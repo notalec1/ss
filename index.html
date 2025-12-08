@@ -2,161 +2,250 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Line Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Line Up!</title>
+    <!-- Import a fun, rounded font -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1e40af;
-            --success: #16a34a;
-            --error: #dc2626;
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #1e293b;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --accent: #ec4899;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-main: #1f2937;
+            --text-sub: #6b7280;
+            --radius: 16px;
+            --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg-gradient);
             margin: 0;
             padding: 20px;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
-            min-height: 100vh;
+            align-items: center;
+            color: var(--text-main);
         }
 
-        .app-container {
-            background: var(--card);
+        /* --- CONTAINER --- */
+        .app-card {
+            background: var(--card-bg);
             width: 100%;
-            max-width: 550px;
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            max-width: 500px;
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            animation: slideUp 0.4s ease-out;
         }
 
-        h1, h2, h3 { margin: 0; text-align: center; }
-        h1 { color: var(--primary); font-size: 1.8rem; }
-        p { color: #64748b; text-align: center; line-height: 1.5; margin: 0; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        /* Controls */
-        .control-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
+        /* --- TYPOGRAPHY --- */
+        h1 { margin: 0 0 10px 0; color: var(--primary-dark); font-weight: 900; text-align: center; font-size: 2rem; }
+        h2 { margin: 0 0 15px 0; font-size: 1.5rem; text-align: center; }
+        p { margin: 0 0 20px 0; color: var(--text-sub); text-align: center; line-height: 1.6; }
+
+        .label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-sub);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        
-        .control-group label {
-            flex: 1;
-            font-weight: bold;
-            font-size: 0.9rem;
-            color: #475569;
-        }
+
+        /* --- FORMS & INPUTS --- */
+        .input-group { margin-bottom: 15px; }
+        .row { display: flex; gap: 15px; }
+        .col { flex: 1; }
 
         input, select {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
+            padding: 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
             font-size: 1rem;
-            box-sizing: border-box;
-            outline: none;
+            font-family: inherit;
+            font-weight: 600;
+            transition: all 0.2s;
+            background: white;
         }
-        
-        input:focus { border-color: var(--primary); }
 
-        /* Buttons */
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        /* --- BUTTONS --- */
         button {
             width: 100%;
-            padding: 14px;
+            padding: 16px;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 1rem;
-            font-weight: 700;
+            font-weight: 800;
+            font-family: inherit;
             cursor: pointer;
-            transition: all 0.2s;
-            background-color: var(--primary);
-            color: white;
-            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+            transition: transform 0.1s, opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        
-        button:hover:not(:disabled) { transform: translateY(-1px); background-color: var(--primary-dark); }
-        button:active:not(:disabled) { transform: translateY(0); }
-        button:disabled { background-color: #cbd5e1; cursor: not-allowed; box-shadow: none; }
-        
-        button.secondary { background-color: #f1f5f9; color: #475569; box-shadow: none; border: 1px solid #e2e8f0; }
-        button.secondary:hover { background-color: #e2e8f0; }
-        
-        button.icon-btn { width: 40px; height: 40px; padding: 0; font-size: 1.2rem; }
-        button.sm-btn { width: auto; padding: 8px 16px; font-size: 0.9rem; }
 
-        /* Lists */
-        .list-container {
+        button:active { transform: scale(0.98); }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-primary:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: var(--text-main);
+            border: 1px solid #e5e7eb;
+        }
+        .btn-secondary:hover { background: #e5e7eb; }
+
+        .btn-danger { background: #fee2e2; color: var(--danger); }
+        .btn-icon { width: 44px; padding: 0; font-size: 1.2rem; flex-shrink: 0; }
+        .btn-sm { padding: 8px 16px; font-size: 0.9rem; width: auto; }
+
+        /* --- LIST ITEMS --- */
+        .list-wrap {
             display: flex;
             flex-direction: column;
             gap: 10px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
         }
 
-        .card-item {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
+        .item-card {
+            background: white;
             padding: 12px 16px;
-            border-radius: 10px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            transition: all 0.2s;
+        }
+        
+        .item-card.correct { background: #ecfdf5; border-color: var(--success); }
+        .item-card.wrong { background: #fef2f2; border-color: var(--danger); }
+
+        .rank-badge {
+            background: var(--text-main);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-right: 10px;
         }
 
-        .card-item.correct { border-color: var(--success); background-color: #f0fdf4; }
-        .card-item.wrong { border-color: var(--error); background-color: #fef2f2; }
+        /* --- PLAYER REVEAL --- */
+        .secret-container {
+            position: relative;
+            margin: 30px 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .secret-blur {
+            filter: blur(20px);
+            opacity: 0.3;
+            transition: all 0.3s ease;
+        }
+
+        .secret-overlay {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--text-main);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .secret-container:hover .secret-blur,
+        .secret-container:active .secret-blur {
+            filter: blur(0);
+            opacity: 1;
+        }
+
+        .secret-container:hover .secret-overlay,
+        .secret-container:active .secret-overlay {
+            opacity: 0;
+        }
 
         .big-number {
-            font-size: 5rem;
-            font-weight: 800;
+            font-size: 6rem;
+            font-weight: 900;
             color: var(--primary);
             text-align: center;
-            margin: 20px 0;
-            text-shadow: 2px 2px 0px #e2e8f0;
+            line-height: 1;
         }
 
-        .move-controls { display: flex; gap: 4px; }
-        
-        /* Utility */
+        /* --- UTILS --- */
         .hidden { display: none; }
-        .badge { 
-            background: #e0f2fe; color: #0369a1; 
-            padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;
-        }
+        .divider { height: 1px; background: #e5e7eb; margin: 20px 0; }
         
-        #toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: #334155; color: white; padding: 10px 20px;
-            border-radius: 20px; font-size: 0.9rem; pointer-events: none;
-            opacity: 0; transition: opacity 0.3s; z-index: 100;
+        .toast {
+            position: fixed; bottom: 30px; left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #1f2937; color: white;
+            padding: 12px 24px; border-radius: 50px;
+            font-weight: 600; font-size: 0.9rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            opacity: 0; pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
         }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
     </style>
 </head>
 <body>
 
-    <div class="app-container" id="app">
-        <!-- JS will render content here -->
+    <div class="app-card" id="app">
+        <!-- Content injected by JS -->
     </div>
     
-    <div id="toast">Copied to clipboard!</div>
+    <div id="toast" class="toast">Link copied!</div>
 
     <script>
-        // --- DATA & STATE ---
-        let state = {
-            step: 'SETUP', // SETUP, DISTRIBUTE, VERIFY, RESULTS
-            players: [],   // { name, number }
-            settings: {
-                min: 1,
-                max: 200,
-                order: 'asc' // 'asc' or 'desc'
-            }
+        // --- GAME STATE ---
+        const state = {
+            step: 'SETUP', 
+            players: [],
+            settings: { min: 1, max: 200, order: 'asc' }
         };
 
         const app = document.getElementById('app');
@@ -165,8 +254,8 @@
         const showToast = (msg) => {
             const t = document.getElementById('toast');
             t.textContent = msg;
-            t.style.opacity = '1';
-            setTimeout(() => t.style.opacity = '0', 2000);
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
         };
 
         const encodeData = (obj) => btoa(JSON.stringify(obj));
@@ -174,261 +263,233 @@
             try { return JSON.parse(atob(str)); } catch(e) { return null; }
         };
 
-        // --- RENDER FUNCTIONS ---
+        // --- VIEWS ---
 
-        function render() {
-            // Check if URL has player data (Player View)
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('p')) {
-                renderPlayerView(params.get('p'));
-                return;
-            }
-
-            // Otherwise, render Host View based on step
-            switch (state.step) {
-                case 'SETUP': renderSetup(); break;
-                case 'DISTRIBUTE': renderDistribute(); break;
-                case 'VERIFY': renderVerify(); break;
-                case 'RESULTS': renderResults(); break;
-            }
-        }
-
-        // 1. SETUP SCREEN
+        // 1. SETUP VIEW
         function renderSetup() {
             app.innerHTML = `
-                <h1>🔢 Number Line</h1>
-                <p>Configure your game settings.</p>
+                <h1>🔢 Line Up!</h1>
+                <p>The party game of hidden numbers.</p>
                 
-                <div class="control-group" style="flex-direction: column; gap:0;">
-                    <div style="display:flex; gap:10px;">
-                        <div>
-                            <label>Min</label>
-                            <input type="number" id="minInput" value="${state.settings.min}">
-                        </div>
-                        <div>
-                            <label>Max</label>
-                            <input type="number" id="maxInput" value="${state.settings.max}">
-                        </div>
+                <div class="row">
+                    <div class="col">
+                        <label class="label">Min Number</label>
+                        <input type="number" id="minInput" value="${state.settings.min}">
+                    </div>
+                    <div class="col">
+                        <label class="label">Max Number</label>
+                        <input type="number" id="maxInput" value="${state.settings.max}">
                     </div>
                 </div>
-
-                <div>
-                    <label style="font-size:0.9rem; font-weight:bold;">Ranking Order</label>
+                
+                <div class="input-group" style="margin-top:15px;">
+                    <label class="label">Sort Order</label>
                     <select id="orderInput">
                         <option value="asc" ${state.settings.order === 'asc' ? 'selected' : ''}>Smallest → Biggest</option>
                         <option value="desc" ${state.settings.order === 'desc' ? 'selected' : ''}>Biggest → Smallest</option>
                     </select>
                 </div>
 
-                <div style="border-top: 1px solid #e2e8f0; margin: 10px 0;"></div>
+                <div class="divider"></div>
 
-                <div>
-                    <label style="font-size:0.9rem; font-weight:bold;">Add Players</label>
-                    <div style="display:flex; gap:8px; margin-top:5px;">
-                        <input type="text" id="nameInput" placeholder="Name (e.g. Mom)" onkeydown="if(event.key==='Enter') addPlayer()">
-                        <button class="sm-btn" onclick="addPlayer()">Add</button>
-                    </div>
+                <label class="label">Players (${state.players.length})</label>
+                <div class="row" style="margin-bottom:15px;">
+                    <input type="text" id="nameInput" placeholder="Enter name (e.g. Dad)" onkeydown="if(event.key==='Enter') addPlayer()">
+                    <button class="btn-primary" style="width:auto;" onclick="addPlayer()">Add</button>
                 </div>
 
-                <div class="list-container">
+                <div class="list-wrap">
+                    ${state.players.length === 0 ? '<div style="text-align:center; color:#ccc; font-style:italic; padding:20px;">No players yet</div>' : ''}
                     ${state.players.map((p, i) => `
-                        <div class="card-item">
-                            <span>${p.name}</span>
-                            <button class="icon-btn secondary" style="color:#ef4444" onclick="removePlayer(${i})">×</button>
+                        <div class="item-card">
+                            <span style="font-weight:700;">${p.name}</span>
+                            <button class="btn-danger btn-icon" style="width:32px; height:32px; font-size:1rem;" onclick="removePlayer(${i})">✕</button>
                         </div>
                     `).join('')}
                 </div>
 
-                <button onclick="startGame()" ${state.players.length < 2 ? 'disabled' : ''}>
-                    Generate Numbers & Start
+                <button class="btn-primary" onclick="startGame()" ${state.players.length < 2 ? 'disabled' : ''}>
+                    ${state.players.length < 2 ? 'Add Players to Start' : 'Generate & Start Game'}
                 </button>
             `;
         }
 
-        // 2. DISTRIBUTE LINKS SCREEN
+        // 2. DISTRIBUTE VIEW
         function renderDistribute() {
             const baseUrl = window.location.href.split('?')[0];
             
             app.innerHTML = `
-                <h1>🔗 Distribute Numbers</h1>
-                <p>Send links to players so they can see their secret numbers.</p>
+                <h2>🔗 Send Links</h2>
+                <p>Send each player their secret link.</p>
                 
-                <div class="list-container">
+                <div class="list-wrap">
                     ${state.players.map(p => {
-                        // Encode payload: name, number, min, max, order
-                        const payload = { 
-                            n: p.name, 
-                            v: p.number, 
-                            min: state.settings.min,
-                            max: state.settings.max,
-                            o: state.settings.order 
-                        };
+                        const payload = { n: p.name, v: p.number, min: state.settings.min, max: state.settings.max, o: state.settings.order };
                         const link = `${baseUrl}?p=${encodeData(payload)}`;
                         
                         return `
-                        <div class="card-item" style="display:block;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                                <strong>${p.name}</strong>
-                                <span class="badge">HIDDEN</span>
+                        <div class="item-card" style="flex-direction:column; align-items:stretch; gap:10px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-weight:800;">${p.name}</span>
+                                <span style="font-size:0.8rem; background:#e0e7ff; color:var(--primary); padding:2px 8px; border-radius:10px; font-weight:700;">HIDDEN</span>
                             </div>
-                            <div style="display:flex; gap:10px;">
-                                <button class="secondary sm-btn" onclick="navigator.clipboard.writeText('${link}'); showToast('Link for ${p.name} copied')">Copy Link</button>
-                                <button class="secondary sm-btn" onclick="window.open('${link}', '_blank')">Open</button>
+                            <div class="row">
+                                <button class="btn-secondary btn-sm" style="flex:1" onclick="shareLink('${link}', '${p.name}')">
+                                    <span style="font-size:1.2rem">📤</span> Share
+                                </button>
+                                <button class="btn-secondary btn-sm" style="flex:1" onclick="window.open('${link}', '_blank')">
+                                    <span style="font-size:1.2rem">👁️</span> Open
+                                </button>
                             </div>
                         </div>
                         `;
                     }).join('')}
                 </div>
 
-                <div style="text-align:center; padding-top:20px; border-top:1px solid #e2e8f0;">
-                    <p style="margin-bottom:10px;">Once everyone has their number and is standing in line...</p>
-                    <button onclick="setState('VERIFY')">Start Verification Phase</button>
+                <div style="text-align:center; margin-top:20px;">
+                    <p style="font-size:0.9rem;">Once everyone is in line:</p>
+                    <button class="btn-primary" onclick="setState('VERIFY')">Start Verification</button>
                 </div>
             `;
         }
 
-        // 3. VERIFICATION SCREEN (Host arranges visual list)
+        // 3. VERIFY VIEW
         function renderVerify() {
             const orderText = state.settings.order === 'asc' ? 'Smallest to Biggest' : 'Biggest to Smallest';
             
             app.innerHTML = `
-                <h2>🧐 Verification</h2>
-                <p>Look at the family line-up.<br>Arrange the names below to match <strong>exactly</strong> how they are standing.</p>
-                <div class="badge" style="align-self:center; margin-bottom:10px;">Goal: ${orderText}</div>
+                <h2>🧐 Verify Order</h2>
+                <p>Match the list below to the real life line.<br>Goal: <strong>${orderText}</strong></p>
 
-                <div class="list-container">
+                <div class="list-wrap">
                     ${state.players.map((p, i) => `
-                        <div class="card-item">
-                            <strong>${p.name}</strong>
-                            <div class="move-controls">
-                                <button class="icon-btn secondary" onclick="movePlayer(${i}, -1)" ${i === 0 ? 'disabled' : ''}>▲</button>
-                                <button class="icon-btn secondary" onclick="movePlayer(${i}, 1)" ${i === state.players.length - 1 ? 'disabled' : ''}>▼</button>
+                        <div class="item-card">
+                            <div style="display:flex; align-items:center;">
+                                <div class="rank-badge">${i + 1}</div>
+                                <span style="font-weight:700;">${p.name}</span>
+                            </div>
+                            <div style="display:flex; gap:5px;">
+                                <button class="btn-secondary btn-icon" onclick="movePlayer(${i}, -1)" ${i === 0 ? 'disabled' : ''}>▲</button>
+                                <button class="btn-secondary btn-icon" onclick="movePlayer(${i}, 1)" ${i === state.players.length - 1 ? 'disabled' : ''}>▼</button>
                             </div>
                         </div>
                     `).join('')}
                 </div>
 
-                <button style="margin-top:20px; background-color: var(--success);" onclick="checkOrder()">Check Correctness</button>
-                <button class="secondary" style="margin-top:10px;" onclick="setState('DISTRIBUTE')">Go Back</button>
+                <button class="btn-primary" style="background:var(--success);" onclick="checkOrder()">Reveal Results</button>
+                <button class="btn-secondary" style="margin-top:10px;" onclick="setState('DISTRIBUTE')">Back</button>
             `;
         }
 
-        // 4. RESULTS SCREEN
+        // 4. RESULTS VIEW
         function renderResults() {
-            // Calculate correct sorted order for logic
-            const sortedPlayers = [...state.players].sort((a, b) => {
+            const sorted = [...state.players].sort((a, b) => {
                 return state.settings.order === 'asc' ? a.number - b.number : b.number - a.number;
             });
 
-            // Compare state.players (user arrangement) vs sortedPlayers
             let allCorrect = true;
-            
-            const resultsHTML = state.players.map((p, i) => {
-                // To check correctness, we check if the person at index i
-                // is the same person who SHOULD be at index i
-                const correctPerson = sortedPlayers[i];
-                const isCorrect = p.name === correctPerson.name; // ID check would be better but names work for simple game
-                
+            const listHtml = state.players.map((p, i) => {
+                const isCorrect = p.name === sorted[i].name;
                 if (!isCorrect) allCorrect = false;
+                
+                const realRank = sorted.findIndex(x => x.name === p.name) + 1;
 
                 return `
-                    <div class="card-item ${isCorrect ? 'correct' : 'wrong'}">
+                    <div class="item-card ${isCorrect ? 'correct' : 'wrong'}">
                         <div>
-                            <strong>${p.name}</strong>
-                            <div style="font-size:0.8rem; color:#64748b;">Has number: <strong>${p.number}</strong></div>
+                            <div style="display:flex; align-items:center;">
+                                <div class="rank-badge" style="background:${isCorrect ? '#10b981' : '#ef4444'}">${i+1}</div>
+                                <strong>${p.name}</strong>
+                            </div>
+                            <div style="font-size:0.85rem; margin-top:4px; margin-left:34px; color:#555;">
+                                Number: <strong>${p.number}</strong>
+                                ${!isCorrect ? `(Should be #${realRank})` : ''}
+                            </div>
                         </div>
-                        <div style="text-align:right;">
-                            ${isCorrect ? '✅ Correct' : '❌ Wrong'}
-                            ${!isCorrect ? `<div style="font-size:0.7rem; color:#ef4444">Should be #${sortedPlayers.findIndex(x => x.name === p.name) + 1}</div>` : ''}
-                        </div>
+                        <div style="font-size:1.5rem;">${isCorrect ? '✅' : '❌'}</div>
                     </div>
                 `;
             }).join('');
 
             app.innerHTML = `
-                <h1>${allCorrect ? '🎉 Perfect!' : '👀 Close!'}</h1>
-                <p>${allCorrect ? 'The family is in the correct order!' : 'Some people are in the wrong spot.'}</p>
+                <h1>${allCorrect ? '🎉 Perfect!' : '😬 So Close!'}</h1>
+                <p>${allCorrect ? 'You guys are mind readers!' : 'Looks like we have some shuffling to do.'}</p>
                 
-                <div class="list-container">
-                    ${resultsHTML}
+                <div class="list-wrap">
+                    ${listHtml}
                 </div>
 
-                <button style="margin-top:20px;" onclick="location.reload()">New Game</button>
+                <button class="btn-primary" onclick="location.reload()">New Game</button>
             `;
         }
 
-        // 5. PLAYER VIEW (What they see on phone)
+        // 5. PLAYER VIEW
         function renderPlayerView(encodedData) {
             const data = decodeData(encodedData);
-            if (!data) {
-                app.innerHTML = `<h3>Error</h3><p>Invalid link.</p>`;
-                return;
-            }
+            if (!data) return app.innerHTML = `<h2>Error</h2><p>Broken link.</p>`;
 
-            const orderText = data.o === 'asc' ? 'Smallest ➔ Biggest' : 'Biggest ➔ Smallest';
+            const orderArrow = data.o === 'asc' ? '↗️' : '↘️';
+            const orderText = data.o === 'asc' ? 'Smallest to Biggest' : 'Biggest to Smallest';
 
             app.innerHTML = `
-                <p>Player: <strong>${data.n}</strong></p>
-                <p>Your secret number is...</p>
-                <div class="big-number">${data.v}</div>
+                <div style="text-align:center;">
+                    <div style="font-size:3rem; margin-bottom:10px;">🤫</div>
+                    <h2>Hi, ${data.n}!</h2>
+                    <p>Hold the number below to reveal it.</p>
+                </div>
+
+                <div class="secret-container">
+                    <div class="secret-overlay">HOLD TO REVEAL</div>
+                    <div class="big-number secret-blur">${data.v}</div>
+                </div>
                 
-                <div style="background:#f1f5f9; padding:15px; border-radius:8px; text-align:left; font-size:0.9rem;">
-                    <strong>Instructions:</strong>
-                    <ul style="padding-left:20px; margin:5px 0;">
-                        <li>Range: ${data.min} - ${data.max}</li>
-                        <li>Goal: Rank <b>${orderText}</b></li>
-                        <li>Give hints, but do NOT say your number!</li>
+                <div style="background:#f0f9ff; padding:20px; border-radius:12px; text-align:left; border:1px solid #bae6fd;">
+                    <label class="label" style="color:#0284c7;">Mission</label>
+                    <ul style="padding-left:20px; margin:5px 0; color:#334155; line-height:1.6;">
+                        <li>Range: <strong>${data.min} - ${data.max}</strong></li>
+                        <li>Order: <strong>${orderText} ${orderArrow}</strong></li>
+                        <li>Give hints, but <strong>never</strong> say your number!</li>
                     </ul>
                 </div>
             `;
         }
 
-
-        // --- LOGIC FUNCTIONS ---
+        // --- CONTROLLER ---
 
         function addPlayer() {
             const input = document.getElementById('nameInput');
             const name = input.value.trim();
             if (!name) return;
-            // distinct names
-            if (state.players.find(p => p.name === name)) {
-                showToast("Name already exists");
-                return;
-            }
+            if (state.players.find(p => p.name === name)) return showToast("Name taken!");
             state.players.push({ name, number: 0 });
             input.value = '';
             renderSetup();
             setTimeout(() => document.getElementById('nameInput').focus(), 50);
         }
 
-        function removePlayer(index) {
-            state.players.splice(index, 1);
+        function removePlayer(i) {
+            state.players.splice(i, 1);
             renderSetup();
         }
 
         function startGame() {
             const min = parseInt(document.getElementById('minInput').value);
             const max = parseInt(document.getElementById('maxInput').value);
-            const order = document.getElementById('orderInput').value;
+            
+            if (min >= max) return showToast("Min must be smaller than Max!");
 
-            if (min >= max) {
-                showToast("Min must be smaller than Max");
-                return;
-            }
+            state.settings = { 
+                min, max, 
+                order: document.getElementById('orderInput').value 
+            };
 
-            state.settings = { min, max, order };
-
-            // Generate unique random numbers
             const used = new Set();
             state.players.forEach(p => {
-                let num;
-                // Safety break to prevent infinite loop if range is too small
-                let attempts = 0;
+                let num, attempts = 0;
                 do {
                     num = Math.floor(Math.random() * (max - min + 1)) + min;
                     attempts++;
                 } while (used.has(num) && attempts < 1000);
-                
                 used.add(num);
                 p.number = num;
             });
@@ -436,28 +497,46 @@
             setState('DISTRIBUTE');
         }
 
-        function movePlayer(index, direction) {
-            // Swap logic
-            const targetIndex = index + direction;
-            if (targetIndex < 0 || targetIndex >= state.players.length) return;
+        async function shareLink(url, name) {
+            // Try native share first (mobile)
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Your Secret Number',
+                        text: `Here is your number for the game, ${name}!`,
+                        url: url
+                    });
+                    return;
+                } catch (err) {
+                    // Fallback if user cancels or fails
+                }
+            }
+            // Fallback to clipboard
+            navigator.clipboard.writeText(url);
+            showToast(`Link for ${name} copied!`);
+        }
 
-            const temp = state.players[index];
-            state.players[index] = state.players[targetIndex];
-            state.players[targetIndex] = temp;
-            
+        function movePlayer(index, dir) {
+            const target = index + dir;
+            if (target < 0 || target >= state.players.length) return;
+            [state.players[index], state.players[target]] = [state.players[target], state.players[index]];
             renderVerify();
         }
 
-        function checkOrder() {
-            setState('RESULTS');
+        function checkOrder() { setState('RESULTS'); }
+        
+        function setState(s) { state.step = s; render(); }
+        
+        function render() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('p')) return renderPlayerView(params.get('p'));
+            
+            if (state.step === 'SETUP') renderSetup();
+            else if (state.step === 'DISTRIBUTE') renderDistribute();
+            else if (state.step === 'VERIFY') renderVerify();
+            else if (state.step === 'RESULTS') renderResults();
         }
 
-        function setState(newState) {
-            state.step = newState;
-            render();
-        }
-
-        // Init
         render();
 
     </script>
