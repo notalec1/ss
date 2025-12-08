@@ -3,135 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Human Number Line</title>
+    <title>Number Line Game</title>
     <style>
         :root {
-            --primary: #6366f1;
-            --surface: #ffffff;
-            --bg: #f3f4f6;
-            --text: #1f2937;
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --success: #16a34a;
+            --error: #dc2626;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
             padding: 20px;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            justify-content: center;
             min-height: 100vh;
         }
 
-        .container {
-            background: var(--surface);
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
+        .app-container {
+            background: var(--card);
             width: 100%;
-            text-align: center;
+            max-width: 550px;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        h1 { margin-top: 0; color: var(--primary); }
-        p { line-height: 1.5; color: #4b5563; }
+        h1, h2, h3 { margin: 0; text-align: center; }
+        h1 { color: var(--primary); font-size: 1.8rem; }
+        p { color: #64748b; text-align: center; line-height: 1.5; margin: 0; }
 
-        input, button {
+        /* Controls */
+        .control-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .control-group label {
+            flex: 1;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        input, select {
             width: 100%;
             padding: 12px;
-            margin: 8px 0;
+            border: 2px solid #e2e8f0;
             border-radius: 8px;
-            border: 1px solid #d1d5db;
-            font-size: 16px;
+            font-size: 1rem;
             box-sizing: border-box;
+            outline: none;
         }
+        
+        input:focus { border-color: var(--primary); }
 
+        /* Buttons */
         button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
             background-color: var(--primary);
             color: white;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            transition: opacity 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
         }
+        
+        button:hover:not(:disabled) { transform: translateY(-1px); background-color: var(--primary-dark); }
+        button:active:not(:disabled) { transform: translateY(0); }
+        button:disabled { background-color: #cbd5e1; cursor: not-allowed; box-shadow: none; }
+        
+        button.secondary { background-color: #f1f5f9; color: #475569; box-shadow: none; border: 1px solid #e2e8f0; }
+        button.secondary:hover { background-color: #e2e8f0; }
+        
+        button.icon-btn { width: 40px; height: 40px; padding: 0; font-size: 1.2rem; }
+        button.sm-btn { width: auto; padding: 8px 16px; font-size: 0.9rem; }
 
-        button:hover { opacity: 0.9; }
-        button.secondary { background-color: #9ca3af; }
-        button.danger { background-color: #ef4444; }
-
-        .player-list {
-            list-style: none;
-            padding: 0;
-            margin: 20px 0;
-        }
-
-        .player-item {
-            background: #f9fafb;
-            margin: 8px 0;
-            padding: 10px;
-            border-radius: 6px;
+        /* Lists */
+        .list-container {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .card-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 12px 16px;
+            border-radius: 10px;
+            display: flex;
             align-items: center;
-            border: 1px solid #e5e7eb;
+            justify-content: space-between;
         }
 
-        .remove-btn {
-            background: #fee2e2;
-            color: #ef4444;
-            width: auto;
-            padding: 4px 8px;
-            margin: 0;
-            font-size: 12px;
-        }
+        .card-item.correct { border-color: var(--success); background-color: #f0fdf4; }
+        .card-item.wrong { border-color: var(--error); background-color: #fef2f2; }
 
-        .secret-number {
+        .big-number {
             font-size: 5rem;
             font-weight: 800;
             color: var(--primary);
+            text-align: center;
             margin: 20px 0;
+            text-shadow: 2px 2px 0px #e2e8f0;
         }
 
-        .hidden { display: none; }
+        .move-controls { display: flex; gap: 4px; }
         
-        .share-link {
-            font-size: 0.9rem;
-            color: var(--primary);
-            text-decoration: underline;
-            cursor: pointer;
-            word-break: break-all;
+        /* Utility */
+        .hidden { display: none; }
+        .badge { 
+            background: #e0f2fe; color: #0369a1; 
+            padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;
         }
         
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            background: #333;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            opacity: 0;
-            transition: opacity 0.3s;
+        #toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #334155; color: white; padding: 10px 20px;
+            border-radius: 20px; font-size: 0.9rem; pointer-events: none;
+            opacity: 0; transition: opacity 0.3s; z-index: 100;
         }
     </style>
 </head>
 <body>
 
-    <div class="container" id="app">
-        <!-- Loading State -->
-        <div id="loading">Loading...</div>
+    <div class="app-container" id="app">
+        <!-- JS will render content here -->
     </div>
-
-    <!-- TOAST NOTIFICATION -->
-    <div id="toast" class="toast">Copied to clipboard!</div>
+    
+    <div id="toast">Copied to clipboard!</div>
 
     <script>
-        // --- GAME LOGIC ---
+        // --- DATA & STATE ---
+        let state = {
+            step: 'SETUP', // SETUP, DISTRIBUTE, VERIFY, RESULTS
+            players: [],   // { name, number }
+            settings: {
+                min: 1,
+                max: 200,
+                order: 'asc' // 'asc' or 'desc'
+            }
+        };
 
         const app = document.getElementById('app');
-        
-        // UTILS
-        const getParams = () => new URLSearchParams(window.location.search);
+
+        // --- UTILS ---
         const showToast = (msg) => {
             const t = document.getElementById('toast');
             t.textContent = msg;
@@ -139,152 +169,296 @@
             setTimeout(() => t.style.opacity = '0', 2000);
         };
 
-        // STATE
-        let players = [];
-        let gameActive = false;
+        const encodeData = (obj) => btoa(JSON.stringify(obj));
+        const decodeData = (str) => {
+            try { return JSON.parse(atob(str)); } catch(e) { return null; }
+        };
 
-        // --- VIEWS ---
+        // --- RENDER FUNCTIONS ---
 
-        // 1. SETUP VIEW (Host adds names)
+        function render() {
+            // Check if URL has player data (Player View)
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('p')) {
+                renderPlayerView(params.get('p'));
+                return;
+            }
+
+            // Otherwise, render Host View based on step
+            switch (state.step) {
+                case 'SETUP': renderSetup(); break;
+                case 'DISTRIBUTE': renderDistribute(); break;
+                case 'VERIFY': renderVerify(); break;
+                case 'RESULTS': renderResults(); break;
+            }
+        }
+
+        // 1. SETUP SCREEN
         function renderSetup() {
             app.innerHTML = `
-                <h1>The Human Number Line</h1>
-                <p>Add everyone who is playing. Each person will get a random number between 1-200.</p>
-                <div style="display:flex; gap:8px;">
-                    <input type="text" id="nameInput" placeholder="Enter player name (e.g. Dad)" onkeydown="if(event.key==='Enter') addPlayer()">
-                    <button style="width:auto;" onclick="addPlayer()">Add</button>
+                <h1>🔢 Number Line</h1>
+                <p>Configure your game settings.</p>
+                
+                <div class="control-group" style="flex-direction: column; gap:0;">
+                    <div style="display:flex; gap:10px;">
+                        <div>
+                            <label>Min</label>
+                            <input type="number" id="minInput" value="${state.settings.min}">
+                        </div>
+                        <div>
+                            <label>Max</label>
+                            <input type="number" id="maxInput" value="${state.settings.max}">
+                        </div>
+                    </div>
                 </div>
-                <ul class="player-list" id="playerList"></ul>
-                <button onclick="startGame()" ${players.length < 2 ? 'disabled style="opacity:0.5"' : ''}>Generate Numbers & Start</button>
+
+                <div>
+                    <label style="font-size:0.9rem; font-weight:bold;">Ranking Order</label>
+                    <select id="orderInput">
+                        <option value="asc" ${state.settings.order === 'asc' ? 'selected' : ''}>Smallest → Biggest</option>
+                        <option value="desc" ${state.settings.order === 'desc' ? 'selected' : ''}>Biggest → Smallest</option>
+                    </select>
+                </div>
+
+                <div style="border-top: 1px solid #e2e8f0; margin: 10px 0;"></div>
+
+                <div>
+                    <label style="font-size:0.9rem; font-weight:bold;">Add Players</label>
+                    <div style="display:flex; gap:8px; margin-top:5px;">
+                        <input type="text" id="nameInput" placeholder="Name (e.g. Mom)" onkeydown="if(event.key==='Enter') addPlayer()">
+                        <button class="sm-btn" onclick="addPlayer()">Add</button>
+                    </div>
+                </div>
+
+                <div class="list-container">
+                    ${state.players.map((p, i) => `
+                        <div class="card-item">
+                            <span>${p.name}</span>
+                            <button class="icon-btn secondary" style="color:#ef4444" onclick="removePlayer(${i})">×</button>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <button onclick="startGame()" ${state.players.length < 2 ? 'disabled' : ''}>
+                    Generate Numbers & Start
+                </button>
             `;
-            renderPlayerList();
         }
 
-        function renderPlayerList() {
-            const list = document.getElementById('playerList');
-            if(!list) return;
-            list.innerHTML = players.map((p, i) => `
-                <li class="player-item">
-                    <span>${p.name}</span>
-                    <button class="remove-btn" onclick="removePlayer(${i})">✕</button>
-                </li>
-            `).join('');
+        // 2. DISTRIBUTE LINKS SCREEN
+        function renderDistribute() {
+            const baseUrl = window.location.href.split('?')[0];
+            
+            app.innerHTML = `
+                <h1>🔗 Distribute Numbers</h1>
+                <p>Send links to players so they can see their secret numbers.</p>
+                
+                <div class="list-container">
+                    ${state.players.map(p => {
+                        // Encode payload: name, number, min, max, order
+                        const payload = { 
+                            n: p.name, 
+                            v: p.number, 
+                            min: state.settings.min,
+                            max: state.settings.max,
+                            o: state.settings.order 
+                        };
+                        const link = `${baseUrl}?p=${encodeData(payload)}`;
+                        
+                        return `
+                        <div class="card-item" style="display:block;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                                <strong>${p.name}</strong>
+                                <span class="badge">HIDDEN</span>
+                            </div>
+                            <div style="display:flex; gap:10px;">
+                                <button class="secondary sm-btn" onclick="navigator.clipboard.writeText('${link}'); showToast('Link for ${p.name} copied')">Copy Link</button>
+                                <button class="secondary sm-btn" onclick="window.open('${link}', '_blank')">Open</button>
+                            </div>
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+
+                <div style="text-align:center; padding-top:20px; border-top:1px solid #e2e8f0;">
+                    <p style="margin-bottom:10px;">Once everyone has their number and is standing in line...</p>
+                    <button onclick="setState('VERIFY')">Start Verification Phase</button>
+                </div>
+            `;
         }
+
+        // 3. VERIFICATION SCREEN (Host arranges visual list)
+        function renderVerify() {
+            const orderText = state.settings.order === 'asc' ? 'Smallest to Biggest' : 'Biggest to Smallest';
+            
+            app.innerHTML = `
+                <h2>🧐 Verification</h2>
+                <p>Look at the family line-up.<br>Arrange the names below to match <strong>exactly</strong> how they are standing.</p>
+                <div class="badge" style="align-self:center; margin-bottom:10px;">Goal: ${orderText}</div>
+
+                <div class="list-container">
+                    ${state.players.map((p, i) => `
+                        <div class="card-item">
+                            <strong>${p.name}</strong>
+                            <div class="move-controls">
+                                <button class="icon-btn secondary" onclick="movePlayer(${i}, -1)" ${i === 0 ? 'disabled' : ''}>▲</button>
+                                <button class="icon-btn secondary" onclick="movePlayer(${i}, 1)" ${i === state.players.length - 1 ? 'disabled' : ''}>▼</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <button style="margin-top:20px; background-color: var(--success);" onclick="checkOrder()">Check Correctness</button>
+                <button class="secondary" style="margin-top:10px;" onclick="setState('DISTRIBUTE')">Go Back</button>
+            `;
+        }
+
+        // 4. RESULTS SCREEN
+        function renderResults() {
+            // Calculate correct sorted order for logic
+            const sortedPlayers = [...state.players].sort((a, b) => {
+                return state.settings.order === 'asc' ? a.number - b.number : b.number - a.number;
+            });
+
+            // Compare state.players (user arrangement) vs sortedPlayers
+            let allCorrect = true;
+            
+            const resultsHTML = state.players.map((p, i) => {
+                // To check correctness, we check if the person at index i
+                // is the same person who SHOULD be at index i
+                const correctPerson = sortedPlayers[i];
+                const isCorrect = p.name === correctPerson.name; // ID check would be better but names work for simple game
+                
+                if (!isCorrect) allCorrect = false;
+
+                return `
+                    <div class="card-item ${isCorrect ? 'correct' : 'wrong'}">
+                        <div>
+                            <strong>${p.name}</strong>
+                            <div style="font-size:0.8rem; color:#64748b;">Has number: <strong>${p.number}</strong></div>
+                        </div>
+                        <div style="text-align:right;">
+                            ${isCorrect ? '✅ Correct' : '❌ Wrong'}
+                            ${!isCorrect ? `<div style="font-size:0.7rem; color:#ef4444">Should be #${sortedPlayers.findIndex(x => x.name === p.name) + 1}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            app.innerHTML = `
+                <h1>${allCorrect ? '🎉 Perfect!' : '👀 Close!'}</h1>
+                <p>${allCorrect ? 'The family is in the correct order!' : 'Some people are in the wrong spot.'}</p>
+                
+                <div class="list-container">
+                    ${resultsHTML}
+                </div>
+
+                <button style="margin-top:20px;" onclick="location.reload()">New Game</button>
+            `;
+        }
+
+        // 5. PLAYER VIEW (What they see on phone)
+        function renderPlayerView(encodedData) {
+            const data = decodeData(encodedData);
+            if (!data) {
+                app.innerHTML = `<h3>Error</h3><p>Invalid link.</p>`;
+                return;
+            }
+
+            const orderText = data.o === 'asc' ? 'Smallest ➔ Biggest' : 'Biggest ➔ Smallest';
+
+            app.innerHTML = `
+                <p>Player: <strong>${data.n}</strong></p>
+                <p>Your secret number is...</p>
+                <div class="big-number">${data.v}</div>
+                
+                <div style="background:#f1f5f9; padding:15px; border-radius:8px; text-align:left; font-size:0.9rem;">
+                    <strong>Instructions:</strong>
+                    <ul style="padding-left:20px; margin:5px 0;">
+                        <li>Range: ${data.min} - ${data.max}</li>
+                        <li>Goal: Rank <b>${orderText}</b></li>
+                        <li>Give hints, but do NOT say your number!</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+
+        // --- LOGIC FUNCTIONS ---
 
         function addPlayer() {
             const input = document.getElementById('nameInput');
             const name = input.value.trim();
-            if (name) {
-                players.push({ name, number: null });
-                input.value = '';
-                renderSetup();
-                input.focus();
+            if (!name) return;
+            // distinct names
+            if (state.players.find(p => p.name === name)) {
+                showToast("Name already exists");
+                return;
             }
+            state.players.push({ name, number: 0 });
+            input.value = '';
+            renderSetup();
+            setTimeout(() => document.getElementById('nameInput').focus(), 50);
         }
 
         function removePlayer(index) {
-            players.splice(index, 1);
+            state.players.splice(index, 1);
             renderSetup();
         }
 
-        // 2. HOST DASHBOARD (Share links phase)
         function startGame() {
-            // Generate unique numbers
-            const usedNumbers = new Set();
-            players.forEach(p => {
+            const min = parseInt(document.getElementById('minInput').value);
+            const max = parseInt(document.getElementById('maxInput').value);
+            const order = document.getElementById('orderInput').value;
+
+            if (min >= max) {
+                showToast("Min must be smaller than Max");
+                return;
+            }
+
+            state.settings = { min, max, order };
+
+            // Generate unique random numbers
+            const used = new Set();
+            state.players.forEach(p => {
                 let num;
+                // Safety break to prevent infinite loop if range is too small
+                let attempts = 0;
                 do {
-                    num = Math.floor(Math.random() * 200) + 1;
-                } while (usedNumbers.has(num));
-                usedNumbers.add(num);
+                    num = Math.floor(Math.random() * (max - min + 1)) + min;
+                    attempts++;
+                } while (used.has(num) && attempts < 1000);
+                
+                used.add(num);
                 p.number = num;
             });
 
-            renderHostDashboard();
+            setState('DISTRIBUTE');
         }
 
-        function renderHostDashboard() {
-            const baseUrl = window.location.href.split('?')[0];
+        function movePlayer(index, direction) {
+            // Swap logic
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= state.players.length) return;
+
+            const temp = state.players[index];
+            state.players[index] = state.players[targetIndex];
+            state.players[targetIndex] = temp;
             
-            app.innerHTML = `
-                <h1>Game Hosted!</h1>
-                <p>Send these links to the players, or verify the order when ready.</p>
-                <ul class="player-list" style="text-align:left;">
-                    ${players.map(p => {
-                        // Create a secure-ish link containing the name and number
-                        const data = btoa(JSON.stringify({ n: p.name, v: p.number }));
-                        const link = `${baseUrl}?d=${data}`;
-                        return `
-                        <li class="player-item" style="flex-direction:column; align-items:flex-start;">
-                            <strong>${p.name}</strong>
-                            <div style="font-size:12px; color:#666; margin-top:4px; width:100%; display:flex; gap:5px;">
-                                <button style="flex:1; padding:5px;" onclick="navigator.clipboard.writeText('${link}'); showToast('Link copied for ${p.name}')">Copy Link</button>
-                                <button class="secondary" style="flex:1; padding:5px;" onclick="window.open('${link}', '_blank')">Open</button>
-                            </div>
-                        </li>
-                        `;
-                    }).join('')}
-                </ul>
-                <button class="danger" onclick="revealAnswers()">Reveal Correct Order</button>
-                <button class="secondary" onclick="if(confirm('Restart?')) location.reload()">Reset Game</button>
-            `;
+            renderVerify();
         }
 
-        // 3. PLAYER VIEW (What they see when they open a link)
-        function renderPlayerCard(name, number) {
-            app.innerHTML = `
-                <p style="font-size:1.2rem; margin-bottom:0;">Hello, <strong>${name}</strong>!</p>
-                <p>Your hidden number is...</p>
-                <div class="secret-number">${number}</div>
-                <p style="font-size:0.9rem; background:#eef2ff; padding:10px; border-radius:8px;">
-                    <strong>Instructions:</strong><br>
-                    Rank yourselves from smallest to biggest.<br>
-                    <em>Do not say this number out loud!</em><br>
-                    Give hints like: "I am definitely bigger than 50" or "I think I'm smaller than Mom".
-                </p>
-            `;
+        function checkOrder() {
+            setState('RESULTS');
         }
 
-        // 4. REVEAL SCREEN (Host view at end)
-        function revealAnswers() {
-            // Sort players by number
-            const sorted = [...players].sort((a, b) => a.number - b.number);
-            
-            app.innerHTML = `
-                <h1>The Correct Order</h1>
-                <ul class="player-list">
-                    ${sorted.map((p, i) => `
-                        <li class="player-item" style="font-size:1.2rem;">
-                            <span><span style="color:#999; margin-right:10px;">#${i+1}</span> ${p.name}</span>
-                            <strong style="color:var(--primary); font-size:1.5rem;">${p.number}</strong>
-                        </li>
-                    `).join('')}
-                </ul>
-                <button onclick="location.reload()">Play Again</button>
-            `;
+        function setState(newState) {
+            state.step = newState;
+            render();
         }
 
-        // --- INITIALIZATION ---
-
-        function init() {
-            const params = getParams();
-            const data = params.get('d');
-
-            if (data) {
-                // We are in PLAYER MODE
-                try {
-                    const decoded = JSON.parse(atob(data));
-                    renderPlayerCard(decoded.n, decoded.v);
-                } catch (e) {
-                    app.innerHTML = `<h1>Error</h1><p>Invalid game link.</p><button onclick="window.location.href = window.location.href.split('?')[0]">Go Home</button>`;
-                }
-            } else {
-                // We are in HOST MODE
-                renderSetup();
-            }
-        }
-
-        init();
+        // Init
+        render();
 
     </script>
 </body>
