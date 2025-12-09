@@ -3,680 +3,882 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Line Up! Hybrid</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>Line Up! Ultimate</title>
+    
+    <!-- Fonts & Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
         :root {
-            --primary: #6366f1; --primary-dark: #4f46e5;
-            --success: #10b981; --danger: #ef4444; --gold: #f59e0b;
-            --text-main: #1e293b; --text-sub: #64748b;
-            --bg-card: rgba(255, 255, 255, 0.95);
+            --primary: #6366f1; 
+            --primary-dark: #4f46e5;
+            --success: #10b981; 
+            --danger: #ef4444; 
+            --gold: #f59e0b;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --bg-card: rgba(255, 255, 255, 0.9);
             --bg-item: rgba(255, 255, 255, 0.6);
-            --border: rgba(255, 255, 255, 0.5);
+            --border: rgba(255, 255, 255, 0.6);
             --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
             --radius: 24px;
         }
+
         @media (prefers-color-scheme: dark) {
             :root {
-                --text-main: #f8fafc; --text-sub: #94a3b8;
-                --bg-card: rgba(30, 41, 59, 0.9);
+                --text-main: #f8fafc;
+                --text-sub: #94a3b8;
+                --bg-card: rgba(30, 41, 59, 0.85);
                 --bg-item: rgba(15, 23, 42, 0.4);
                 --border: rgba(255, 255, 255, 0.1);
-                --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+                --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
             }
         }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         body {
-            font-family: 'Nunito', sans-serif; margin: 0; padding: 20px;
-            min-height: 100vh; color: var(--text-main);
+            font-family: 'Nunito', sans-serif;
+            margin: 0; padding: 20px;
+            min-height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            color: var(--text-main);
             background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #4338ca);
-            background-size: 400% 400%; animation: gradientBG 15s ease infinite;
-            overflow-x: hidden; display: flex; justify-content: center; align-items: flex-start;
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            overflow-x: hidden;
         }
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.4; }
 
-        /* LAYOUT ENGINE */
-        .layout-wrapper {
-            display: flex; gap: 20px; width: 100%; max-width: 500px;
-            z-index: 2; transition: max-width 0.3s ease;
-            margin-top: 20px;
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        
-        /* TV MODE STYLES */
-        body.tv-mode { zoom: 1.2; }
-        body.tv-mode .layout-wrapper { max-width: 1000px; }
-        body.tv-mode .sidebar { display: block; flex: 1; min-width: 300px; }
-        body.tv-mode .app-card { flex: 1.5; }
 
+        /* Snow Overlay */
+        #snowCanvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0; opacity: 0.5;
+        }
+
+        /* App Container */
         .app-card {
-            background: var(--bg-card); backdrop-filter: blur(16px);
-            border: 1px solid var(--border); border-radius: var(--radius);
-            box-shadow: var(--shadow); padding: 2rem; width: 100%;
-            position: relative;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            width: 100%; max-width: 500px; padding: 2.5rem 2rem;
+            border-radius: var(--radius); box-shadow: var(--shadow);
+            position: relative; z-index: 2; 
+            transition: all 0.3s ease;
         }
 
-        .sidebar {
-            display: none; background: var(--bg-card); backdrop-filter: blur(16px);
-            border: 1px solid var(--border); border-radius: var(--radius);
-            box-shadow: var(--shadow); padding: 20px; height: fit-content;
-            animation: slideIn 0.3s ease;
+        /* TV MODE STYLES */
+        body.is-tv-mode .app-card {
+            max-width: 90vw;
+            width: 90vw;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
         }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 
-        /* UI ELEMENTS */
-        h1 { margin: 0 0 10px 0; color: var(--primary); font-weight: 900; text-align: center; font-size: 2.2rem; }
-        h2 { margin: 0 0 15px 0; font-size: 1.5rem; text-align: center; font-weight: 800; }
-        p { margin: 0 0 20px 0; color: var(--text-sub); text-align: center; line-height: 1.5; }
-        .label { display: block; font-size: 0.8rem; font-weight: 800; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
-        .row { display: flex; gap: 10px; } .col { flex: 1; }
+        .split-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+        }
+
+        body.is-tv-mode .split-container {
+            flex-direction: row;
+            align-items: stretch;
+        }
+
+        .left-panel, .right-panel { flex: 1; }
         
+        body.is-tv-mode .right-panel {
+            flex: 1.5;
+            background: rgba(0,0,0,0.05);
+            border-radius: 20px;
+            padding: 20px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.is-tv-mode .left-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-right: 20px;
+        }
+        
+        /* Typography */
+        h1 { margin: 0 0 10px 0; color: var(--primary); font-weight: 900; text-align: center; font-size: 2.2rem; }
+        h2 { margin: 0 0 15px 0; font-size: 1.6rem; text-align: center; font-weight: 800; }
+        p { margin: 0 0 25px 0; color: var(--text-sub); text-align: center; line-height: 1.6; }
+        .label { display: block; font-size: 0.8rem; font-weight: 800; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+
+        body.is-tv-mode h1 { font-size: 3.5rem; }
+        body.is-tv-mode h2 { font-size: 2.5rem; }
+
+        /* Inputs & Buttons */
+        .row { display: flex; gap: 12px; }
+        .col { flex: 1; }
+
         input, select {
-            width: 100%; padding: 14px; border: 2px solid transparent; border-radius: 16px;
-            font-size: 1rem; font-weight: 700; background: var(--bg-item); color: var(--text-main);
-            transition: 0.2s;
+            width: 100%; padding: 16px; border: 2px solid transparent; border-radius: 16px;
+            font-size: 1rem; font-family: inherit; font-weight: 700;
+            background: var(--bg-item); color: var(--text-main);
+            transition: all 0.2s;
         }
         input:focus, select:focus { outline: none; background: var(--bg-card); border-color: var(--primary); transform: translateY(-2px); }
 
         button {
-            width: 100%; padding: 14px; border: none; border-radius: 16px;
-            font-size: 1rem; font-weight: 800; cursor: pointer;
+            width: 100%; padding: 16px; border: none; border-radius: 18px;
+            font-size: 1rem; font-weight: 800; font-family: inherit; cursor: pointer;
+            transition: all 0.2s;
             display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: all 0.1s;
         }
-        button:active { transform: scale(0.96); }
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        button:active { transform: scale(0.95); }
+        
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
         .btn-secondary { background: var(--bg-item); color: var(--text-main); border: 1px solid var(--border); }
-        .btn-danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
-        .btn-sm { padding: 8px 12px; font-size: 0.85rem; width: auto; }
-        .btn-mode { height: 100px; flex-direction: column; font-size: 1.2rem; }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .btn-sm { padding: 8px 14px; font-size: 0.85rem; width: auto; border-radius: 12px; }
+        .btn-icon { width: 44px; padding: 0; font-size: 1.2rem; flex-shrink: 0; }
+        
+        /* Lists */
+        .list-wrap { display: flex; flex-direction: column; gap: 12px; margin: 25px 0; max-height: 400px; overflow-y: auto; padding-right: 4px; }
+        
+        body.is-tv-mode .list-wrap { max-height: 100%; flex: 1; margin: 10px 0; }
 
-        /* LISTS & ITEMS */
-        .list-wrap { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; max-height: 50vh; overflow-y: auto; padding-right: 5px; }
         .item-card {
-            background: var(--bg-item); padding: 12px 16px; border-radius: 14px;
-            border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;
+            background: var(--bg-item); padding: 14px 18px; border-radius: 16px; border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
         }
-        .item-card.correct { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
-        .item-card.wrong { border-color: var(--danger); background: rgba(239, 68, 68, 0.1); }
-        .rank-badge { background: var(--text-main); color: var(--bg-card); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; margin-right: 10px; }
+        .item-card.correct { background: rgba(16, 185, 129, 0.15); border-color: var(--success); }
+        .item-card.wrong { background: rgba(239, 68, 68, 0.15); border-color: var(--danger); }
+        .item-card.gold { background: rgba(245, 158, 11, 0.15); border-color: var(--gold); }
+        .rank-badge { background: var(--text-main); color: var(--bg-card); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; margin-right: 12px; }
+        
+        /* Timer & Secret */
+        .timer-badge { background: var(--text-main); color: var(--bg-card); padding: 6px 16px; border-radius: 50px; font-weight: 800; font-family: monospace; font-size: 1.2rem; display: inline-block; margin-bottom: 15px; }
+        body.is-tv-mode .timer-badge { font-size: 2rem; padding: 10px 30px; }
+        
+        .secret-container { position: relative; margin: 30px 0; cursor: pointer; height: 140px; display: flex; align-items: center; justify-content: center; background: var(--bg-item); border-radius: 24px; user-select: none; }
+        .secret-blur { filter: blur(25px); opacity: 0.4; transition: all 0.3s ease; }
+        .secret-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--text-main); color: var(--bg-card); padding: 12px 24px; border-radius: 50px; font-size: 0.9rem; font-weight: 800; pointer-events: none; transition: opacity 0.2s; white-space: nowrap; }
+        .secret-container.revealed .secret-blur { filter: blur(0); opacity: 1; transform: scale(1.1); }
+        .secret-container.revealed .secret-overlay { opacity: 0; }
+        .big-number { font-size: 5rem; font-weight: 900; color: var(--primary); line-height: 1; }
 
-        /* SCORES */
-        .score-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-weight: 700; }
-        .score-val { color: var(--primary); font-weight: 900; }
-
-        /* MODALS */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 100; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.2s; }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-content { background: var(--bg-card); padding: 30px; border-radius: 24px; width: 90%; max-width: 320px; text-align: center; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.3); transform: scale(0.9); transition: 0.2s; }
+        /* Modals */
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); 
+            z-index: 100; display: flex; justify-content: center; align-items: center; 
+            opacity: 0; visibility: hidden; pointer-events: none; 
+            transition: opacity 0.3s; 
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; pointer-events: all; }
+        
+        .modal-content { 
+            background: var(--bg-card); padding: 30px; border-radius: 24px; 
+            text-align: center; width: 90%; max-width: 320px; 
+            transform: scale(0.9); transition: transform 0.3s; 
+            border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.2); 
+            max-height: 80vh; overflow-y: auto; 
+        }
         .modal-overlay.active .modal-content { transform: scale(1); }
 
-        /* UTILS */
-        .hidden { display: none; }
-        .timer-badge { background: var(--text-main); color: var(--bg-card); padding: 5px 15px; border-radius: 50px; font-family: monospace; font-size: 1.2rem; font-weight: 800; margin: 0 auto 15px auto; width: fit-content; }
-        #qrDisplay { background: white; padding: 10px; border-radius: 10px; margin: 15px auto; width: fit-content; }
-        
-        /* SECRET REVEAL */
-        .secret-box { 
-            position: relative; height: 120px; background: var(--bg-item); 
-            border-radius: 20px; display: flex; align-items: center; justify-content: center; 
-            margin: 20px 0; user-select: none; cursor: pointer;
+        /* Mode Selection Screen */
+        .mode-btn { 
+            height: 150px; flex-direction: column; font-size: 1.5rem; gap: 15px;
+            background: var(--bg-item); border: 2px solid var(--border);
         }
-        .secret-val { font-size: 4rem; font-weight: 900; filter: blur(20px); opacity: 0; transition: 0.2s; color: var(--primary); }
-        .secret-msg { position: absolute; font-weight: 800; background: var(--text-main); color: var(--bg-card); padding: 8px 16px; border-radius: 50px; pointer-events: none; transition: 0.2s; }
-        .secret-box.revealed .secret-val { filter: blur(0); opacity: 1; }
-        .secret-box.revealed .secret-msg { opacity: 0; transform: scale(0.8); }
+        .mode-btn:hover { background: var(--bg-card); border-color: var(--primary); transform: scale(1.02); }
+        .mode-icon { font-size: 3rem; }
 
-        /* SCROLLBAR */
-        ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-thumb { background: var(--text-sub); border-radius: 10px; opacity: 0.3; }
+        /* Utils */
+        #qrDisplay { margin: 20px auto; display: flex; justify-content: center; background: white; padding: 15px; border-radius: 16px; width: fit-content; }
+        .divider { height: 2px; background: var(--border); margin: 25px 0; border-radius: 2px; }
+        .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text-main); color: var(--bg-card); padding: 14px 28px; border-radius: 50px; font-weight: 700; font-size: 0.95rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; pointer-events: none; transition: all 0.4s; z-index: 1000; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        
+        .btn-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .emergency-reset { position: fixed; bottom: 10px; right: 10px; opacity: 0.3; font-size: 20px; cursor: pointer; z-index: 9999; }
     </style>
 </head>
 <body>
 
     <canvas id="snowCanvas"></canvas>
 
-    <div class="layout-wrapper">
-        <!-- MAIN GAME AREA -->
-        <div class="app-card" id="app">
-            <!-- Content Injected via JS -->
-            <div style="text-align:center; padding:50px;">Loading...</div>
-        </div>
-
-        <!-- SIDEBAR (TV MODE ONLY) -->
-        <div class="sidebar" id="sidebar">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2 style="margin:0;">🏆 Scores</h2>
-                <button class="btn-danger btn-sm" onclick="resetScores()">Reset</button>
-            </div>
-            <div id="sidebarScoreList" class="list-wrap" style="max-height: 60vh;"></div>
+    <div class="app-card" id="app">
+        <div style="text-align:center;">
+            <h1>Loading...</h1>
         </div>
     </div>
 
     <!-- MODALS -->
     <div class="modal-overlay" id="qrModal" onclick="closeModal('qrModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h2 id="qrTitle">Scan</h2>
+            <h2 id="qrName" style="margin-bottom:5px;">Player</h2>
             <div id="qrDisplay"></div>
             <button class="btn-secondary" onclick="closeModal('qrModal')">Close</button>
         </div>
     </div>
 
+    <div class="modal-overlay" id="presetsModal" onclick="closeModal('presetsModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2>💾 Saved Groups</h2>
+            <div id="presetsList" style="margin:20px 0; text-align:left;"></div>
+            <button class="btn-secondary" onclick="closeModal('presetsModal')">Close</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="historyModal" onclick="closeModal('historyModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2>📜 Game History</h2>
+            <div id="historyList" style="margin:20px 0; text-align:left;"></div>
+            <button class="btn-secondary" onclick="closeModal('historyModal')">Close</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="dataModal" onclick="closeModal('dataModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h2>⚙️ Data</h2>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+            <h2>⚙️ Data Manager</h2>
+            <div class="btn-mini-grid">
                 <button class="btn-secondary" onclick="exportData()">📤 Export</button>
                 <button class="btn-secondary" onclick="document.getElementById('fileInput').click()">📥 Import</button>
             </div>
             <input type="file" id="fileInput" style="display:none" onchange="importData(event)" accept=".json">
+            <div class="divider"></div>
             <button class="btn-danger" onclick="wipeData()">🗑️ Factory Reset</button>
             <br><br>
             <button class="btn-secondary" onclick="closeModal('dataModal')">Close</button>
         </div>
     </div>
-
-    <div class="modal-overlay" id="scoreModal" onclick="closeModal('scoreModal')">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h2>🏆 Leaderboard</h2>
-            <div id="modalScoreList" class="list-wrap"></div>
-            <button class="btn-danger" onclick="resetScores()">Reset Points</button>
-            <br><br>
-            <button class="btn-secondary" onclick="closeModal('scoreModal')">Close</button>
-        </div>
-    </div>
-
-    <!-- UTILS -->
-    <div style="position:fixed; bottom:10px; right:10px; opacity:0.2; cursor:pointer; font-size:24px; z-index:999;" onclick="if(confirm('Hard Reset App?')) wipeData()">🗑️</div>
+    
+    <div id="toast" class="toast">Action</div>
+    <div class="emergency-reset" onclick="if(confirm('Hard Reset?')) { localStorage.clear(); location.reload(); }">🗑️</div>
 
     <script>
-        /* --- CONFIGURATION --- */
-        const GOD_PASS = "1234";
-        const DEFAULT_STATE = {
-            step: 'MODE', // Start at Mode Select
-            mode: null,   // 'mobile' or 'tv'
-            players: [],
-            scores: {},
-            settings: { min: 1, max: 200, order: 'asc' },
-            startTime: null,
-            finalTime: null,
-            passIndex: 0,
-            viewingNumber: false
+        // --- CONFIG & STATE ---
+        const GOD_PASSWORD = "1234";
+        const DEFAULT_STATE = { 
+            step: 'SETUP', 
+            players: [], 
+            settings: { min: 1, max: 200, order: 'asc' }, 
+            startTime: null, 
+            finalTime: null, 
+            passIndex: 0, 
+            viewingNumber: false 
         };
-
+        
         let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-        let timerInt = null;
+        let timerInterval = null;
         let godMode = false;
+        let viewMode = sessionStorage.getItem('lineUpViewMode') || null; // 'mobile' or 'tv'
         const app = document.getElementById('app');
 
-        /* --- INITIALIZATION --- */
-        function init() {
-            initSnow();
-            // Check for Lobby/Player Link first
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('p')) { renderPlayerLink(params.get('p')); return; }
-            if (params.get('lobby')) { renderLobby(params.get('lobby')); return; }
+        // --- UTILS ---
+        function pulse(ms = 10) { if (navigator.vibrate) navigator.vibrate(ms); }
+        async function requestWakeLock() { if ('wakeLock' in navigator) { try { await navigator.wakeLock.request('screen'); } catch (err) {} } }
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
+        }
 
-            // Load saved host state
-            try {
-                const saved = localStorage.getItem('lineUpState');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    // Merge saved state to ensure new fields exist
-                    state = { ...DEFAULT_STATE, ...parsed };
-                    
-                    // Resume Timer if needed
-                    if (state.startTime && (state.step === 'DISTRIBUTE' || state.step === 'VERIFY')) {
-                        startTimer();
-                    }
-                }
-            } catch(e) { console.log('Resetting state'); }
-
+        function setViewMode(mode) {
+            viewMode = mode;
+            sessionStorage.setItem('lineUpViewMode', mode);
+            if(mode === 'tv') document.body.classList.add('is-tv-mode');
+            else document.body.classList.remove('is-tv-mode');
             render();
         }
 
-        /* --- CORE RENDERER --- */
-        function render() {
-            // 1. Apply TV Mode Class
-            if (state.mode === 'tv') {
-                document.body.classList.add('tv-active');
-                document.body.classList.add('tv-mode');
-                updateScoreboard('sidebarScoreList');
-            } else {
-                document.body.classList.remove('tv-active');
-                document.body.classList.remove('tv-mode');
+        // --- SNOW FX ---
+        function initSnow() {
+            const canvas = document.getElementById('snowCanvas');
+            const ctx = canvas.getContext('2d');
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+            const snowflakes = [];
+            window.addEventListener('resize', () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; });
+            for (let i = 0; i < 50; i++) snowflakes.push({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 50 });
+            function draw() {
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+                ctx.beginPath();
+                for (let i = 0; i < 50; i++) {
+                    const f = snowflakes[i];
+                    ctx.moveTo(f.x, f.y);
+                    ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
+                }
+                ctx.fill();
+                update();
+                requestAnimationFrame(draw);
             }
-
-            // 2. Route Views
-            if (state.step === 'MODE') renderModeSelect();
-            else if (state.step === 'SETUP') renderSetup();
-            else if (state.step === 'DISTRIBUTE') renderDistribute();
-            else if (state.step === 'PASS_PLAY') renderPassPlay();
-            else if (state.step === 'VERIFY') renderVerify();
-            else if (state.step === 'RESULTS') renderResults();
+            function update() {
+                for (let i = 0; i < 50; i++) {
+                    const f = snowflakes[i];
+                    f.y += Math.pow(f.d, 2) + 1;
+                    f.y = f.y > height ? 0 : f.y;
+                    f.x += Math.sin(f.y / 50);
+                }
+            }
+            draw();
         }
 
-        function setState(s) { state.step = s; save(); render(); }
-        function save() { localStorage.setItem('lineUpState', JSON.stringify(state)); }
+        // --- DATA MANAGEMENT ---
+        function loadState() {
+            if (new URLSearchParams(window.location.search).has('p')) return;
+            try {
+                const saved = localStorage.getItem('lineUpState');
+                if (saved) {
+                    state = JSON.parse(saved);
+                    if ((state.step === 'DISTRIBUTE' || state.step === 'VERIFY') && state.startTime) startTimerTicker();
+                }
+            } catch (e) { state = JSON.parse(JSON.stringify(DEFAULT_STATE)); }
+        }
 
-        /* --- VIEWS --- */
-        function renderModeSelect() {
+        function saveState() {
+            if (!new URLSearchParams(window.location.search).has('p')) localStorage.setItem('lineUpState', JSON.stringify(state));
+        }
+
+        function exportData() {
+            const data = {
+                presets: localStorage.getItem('lineUpPresets'),
+                history: localStorage.getItem('lineUpHistory'),
+                state: localStorage.getItem('lineUpState')
+            };
+            const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'lineup-backup.json';
+            a.click();
+            showToast("Backup Downloaded");
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.presets) localStorage.setItem('lineUpPresets', data.presets);
+                    if (data.history) localStorage.setItem('lineUpHistory', data.history);
+                    if (data.state) localStorage.setItem('lineUpState', data.state);
+                    showToast("Data Restored!");
+                    setTimeout(() => location.reload(), 1000);
+                } catch(err) { showToast("Invalid File"); }
+            };
+            reader.readAsText(file);
+        }
+
+        function wipeData() {
+            if(confirm("Are you sure? This deletes ALL history, groups, and settings.")) {
+                localStorage.clear(); location.reload();
+            }
+        }
+
+        // --- GAME LOGIC ---
+        function addPlayer() {
+            const input = document.getElementById('nameInput');
+            const name = input.value.trim();
+            if (!name) return;
+            state.players.push({ name, number: 0 });
+            input.value = '';
+            setState('SETUP');
+            setTimeout(() => { const el = document.getElementById('nameInput'); if(el) el.focus(); }, 50);
+            pulse();
+        }
+
+        function removePlayer(i) { state.players.splice(i, 1); setState('SETUP'); pulse(); }
+
+        function generateNumbers() {
+            const minEl = document.getElementById('minInput');
+            const maxEl = document.getElementById('maxInput');
+            const min = parseInt(minEl ? minEl.value : state.settings.min);
+            const max = parseInt(maxEl ? maxEl.value : state.settings.max);
+
+            if (min >= max) { showToast("Min must be < Max!"); return false; }
+            state.settings.min = min; state.settings.max = max;
+            const orderEl = document.getElementById('orderInput');
+            if(orderEl) state.settings.order = orderEl.value;
+
+            const used = new Set();
+            state.players.forEach(p => {
+                let num;
+                do { num = Math.floor(Math.random() * (max - min + 1)) + min; } while (used.has(num));
+                used.add(num); p.number = num;
+            });
+            return true;
+        }
+
+        function startGame() {
+            if (generateNumbers()) {
+                state.startTime = Date.now(); state.finalTime = null;
+                setState('DISTRIBUTE'); pulse(); requestWakeLock();
+            }
+        }
+
+        function startPassGame() {
+            if (state.players.length < 2) return showToast("Need 2+ players!");
+            if (generateNumbers()) {
+                state.passIndex = 0; state.viewingNumber = false; state.startTime = null;
+                setState('PASS_PLAY'); pulse(); requestWakeLock();
+            }
+        }
+
+        function nextPassPlayer() {
+            if (state.passIndex < state.players.length - 1) {
+                state.passIndex++; state.viewingNumber = false; saveState(); render();
+            } else {
+                state.startTime = Date.now(); setState('VERIFY');
+            }
+            pulse();
+        }
+
+        function restartSamePlayers() { state.startTime = null; state.finalTime = null; startGame(); }
+        function resetGameData() { state = JSON.parse(JSON.stringify(DEFAULT_STATE)); saveState(); render(); }
+
+        // --- PRESETS & HISTORY ---
+        function savePreset() {
+            if(state.players.length === 0) return showToast("No players");
+            const name = prompt("Name this group:");
+            if(name) {
+                const presets = JSON.parse(localStorage.getItem('lineUpPresets')) || [];
+                // CHANGE: Save min/max with the group
+                presets.push({ 
+                    name, 
+                    players: state.players.map(p => ({ name: p.name, number: 0 })),
+                    min: state.settings.min,
+                    max: state.settings.max
+                });
+                localStorage.setItem('lineUpPresets', JSON.stringify(presets));
+                showToast("Saved!");
+            }
+        }
+
+        function loadPreset(index) {
+            const presets = JSON.parse(localStorage.getItem('lineUpPresets')) || [];
+            if(presets[index]) {
+                state.players = JSON.parse(JSON.stringify(presets[index].players));
+                // CHANGE: Load min/max if available
+                if(presets[index].min !== undefined) state.settings.min = presets[index].min;
+                if(presets[index].max !== undefined) state.settings.max = presets[index].max;
+                saveState();
+                closeModal('presetsModal');
+                render();
+                showToast("Loaded!");
+            }
+        }
+
+        function deletePreset(index) {
+            const presets = JSON.parse(localStorage.getItem('lineUpPresets')) || [];
+            presets.splice(index, 1);
+            localStorage.setItem('lineUpPresets', JSON.stringify(presets));
+            renderPresetsList();
+        }
+
+        function renderPresetsList() {
+            const presets = JSON.parse(localStorage.getItem('lineUpPresets')) || [];
+            const el = document.getElementById('presetsList');
+            if(presets.length === 0) { el.innerHTML = "<p>No saved groups.</p>"; return; }
+            el.innerHTML = presets.map((p, i) => {
+                const rangeInfo = (p.min !== undefined) ? `<br><small style="opacity:0.6">Range: ${p.min}-${p.max}</small>` : '';
+                return `
+                <div class="item-card" style="margin-bottom:8px;">
+                    <div><strong>${p.name}</strong> (${p.players.length})${rangeInfo}</div>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-primary btn-sm" onclick="loadPreset(${i})">Load</button>
+                        <button class="btn-danger btn-sm" onclick="deletePreset(${i})">X</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function saveHistory(win) {
+            const log = JSON.parse(localStorage.getItem('lineUpHistory')) || [];
+            log.unshift({
+                date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                players: state.players.length,
+                time: formatTime(state.finalTime),
+                win: win
+            });
+            if(log.length > 20) log.pop();
+            localStorage.setItem('lineUpHistory', JSON.stringify(log));
+        }
+
+        function renderHistoryList() {
+            const log = JSON.parse(localStorage.getItem('lineUpHistory')) || [];
+            const el = document.getElementById('historyList');
+            if(log.length === 0) { el.innerHTML = "<p>No games played yet.</p>"; return; }
+            el.innerHTML = log.map(g => `
+                <div class="item-card" style="margin-bottom:8px; ${g.win ? 'border-color:var(--success)' : ''}">
+                    <div><div style="font-size:0.8rem; opacity:0.7">${g.date}</div><strong>${g.players} Players</strong></div>
+                    <div style="text-align:right;"><div style="font-weight:bold;">${g.time}</div><div>${g.win ? '✅' : '❌'}</div></div>
+                </div>`).join('');
+        }
+
+        // --- MISC UTILS ---
+        function toggleGodMode() {
+            if(godMode) { godMode = false; render(); } else { 
+                if(prompt("Enter Admin Password:") === GOD_PASSWORD) { godMode = true; showToast("🔓 God Mode Active"); render(); } else { showToast("❌ Wrong Password"); } 
+            }
+        }
+
+        function formatTime(s) { 
+            if(s === null) return "0:00";
+            return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`; 
+        }
+
+        function startTimerTicker() {
+            if(timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const el = document.getElementById('timerDisplay');
+                if(el && state.startTime) {
+                    const diff = Math.floor((Date.now() - state.startTime) / 1000);
+                    el.innerText = `⏱️ ${formatTime(diff)}`;
+                }
+            }, 1000);
+        }
+
+        function openModal(id) { 
+            const m = document.getElementById(id); m.classList.add('active'); 
+            if(id==='presetsModal') renderPresetsList(); 
+            if(id==='historyModal') renderHistoryList(); 
+            pulse(); 
+        }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); pulse(); }
+
+        // --- RENDER ENGINE ---
+        function setState(s) { state.step = s; saveState(); render(); }
+        
+        function render() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('p')) { renderPlayerView(params.get('p')); return; }
+
+            // Mode Selection
+            if (!viewMode) { renderModeSelection(); return; }
+
+            // Host Mode
+            if(state.step === 'SETUP') renderSetup();
+            else if(state.step === 'DISTRIBUTE') renderDistribute();
+            else if(state.step === 'PASS_PLAY') renderPassPlay();
+            else if(state.step === 'VERIFY') renderVerify();
+            else if(state.step === 'RESULTS') renderResults();
+        }
+
+        // --- VIEW TEMPLATES ---
+
+        function renderModeSelection() {
             app.innerHTML = `
-                <h1>Welcome!</h1>
-                <p>Select your hosting style:</p>
-                <div class="btn-mini-grid" style="gap:20px;">
-                    <button class="btn-secondary btn-mode" onclick="setMode('mobile')">📱<br>Mobile Host</button>
-                    <button class="btn-secondary btn-mode" onclick="setMode('tv')">📺<br>TV Host</button>
+                <h1>Welcome</h1>
+                <p>Choose your display mode</p>
+                <div class="row" style="margin-top:20px;">
+                    <button class="mode-btn col" onclick="setViewMode('mobile')">
+                        <div class="mode-icon">📱</div>
+                        Mobile / Host
+                    </button>
+                    <button class="mode-btn col" onclick="setViewMode('tv')">
+                        <div class="mode-icon">📺</div>
+                        TV Display
+                    </button>
                 </div>
             `;
         }
 
         function renderSetup() {
-            app.innerHTML = `
+            const leftContent = `
                 <h1>Line Up!</h1>
-                <p>${state.mode === 'tv' ? 'TV Host' : 'Mobile Host'}</p>
-                
+                <p>The Ultimate Party Game</p>
                 <div class="row">
-                    <div class="col"><label class="label">Min</label><input type="number" id="inpMin" value="${state.settings.min}"></div>
-                    <div class="col"><label class="label">Max</label><input type="number" id="inpMax" value="${state.settings.max}"></div>
+                    <div class="col"><label class="label">Min</label><input type="number" id="minInput" value="${state.settings.min}"></div>
+                    <div class="col"><label class="label">Max</label><input type="number" id="maxInput" value="${state.settings.max}"></div>
                 </div>
-                <div style="margin-top:10px;">
-                    <label class="label">Order</label>
-                    <select id="inpOrder">
-                        <option value="asc" ${state.settings.order==='asc'?'selected':''}>Smallest → Biggest</option>
-                        <option value="desc" ${state.settings.order==='desc'?'selected':''}>Biggest → Smallest</option>
+                <div style="margin-top:15px;">
+                    <label class="label">Sort Order</label>
+                    <select id="orderInput">
+                        <option value="asc" ${state.settings.order === 'asc' ? 'selected' : ''}>Smallest → Biggest</option>
+                        <option value="desc" ${state.settings.order === 'desc' ? 'selected' : ''}>Biggest → Smallest</option>
                     </select>
                 </div>
-
                 <div class="divider"></div>
-
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <label class="label" style="margin:0">Players (${state.players.length})</label>
+                    <label class="label" style="margin:0;">Players (${state.players.length})</label>
                     <div style="display:flex; gap:5px;">
-                        ${state.mode === 'mobile' ? `<button class="btn-secondary btn-sm" onclick="openScoreModal()">🏆</button>` : ''}
-                        <button class="btn-secondary btn-sm" onclick="openModal('dataModal')">⚙️ Data</button>
-                        <button class="btn-secondary btn-sm" onclick="saveGroup()">+ Save</button>
-                        <button class="btn-secondary btn-sm" onclick="loadGroup()">📂 Load</button>
+                        <button class="btn-secondary btn-sm" onclick="openModal('presetsModal')">💾</button>
+                        <button class="btn-secondary btn-sm" onclick="openModal('historyModal')">📜</button>
+                        <button class="btn-secondary btn-sm" onclick="openModal('dataModal')">⚙️</button>
+                        <button class="btn-secondary btn-sm" onclick="savePreset()">+Save</button>
                     </div>
                 </div>
-
-                <div class="row" style="margin-top:10px;">
-                    <input type="text" id="inpName" placeholder="Name" onkeydown="if(event.key==='Enter') addPlayer()">
-                    <button class="btn-primary" style="width:auto" onclick="addPlayer()">Add</button>
+                <div class="row" style="margin-top:10px; margin-bottom:15px;">
+                    <input type="text" id="nameInput" placeholder="Name" onkeydown="if(event.key==='Enter') addPlayer()">
+                    <button class="btn-primary" style="width:auto;" onclick="addPlayer()">Add</button>
                 </div>
-
-                <div class="list-wrap">
-                    ${state.players.map((p, i) => `
-                        <div class="item-card">
-                            <b>${p.name}</b>
-                            <button class="btn-danger btn-icon" style="width:30px; height:30px; font-size:0.9rem;" onclick="remPlayer(${i})">✕</button>
-                        </div>
-                    `).join('') || '<div style="text-align:center; opacity:0.5; padding:10px;">Add players...</div>'}
-                </div>
-
-                <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
-                    <button class="btn-primary" onclick="startGame()">Generate & Start</button>
-                    ${state.mode === 'mobile' ? `<button class="btn-secondary" onclick="startPassPlay()">📱 Pass & Play Mode</button>` : ''}
-                    <button class="btn-secondary btn-sm" onclick="state.mode=null; state.step='MODE'; save(); render()">Change Mode</button>
+                
+                <div style="margin-top:auto;">
+                    <button class="btn-primary" onclick="startGame()" ${state.players.length < 2 ? 'disabled' : ''}>${state.players.length < 2 ? 'Add Players to Start' : 'Generate Links'}</button>
+                    ${viewMode === 'mobile' ? `
+                    <div style="text-align:center; margin: 12px 0; font-size: 0.8rem; font-weight:800; opacity:0.5; letter-spacing:1px;">— OR —</div>
+                    <button class="btn-secondary" onclick="startPassGame()" ${state.players.length < 2 ? 'disabled' : ''}>📱 Pass & Play</button>` : ''}
                 </div>
             `;
+
+            const rightContent = `
+                <div class="list-wrap">
+                    ${state.players.length === 0 ? '<div style="text-align:center; opacity:0.5; padding:20px;">Add players...</div>' : ''}
+                    ${state.players.map((p, i) => `
+                        <div class="item-card">
+                            <span style="font-weight:700;">${p.name}</span>
+                            <button class="btn-danger btn-icon" style="width:32px; height:32px; font-size:1rem;" onclick="removePlayer(${i})">✕</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            app.innerHTML = `
+                <div class="split-container">
+                    <div class="left-panel">${leftContent}</div>
+                    ${viewMode === 'tv' ? `<div class="right-panel"><h2>Roster</h2>${rightContent}</div>` : `<div style="margin-top:10px">${rightContent}</div>`}
+                </div>
+            `;
+            if(viewMode === 'tv') document.body.classList.add('is-tv-mode');
         }
 
         function renderDistribute() {
-            const timeStr = formatTime(getElapsed());
             const baseUrl = window.location.href.split('?')[0];
+            const currentSeconds = state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0;
+            const encodeData = (obj) => btoa(JSON.stringify(obj));
             
-            // TV MODE: Show One Giant QR for Lobby
-            if (state.mode === 'tv') {
-                const lobbyPayload = { all: state.players, min: state.settings.min, max: state.settings.max, o: state.settings.order };
-                const lobbyLink = `${baseUrl}?lobby=${btoa(JSON.stringify(lobbyPayload))}`;
-                
-                app.innerHTML = `
-                    <div style="text-align:center;"><div id="timer" class="timer-badge">⏱️ ${timeStr}</div></div>
-                    <h2>🔗 Join Lobby</h2>
-                    <p>Everyone scan this code to find their number.</p>
-                    <div style="background:white; padding:15px; border-radius:16px; margin:20px auto; width:fit-content;" id="masterQr"></div>
-                    <div style="text-align:center;">
-                        <button class="btn-primary" onclick="setState('VERIFY')">Everyone Ready?</button>
-                        <button class="btn-secondary" style="margin-top:10px" onclick="setState('SETUP')">Back</button>
-                    </div>
-                `;
-                new QRCode(document.getElementById("masterQr"), { text: lobbyLink, width: 220, height: 220 });
-            } 
-            // MOBILE MODE: Individual Controls
-            else {
-                app.innerHTML = `
-                    <div style="text-align:center;"><div id="timer" class="timer-badge">⏱️ ${timeStr}</div></div>
-                    <h2>🔗 Distribute</h2>
-                    <div class="list-wrap">
-                        ${state.players.map((p) => {
-                            const link = `${baseUrl}?p=${btoa(JSON.stringify({n:p.name, v:p.number, min:state.settings.min, max:state.settings.max, o:state.settings.order}))}`;
-                            return `
-                            <div class="item-card">
-                                <b>${p.name}</b>
-                                <div style="display:flex; gap:5px;">
-                                    <button class="btn-secondary btn-sm" onclick="showQr('${link}')">QR</button>
-                                    <button class="btn-secondary btn-sm" onclick="share('${link}', '${p.name}')">Share</button>
-                                </div>
-                            </div>`;
-                        }).join('')}
-                    </div>
-                    <div style="margin-top:20px;">
-                        <button class="btn-primary" onclick="setState('VERIFY')">Start Verification</button>
-                        <button class="btn-secondary" style="margin-top:10px" onclick="setState('SETUP')">Back</button>
-                    </div>
-                `;
+            const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ ${formatTime(currentSeconds)}</div></div>`;
+            const controlsHtml = `
+                ${timerHtml}
+                <h2>🔗 Distribute</h2>
+                <div style="text-align:center; margin-top:20px;">
+                    <button class="btn-primary" onclick="setState('VERIFY')">Start Verification</button>
+                    <button class="btn-secondary" style="margin-top:10px;" onclick="setState('SETUP')">Back</button>
+                </div>
+            `;
+
+            const listHtml = `
+                <div class="list-wrap">
+                    ${state.players.map((p, i) => {
+                        const payload = { n: p.name, v: p.number, min: state.settings.min, max: state.settings.max, o: state.settings.order };
+                        const link = `${baseUrl}?p=${encodeData(payload)}`;
+                        return `
+                        <div class="item-card" style="flex-direction:column; gap:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                                <span style="font-weight:800;">${p.name}</span>
+                                <span style="font-size:0.75rem; background:var(--primary); color:white; padding:4px 10px; border-radius:12px; font-weight:800;">HIDDEN</span>
+                            </div>
+                            <div class="row" style="width:100%; gap:8px;">
+                                <button class="btn-secondary btn-icon" onclick="showQr('${link}', '${p.name}')">🏁</button>
+                                <button class="btn-secondary btn-sm" style="flex:1" onclick="copyLink('${link}')">Copy</button>
+                                <button class="btn-secondary btn-icon" onclick="shareLink('${link}', '${p.name}')">📤</button>
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>`;
+
+            if (viewMode === 'tv') {
+                app.innerHTML = `<div class="split-container"><div class="left-panel">${controlsHtml}</div><div class="right-panel"><h2>Players</h2>${listHtml}</div></div>`;
+            } else {
+                app.innerHTML = `${controlsHtml}${listHtml}`;
             }
-            startTimer();
+            startTimerTicker();
         }
 
         function renderPassPlay() {
+            // Pass Play is inherently mobile/single screen, so we don't split this layout
             const p = state.players[state.passIndex];
-            const arrow = state.settings.order === 'asc' ? '↗️' : '↘️';
-            
+            const orderText = state.settings.order === 'asc' ? 'Smallest ➔ Biggest' : 'Biggest ➔ Smallest';
             if (!state.viewingNumber) {
                 app.innerHTML = `
-                    <div style="text-align:center; padding-top:40px;">
-                        <div style="font-size:4rem; margin-bottom:20px;">📱</div>
-                        <h2>Pass to <span style="color:var(--primary)">${p.name}</span></h2>
+                    <div style="text-align:center; margin-top:20px;">
+                        <h1 style="font-size:4rem; margin-bottom:20px;">📱</h1>
+                        <h2>Pass to<br><span style="color:var(--primary); font-size:2.5rem;">${p.name}</span></h2>
                         <div class="divider"></div>
-                        <button class="btn-primary" onclick="state.viewingNumber=true; save(); render()">I am ${p.name}</button>
-                    </div>
-                `;
+                        <button class="btn-primary" onclick="state.viewingNumber=true; saveState(); render()">I am ${p.name}</button>
+                    </div>`;
             } else {
                 app.innerHTML = `
-                    <div style="text-align:center;"><h2>Hi, ${p.name}</h2><p>Tap & hold to reveal.</p></div>
-                    <div class="secret-box" id="sBox"><div class="secret-msg">HOLD</div><div class="secret-val">${p.number}</div></div>
-                    <div style="background:var(--bg-item); padding:15px; border-radius:16px; font-size:0.9rem;">
-                        Range: <b>${state.settings.min} - ${state.settings.max}</b><br>Order: <b>${arrow}</b>
+                    <div style="text-align:center;"><h2>Hi, ${p.name}!</h2><p>Tap & hold to reveal.</p></div>
+                    <div class="secret-container" id="secretBox"><div class="secret-overlay">HOLD</div><div class="big-number secret-blur">${p.number}</div></div>
+                    <div style="background:var(--bg-item); padding:15px; border-radius:16px; text-align:left; font-size:0.95rem; margin-bottom:20px;">
+                        Range: <strong>${state.settings.min} - ${state.settings.max}</strong><br>Order: <strong>${orderText}</strong>
                     </div>
-                    <br>
-                    <button class="btn-primary" onclick="nextPass()">
-                        ${state.passIndex < state.players.length-1 ? 'Next Player' : 'Finish'}
-                    </button>
+                    <button class="btn-primary" onclick="nextPassPlayer()">${state.passIndex < state.players.length - 1 ? 'Next Player' : 'Go to Line Up!'}</button>
                 `;
                 bindSecretBox();
             }
         }
 
         function renderVerify() {
-            if(!state.startTime) state.startTime = Date.now();
-            const timeStr = formatTime(getElapsed());
+            if (!state.startTime) state.startTime = Date.now();
+            const currentSeconds = Math.floor((Date.now() - state.startTime) / 1000);
             
-            app.innerHTML = `
-                <div style="text-align:center;"><div id="timer" class="timer-badge">⏱️ ${timeStr}</div></div>
+            const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ ${formatTime(currentSeconds)}</div></div>`;
+            const controlsHtml = `
+                ${timerHtml}
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <h2>🧐 Verify</h2>
-                    <button class="btn-secondary btn-icon" style="height:32px; width:32px; font-size:1rem;" onclick="toggleGodMode()">${godMode?'🔓':'🔒'}</button>
+                    <button class="btn-secondary btn-icon" style="width:36px; height:36px; font-size:1rem;" onclick="toggleGodMode()">${godMode ? '🔓' : '🔒'}</button>
                 </div>
+                ${viewMode === 'tv' ? 
+                  `<div style="margin-top:auto">
+                    <button class="btn-primary" style="background:var(--success); margin-bottom:10px" onclick="checkOrder()">Reveal Results</button>
+                    <button class="btn-secondary" onclick="setState('DISTRIBUTE')">Back</button>
+                   </div>` 
+                  : ''}
+            `;
+
+            const listHtml = `
                 <div class="list-wrap">
                     ${state.players.map((p, i) => `
-                        <div class="item-card" style="transition: transform 0.2s;">
-                            <div>
-                                <span class="rank-badge">${i+1}</span>
-                                <b>${p.name}</b>
-                                ${godMode ? `<span style="color:var(--primary); margin-left:5px;">(${p.number})</span>` : ''}
+                        <div class="item-card" style="transition: transform 0.3s ease;">
+                            <div style="display:flex; align-items:center;">
+                                <div class="rank-badge">${i + 1}</div>
+                                <div><span style="font-weight:700;">${p.name}</span>${godMode ? `<span style="margin-left:8px; color:var(--primary); font-weight:900;">(${p.number})</span>` : ''}</div>
                             </div>
-                            <div style="display:flex; gap:5px;">
-                                <button class="btn-secondary btn-icon" onclick="move(${i}, -1)">▲</button>
-                                <button class="btn-secondary btn-icon" onclick="move(${i}, 1)">▼</button>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn-secondary btn-icon" onclick="movePlayer(${i}, -1)" ${i === 0 ? 'disabled' : ''}>▲</button>
+                                <button class="btn-secondary btn-icon" onclick="movePlayer(${i}, 1)" ${i === state.players.length - 1 ? 'disabled' : ''}>▼</button>
                             </div>
-                        </div>
-                    `).join('')}
+                        </div>`).join('')}
                 </div>
-                <button class="btn-primary" style="margin-top:20px;" onclick="calcResults()">Reveal Results</button>
-                <button class="btn-secondary" style="margin-top:10px;" onclick="setState('DISTRIBUTE')">Back</button>
+                ${viewMode === 'mobile' ? `
+                <button class="btn-primary" style="background:var(--success);" onclick="checkOrder()">Reveal Results</button>
+                <button class="btn-secondary" style="margin-top:10px;" onclick="setState('DISTRIBUTE')">Back</button>` : ''}
             `;
-            startTimer();
+
+            if (viewMode === 'tv') {
+                app.innerHTML = `<div class="split-container"><div class="left-panel">${controlsHtml}</div><div class="right-panel"><h2>Current Order</h2>${listHtml}</div></div>`;
+            } else {
+                app.innerHTML = `${controlsHtml}${listHtml}`;
+            }
+            startTimerTicker();
         }
 
         function renderResults() {
-            clearInterval(timerInt);
-            // Sort to find correct order
-            const sorted = [...state.players].sort((a,b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
-            let allCorrect = true;
+            clearInterval(timerInterval);
+            const sorted = [...state.players].sort((a, b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
+            let allCorrect = true; 
+            
+            // MVP Logic
+            let mvpName = ""; let bestDelta = Infinity;
+            const min = state.settings.min; const max = state.settings.max; const total = state.players.length;
+            if(total > 1) {
+                state.players.forEach((p, actualIndex) => {
+                    const idealPercent = (p.number - min) / (max - min); 
+                    const idealIndex = idealPercent * (total - 1);
+                    const delta = Math.abs(actualIndex - idealIndex);
+                    if(delta < bestDelta) { bestDelta = delta; mvpName = p.name; }
+                });
+            }
 
-            const listHtml = state.players.map((p, i) => {
-                const correct = p.name === sorted[i].name;
-                if(!correct) allCorrect = false;
-                const realRank = sorted.findIndex(x => x.name === p.name) + 1;
+            const listItems = state.players.map((p, i) => {
+                const isCorrect = p.name === sorted[i].name; 
+                if (!isCorrect) allCorrect = false;
+                const realRank = sorted.findIndex(x => x.name === p.name) + 1; 
+                const isMvp = p.name === mvpName;
                 return `
-                    <div class="item-card ${correct ? 'correct' : 'wrong'}">
+                    <div class="item-card ${isCorrect ? 'correct' : 'wrong'} ${isMvp ? 'gold' : ''}">
                         <div>
-                            <span class="rank-badge">${i+1}</span> <b>${p.name}</b>
-                            ${correct ? '<span style="font-size:0.7rem; background:var(--gold); padding:2px 5px; border-radius:4px; margin-left:5px;">+10</span>' : ''}
+                            <div style="display:flex; align-items:center;">
+                                <div class="rank-badge" style="background:${isCorrect ? 'var(--success)' : 'var(--danger)'}; color:white;">${i+1}</div>
+                                <strong>${p.name}</strong>${isMvp ? '<span style="margin-left:8px; font-size:0.8rem; background:var(--gold); color:white; padding:2px 6px; border-radius:4px;">⭐ MVP</span>' : ''}
+                            </div>
+                            <div style="font-size:0.85rem; margin-top:6px; margin-left:40px; opacity:0.8;">Number: <strong>${p.number}</strong>${!isCorrect ? `(Should be #${realRank})` : ''}</div>
                         </div>
-                        <div style="font-size:0.85rem; text-align:right;">
-                            Val: <b>${p.number}</b><br>
-                            ${!correct ? `<span style="color:var(--danger)">Should be #${realRank}</span>` : ''}
-                        </div>
-                    </div>
-                `;
+                        <div style="font-size:1.5rem;">${isCorrect ? '✅' : '❌'}</div>
+                    </div>`;
             }).join('');
 
-            // Score Calculation logic happens in calcResults(), here we just display
-            app.innerHTML = `
-                <div style="text-align:center;">
-                    <div class="timer-badge" style="background:${allCorrect? 'var(--gold)':'var(--bg-item)'}">Time: ${formatTime(state.finalTime)}</div>
-                </div>
-                <h1>${allCorrect ? '🎉 Perfect!' : '😬 Results'}</h1>
-                <div class="list-wrap">${listHtml}</div>
-                <button class="btn-primary" onclick="restart()">🔄 Play Again</button>
-                <button class="btn-secondary" style="margin-top:10px" onclick="resetGame()">New Game</button>
+            let timeMsg = "";
+            if(allCorrect) {
+                const duration = Math.floor((Date.now() - state.startTime) / 1000);
+                if(!state.finalTime) { 
+                    state.finalTime = duration; saveState(); saveHistory(true); 
+                    setTimeout(() => confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } }), 200); 
+                }
+                timeMsg = `<div class="timer-badge" style="background:var(--gold); color:white; animation: popIn 0.5s;">Time: ${formatTime(state.finalTime)}</div>`;
+            } else if (!state.finalTime) { 
+                state.finalTime = Math.floor((Date.now() - state.startTime) / 1000); saveHistory(false); 
+            }
+
+            const headerHtml = `<div style="text-align:center;">${timeMsg}</div><h1>${allCorrect ? '🎉 Perfect!' : '😬 Close!'}</h1>`;
+            const buttonsHtml = `
+                <button class="btn-primary" onclick="restartSamePlayers()">🔄 Play Again</button>
+                <button class="btn-secondary" style="margin-top:10px;" onclick="resetGameData()">New Game</button>
             `;
+            const listHtml = `<div class="list-wrap">${listItems}</div>`;
+
+            if(viewMode === 'tv') {
+                app.innerHTML = `
+                    <div class="split-container">
+                        <div class="left-panel" style="justify-content:center;">${headerHtml}<div style="margin-top:30px">${buttonsHtml}</div></div>
+                        <div class="right-panel"><h2>Scoreboard</h2>${listHtml}</div>
+                    </div>`;
+            } else {
+                app.innerHTML = `${headerHtml}${listHtml}${buttonsHtml}`;
+            }
         }
 
-        /* --- PLAYER & LOBBY VIEWS (No Host UI) --- */
-        function renderLobby(str) {
-            const data = JSON.parse(atob(str));
-            if(data.all.length === 1) { renderPlayerLink(btoa(JSON.stringify(data.all[0]))); return; }
-            
+        function renderPlayerView(encodedData) {
+            let data = null;
+            try { data = JSON.parse(atob(encodedData)); } catch(e) {}
+            if (!data) return app.innerHTML = `<h2>Error</h2><p>Broken link.</p>`;
             app.innerHTML = `
-                <h1>Who are you?</h1>
-                <div class="list-wrap">
-                    ${data.all.map((p, i) => `
-                        <button class="btn-secondary" style="justify-content:space-between;" onclick="selectLobbyUser('${str}', ${i})">
-                            ${p.name} <span>👉</span>
-                        </button>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function selectLobbyUser(str, index) {
-            const data = JSON.parse(atob(str));
-            // Reuse renderPlayerLink logic
-            const payload = { n: data.all[index].name, v: data.all[index].number, min: data.min, max: data.max, o: data.o };
-            renderPlayerLink(btoa(JSON.stringify(payload)));
-        }
-
-        function renderPlayerLink(str) {
-            const d = JSON.parse(atob(str));
-            const arrow = d.o === 'asc' ? '↗️' : '↘️';
-            app.innerHTML = `
-                <div style="text-align:center;"><h2>Hi, ${d.n}</h2><p>Tap & hold.</p></div>
-                <div class="secret-box" id="sBox"><div class="secret-msg">HOLD</div><div class="secret-val">${d.v}</div></div>
-                <div style="background:var(--bg-item); padding:20px; border-radius:16px; text-align:left;">Range: <b>${d.min} - ${d.max}</b><br>Order: <b>${arrow}</b></div>
+                <div style="text-align:center;"><h2>Hi, ${data.n}!</h2><p>Tap & hold.</p></div>
+                <div class="secret-container" id="secretBox"><div class="secret-overlay">HOLD</div><div class="big-number secret-blur">${data.v}</div></div>
+                <div style="background:var(--bg-item); padding:20px; border-radius:16px; text-align:left; font-size:0.95rem;">Range: <strong>${data.min} - ${data.max}</strong></div>
             `;
             bindSecretBox();
         }
 
-        /* --- LOGIC ACTIONS --- */
-        function setMode(m) { state.mode = m; state.step = 'SETUP'; save(); render(); }
-        
-        function addPlayer() {
-            const n = document.getElementById('inpName').value.trim();
-            if(!n) return;
-            state.players.push({ name: n, number: 0 });
-            if(!state.scores[n]) state.scores[n] = 0;
-            save(); render(); setTimeout(() => document.getElementById('inpName').focus(), 50);
-        }
-        function remPlayer(i) { state.players.splice(i, 1); save(); render(); }
-
-        function saveGroup() {
-            if(state.players.length === 0) return;
-            const name = prompt("Group Name:");
-            if(name) {
-                const groups = JSON.parse(localStorage.getItem('lineUpGroups') || '[]');
-                // Save Players + Settings (Min/Max)
-                groups.push({ 
-                    name, 
-                    players: state.players.map(p => ({name: p.name, number: 0})),
-                    settings: { min: state.settings.min, max: state.settings.max }
-                });
-                localStorage.setItem('lineUpGroups', JSON.stringify(groups));
-                alert("Saved!");
-            }
-        }
-        function loadGroup() {
-            const groups = JSON.parse(localStorage.getItem('lineUpGroups') || '[]');
-            if(groups.length === 0) return alert("No saved groups");
-            const names = groups.map((g, i) => `${i+1}. ${g.name} (${g.players.length})`).join('\n');
-            const choice = prompt("Enter number to load:\n" + names);
-            if(choice && groups[choice-1]) {
-                const g = groups[choice-1];
-                state.players = JSON.parse(JSON.stringify(g.players));
-                if(g.settings) { state.settings.min = g.settings.min; state.settings.max = g.settings.max; }
-                save(); render();
-            }
+        // --- INTERACTION ---
+        function movePlayer(index, dir) { 
+            const target = index + dir; 
+            if (target < 0 || target >= state.players.length) return; 
+            [state.players[index], state.players[target]] = [state.players[target], state.players[index]]; 
+            renderVerify(); saveState(); pulse(); 
         }
 
-        function startGame() {
-            // Apply Settings
-            state.settings.min = parseInt(document.getElementById('inpMin').value);
-            state.settings.max = parseInt(document.getElementById('inpMax').value);
-            state.settings.order = document.getElementById('inpOrder').value;
-            
-            // Generate
-            const used = new Set();
-            state.players.forEach(p => {
-                let n;
-                do { n = Math.floor(Math.random() * (state.settings.max - state.settings.min + 1)) + state.settings.min; } while(used.has(n));
-                used.add(n);
-                p.number = n;
-            });
-            
-            state.startTime = Date.now();
-            state.finalTime = null;
-            setState('DISTRIBUTE');
-        }
-
-        function startPassPlay() { startGame(); state.step = 'PASS_PLAY'; state.startTime = null; save(); render(); }
-        
-        function nextPass() {
-            if (state.passIndex < state.players.length - 1) {
-                state.passIndex++; state.viewingNumber = false; save(); render();
-            } else {
-                state.startTime = Date.now(); setState('VERIFY');
-            }
-        }
-
-        function move(i, dir) {
-            const t = i + dir;
-            if (t >= 0 && t < state.players.length) {
-                [state.players[i], state.players[t]] = [state.players[t], state.players[i]];
-                save(); render();
-            }
-        }
-
-        function calcResults() {
-            state.finalTime = Math.floor((Date.now() - state.startTime) / 1000);
-            
-            // Score Calculation
-            const sorted = [...state.players].sort((a,b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
-            let correctCount = 0;
-            state.players.forEach((p, i) => {
-                if (p.name === sorted[i].name) {
-                    state.scores[p.name] = (state.scores[p.name] || 0) + 10;
-                    correctCount++;
-                }
-            });
-            
-            if (correctCount === state.players.length) confetti({particleCount: 150});
-            setState('RESULTS');
-        }
-
-        function restart() { state.startTime = null; state.finalTime = null; startGame(); }
-        function resetGame() { state.step = 'SETUP'; state.startTime = null; save(); render(); }
-
-        /* --- SCOREBOARD --- */
-        function updateScoreboard(targetId) {
-            const el = document.getElementById(targetId);
-            if(!el) return;
-            const entries = Object.entries(state.scores).sort((a,b) => b[1]-a[1]);
-            el.innerHTML = entries.length ? entries.map(([n, s], i) => `
-                <div class="score-row">
-                    <div><span style="opacity:0.5; margin-right:5px">#${i+1}</span> ${n}</div>
-                    <div class="score-val">${s}</div>
-                </div>
-            `).join('') : '<div style="opacity:0.5; text-align:center">No scores yet</div>';
-        }
-        function openScoreModal() { document.getElementById('scoreModal').classList.add('active'); updateScoreboard('modalScoreList'); }
-        function resetScores() { state.scores = {}; save(); render(); if(document.getElementById('scoreModal').classList.contains('active')) updateScoreboard('modalScoreList'); }
-
-        /* --- DATA MANAGER --- */
-        function exportData() {
-            const exportObj = {
-                state: state,
-                groups: JSON.parse(localStorage.getItem('lineUpGroups') || '[]'),
-                history: JSON.parse(localStorage.getItem('lineUpHistory') || '[]')
-            };
-            const blob = new Blob([JSON.stringify(exportObj)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = 'lineup-backup.json'; a.click();
-        }
-        
-        function importData(e) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                try {
-                    const d = JSON.parse(ev.target.result);
-                    if(d.state) localStorage.setItem('lineUpState', JSON.stringify(d.state));
-                    if(d.groups) localStorage.setItem('lineUpGroups', JSON.stringify(d.groups));
-                    if(d.history) localStorage.setItem('lineUpHistory', JSON.stringify(d.history));
-                    location.reload();
-                } catch(err) { alert("Invalid File"); }
-            };
-            if(e.target.files[0]) reader.readAsText(e.target.files[0]);
-        }
-        
-        function wipeData() { localStorage.clear(); location.reload(); }
-
-        /* --- HELPERS --- */
-        function getElapsed() { return state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0; }
-        function formatTime(s) { return `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`; }
-        function startTimer() { if(timerInt) clearInterval(timerInt); timerInt = setInterval(() => { const el = document.getElementById('timer'); if(el) el.innerText = '⏱️ '+formatTime(getElapsed()); }, 1000); }
-        function toggleGodMode() { if(!godMode) { if(prompt("Pass:")===GOD_PASS) godMode=true; } else godMode=false; render(); }
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-        function showQr(url) { document.getElementById('qrDisplay').innerHTML = ''; new QRCode(document.getElementById('qrDisplay'), {text: url, width:200, height:200}); openModal('qrModal'); }
-        function copyLink(url) { navigator.clipboard.writeText(url); alert("Copied"); }
-        function share(url, name) { if(navigator.share) navigator.share({title:'Line Up', text:name, url}); else copyLink(url); }
-        
         function bindSecretBox() {
-            const b = document.getElementById('sBox'); if(!b) return;
-            const show = (e) => { e.preventDefault(); b.classList.add('revealed'); if(navigator.vibrate) navigator.vibrate(10); };
-            const hide = (e) => { e.preventDefault(); b.classList.remove('revealed'); };
-            ['mousedown','touchstart'].forEach(ev => b.addEventListener(ev, show));
-            ['mouseup','mouseleave','touchend'].forEach(ev => b.addEventListener(ev, hide));
+            const box = document.getElementById('secretBox');
+            if(!box) return;
+            const reveal = (e) => { if(e.cancelable) e.preventDefault(); box.classList.add('revealed'); pulse(5); };
+            const hide = (e) => { if(e.cancelable) e.preventDefault(); box.classList.remove('revealed'); };
+            ['touchstart','mousedown'].forEach(e => box.addEventListener(e, reveal, {passive:false}));
+            ['touchend','touchcancel','mouseup','mouseleave'].forEach(e => box.addEventListener(e, hide));
         }
 
-        function initSnow() {
-            const c=document.getElementById('snowCanvas'), x=c.getContext('2d');
-            let w=c.width=window.innerWidth, h=c.height=window.innerHeight;
-            const f=Array(50).fill().map(()=>({x:Math.random()*w,y:Math.random()*h,r:Math.random()*3+1,s:Math.random()*50}));
-            const loop = () => {
-                x.clearRect(0,0,w,h); x.fillStyle="rgba(255,255,255,0.4)"; x.beginPath();
-                f.forEach(p=>{x.moveTo(p.x,p.y);x.arc(p.x,p.y,p.r,0,6.28);}); x.fill();
-                f.forEach(p=>{p.y+=Math.pow(p.s,2)/2500+1;if(p.y>h)p.y=0;p.x+=Math.sin(p.y/50)});
-                requestAnimationFrame(loop);
-            }; loop();
-        }
+        function copyLink(url) { navigator.clipboard.writeText(url); showToast("Link copied!"); pulse(); }
+        async function shareLink(url, name) { pulse(); if (navigator.share) { try { await navigator.share({ title: 'Line Up!', text: `Number for ${name}`, url: url }); } catch (err) {} } else { copyLink(url); } }
+        function showQr(url, name) { pulse(); openModal('qrModal'); document.getElementById('qrName').textContent = name; const c = document.getElementById('qrDisplay'); c.innerHTML = ''; new QRCode(c, { text: url, width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H }); }
+        function checkOrder() { setState('RESULTS'); pulse(50); }
 
-        init();
+        // Start
+        initSnow(); loadState(); 
+        // If we are deep in the game (not setup), assume mobile unless previously set
+        if(state.step !== 'SETUP' && !viewMode) { viewMode = 'mobile'; }
+        if(viewMode === 'tv') document.body.classList.add('is-tv-mode');
+        render();
+
     </script>
 </body>
 </html>
