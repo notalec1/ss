@@ -5,163 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Line Up!</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- QR Code Lib -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Confetti Lib -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
         :root {
-            /* Light Mode Defaults */
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --success: #10b981;
-            --success-bg: #ecfdf5;
-            --danger: #ef4444;
-            --danger-bg: #fef2f2;
+            /* Light Mode */
+            --primary: #6366f1; --primary-dark: #4f46e5;
+            --success: #10b981; --success-bg: #ecfdf5;
+            --danger: #ef4444; --danger-bg: #fef2f2;
             --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --card-bg: rgba(255, 255, 255, 0.95);
-            --item-bg: #ffffff;
-            --item-border: #e5e7eb;
-            --text-main: #1f2937;
-            --text-sub: #6b7280;
-            --input-bg: #ffffff;
-            --radius: 16px;
+            --item-bg: #ffffff; --item-border: #e5e7eb;
+            --text-main: #1f2937; --text-sub: #6b7280;
+            --input-bg: #ffffff; --radius: 16px;
             --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
             --modal-bg: #ffffff;
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
-                /* Dark Mode Overrides */
-                --primary: #818cf8;
-                --primary-dark: #6366f1;
-                --success: #34d399;
-                --success-bg: rgba(16, 185, 129, 0.2);
-                --danger: #f87171;
-                --danger-bg: rgba(239, 68, 68, 0.2);
+                /* Dark Mode */
+                --primary: #818cf8; --primary-dark: #6366f1;
+                --success: #34d399; --success-bg: rgba(16, 185, 129, 0.2);
+                --danger: #f87171; --danger-bg: rgba(239, 68, 68, 0.2);
                 --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
                 --card-bg: rgba(30, 41, 59, 0.95);
-                --item-bg: #334155;
-                --item-border: #475569;
-                --text-main: #f1f5f9;
-                --text-sub: #94a3b8;
-                --input-bg: #1e293b;
-                --modal-bg: #1e293b;
+                --item-bg: #334155; --item-border: #475569;
+                --text-main: #f1f5f9; --text-sub: #94a3b8;
+                --input-bg: #1e293b; --modal-bg: #1e293b;
             }
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: 'Nunito', sans-serif;
-            background: var(--bg-gradient);
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: 'Nunito', sans-serif; background: var(--bg-gradient);
+            margin: 0; padding: 20px; min-height: 100vh;
+            display: flex; justify-content: center; align-items: center;
             color: var(--text-main);
         }
 
         .app-card {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 500px;
-            padding: 2rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(10px);
-            animation: slideUp 0.4s ease-out;
-            position: relative;
-            z-index: 1;
+            background: var(--card-bg); width: 100%; max-width: 500px;
+            padding: 2rem; border-radius: var(--radius);
+            box-shadow: var(--shadow); backdrop-filter: blur(10px);
+            animation: slideUp 0.4s ease-out; position: relative; z-index: 1;
         }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         h1 { margin: 0 0 10px 0; color: var(--primary); font-weight: 900; text-align: center; font-size: 2rem; }
         h2 { margin: 0 0 15px 0; font-size: 1.5rem; text-align: center; }
         p { margin: 0 0 20px 0; color: var(--text-sub); text-align: center; line-height: 1.6; }
-
-        .label {
-            display: block; font-size: 0.85rem; font-weight: 700;
-            color: var(--text-sub); margin-bottom: 6px;
-            text-transform: uppercase; letter-spacing: 0.5px;
-        }
+        .label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
 
         .row { display: flex; gap: 10px; }
         .col { flex: 1; }
 
         input, select {
-            width: 100%; padding: 14px;
-            border: 2px solid var(--item-border);
-            border-radius: 12px; font-size: 1rem;
-            font-family: inherit; font-weight: 600;
-            transition: all 0.2s;
-            background: var(--input-bg);
-            color: var(--text-main);
+            width: 100%; padding: 14px; border: 2px solid var(--item-border);
+            border-radius: 12px; font-size: 1rem; font-family: inherit; font-weight: 600;
+            transition: all 0.2s; background: var(--input-bg); color: var(--text-main);
         }
-
-        input:focus, select:focus {
-            outline: none; border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-        }
+        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
 
         button {
-            width: 100%; padding: 16px; border: none;
-            border-radius: 12px; font-size: 1rem; font-weight: 800;
-            font-family: inherit; cursor: pointer;
-            transition: transform 0.1s, opacity 0.2s;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; padding: 16px; border: none; border-radius: 12px;
+            font-size: 1rem; font-weight: 800; font-family: inherit; cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
         button:active { transform: scale(0.98); }
-        
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-primary:disabled { background: var(--text-sub); opacity: 0.5; box-shadow: none; cursor: not-allowed; }
-
         .btn-secondary { background: var(--item-bg); color: var(--text-main); border: 1px solid var(--item-border); }
         .btn-secondary:hover { filter: brightness(0.95); }
-
         .btn-danger { background: var(--danger-bg); color: var(--danger); }
         .btn-icon { width: 44px; padding: 0; font-size: 1.2rem; flex-shrink: 0; }
         .btn-sm { padding: 10px 12px; font-size: 0.9rem; width: auto; }
 
-        .list-wrap {
-            display: flex; flex-direction: column; gap: 10px;
-            margin: 20px 0; max-height: 400px; overflow-y: auto;
-        }
+        .list-wrap { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; max-height: 400px; overflow-y: auto; }
 
         .item-card {
-            background: var(--item-bg); padding: 12px 16px;
-            border-radius: 12px; border: 1px solid var(--item-border);
-            display: flex; align-items: center; justify-content: space-between;
+            background: var(--item-bg); padding: 12px 16px; border-radius: 12px;
+            border: 1px solid var(--item-border); display: flex; align-items: center; justify-content: space-between;
         }
-        
         .item-card.correct { background: var(--success-bg); border-color: var(--success); }
         .item-card.wrong { background: var(--danger-bg); border-color: var(--danger); }
-
+        
         .rank-badge {
-            background: var(--text-main); color: var(--item-bg);
-            width: 24px; height: 24px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
+            background: var(--text-main); color: var(--item-bg); width: 24px; height: 24px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
             font-size: 0.75rem; font-weight: bold; margin-right: 10px;
         }
 
         /* SECRET BOX */
         .secret-container {
             position: relative; margin: 30px 0; cursor: pointer;
-            user-select: none; -webkit-user-select: none;
-            -webkit-touch-callout: none; touch-action: manipulation;
+            user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: manipulation;
         }
         .secret-blur { filter: blur(20px); opacity: 0.3; transition: all 0.2s ease; }
         .secret-overlay {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: var(--text-main); color: var(--item-bg); padding: 10px 20px;
-            border-radius: 30px; font-size: 1rem; font-weight: bold;
-            pointer-events: none; transition: opacity 0.2s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2); white-space: nowrap;
+            border-radius: 30px; font-size: 1rem; font-weight: bold; pointer-events: none;
+            transition: opacity 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); white-space: nowrap;
         }
         .secret-container.revealed .secret-blur { filter: blur(0); opacity: 1; }
         .secret-container.revealed .secret-overlay { opacity: 0; }
@@ -170,23 +121,18 @@
         /* MODAL */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
-            z-index: 100; display: flex; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 100;
+            display: flex; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none; transition: opacity 0.3s;
         }
         .modal-overlay.active { opacity: 1; pointer-events: all; }
         .modal-content {
             background: var(--modal-bg); padding: 30px; border-radius: 20px;
-            text-align: center; width: 90%; max-width: 320px;
-            transform: scale(0.9); transition: transform 0.3s;
-            border: 1px solid var(--item-border);
+            text-align: center; width: 90%; max-width: 320px; transform: scale(0.9);
+            transition: transform 0.3s; border: 1px solid var(--item-border);
         }
         .modal-overlay.active .modal-content { transform: scale(1); }
-        
-        #qrDisplay {
-            margin: 20px auto; display: flex; justify-content: center;
-            background: white; padding: 10px; border-radius: 10px; width: fit-content;
-        }
+        #qrDisplay { margin: 20px auto; display: flex; justify-content: center; background: white; padding: 10px; border-radius: 10px; width: fit-content; }
 
         .divider { height: 1px; background: var(--item-border); margin: 20px 0; }
         .toast {
@@ -215,20 +161,57 @@
     <div id="toast" class="toast">Link copied!</div>
 
     <script>
-        const state = { step: 'SETUP', players: [], settings: { min: 1, max: 200, order: 'asc' } };
+        // --- DATA ---
+        const DEFAULT_STATE = { step: 'SETUP', players: [], settings: { min: 1, max: 200, order: 'asc' } };
+        let state = JSON.parse(JSON.stringify(DEFAULT_STATE)); // Deep copy
+
         const app = document.getElementById('app');
 
+        // --- PERSISTENCE ---
+        function loadState() {
+            // Only load for HOST (not players visiting via link)
+            if (new URLSearchParams(window.location.search).has('p')) return; 
+            
+            const saved = localStorage.getItem('lineUpState');
+            if (saved) {
+                try { state = JSON.parse(saved); } catch(e) { console.error('Save file corrupted'); }
+            }
+        }
+        
+        function saveState() {
+            // Don't save if in player view
+            if (!new URLSearchParams(window.location.search).has('p')) {
+                localStorage.setItem('lineUpState', JSON.stringify(state));
+            }
+        }
+
+        function resetGameData() {
+            if(confirm('Clear all players and data?')) {
+                state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+                saveState();
+                render();
+            }
+        }
+
+        function restartSamePlayers() {
+            state.step = 'SETUP';
+            // Reset numbers but keep names
+            state.players.forEach(p => p.number = 0);
+            saveState();
+            render();
+            showToast("Ready for Round 2!");
+        }
+
+        // --- UTILS ---
         const showToast = (msg) => {
             const t = document.getElementById('toast');
             t.textContent = msg; t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 2000);
         };
-
         const encodeData = (obj) => btoa(JSON.stringify(obj));
         const decodeData = (str) => { try { return JSON.parse(atob(str)); } catch(e) { return null; } };
 
         // --- VIEWS ---
-
         function renderSetup() {
             app.innerHTML = `
                 <h1>🔢 Line Up!</h1>
@@ -245,8 +228,11 @@
                     </select>
                 </div>
                 <div class="divider"></div>
-                <label class="label">Players (${state.players.length})</label>
-                <div class="row" style="margin-bottom:15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label class="label" style="margin:0;">Players (${state.players.length})</label>
+                    ${state.players.length > 0 ? `<button class="btn-secondary btn-sm" style="width:auto; padding:4px 8px; font-size:0.75rem;" onclick="resetGameData()">Reset All</button>` : ''}
+                </div>
+                <div class="row" style="margin-top:10px; margin-bottom:15px;">
                     <input type="text" id="nameInput" placeholder="Enter name" onkeydown="if(event.key==='Enter') addPlayer()">
                     <button class="btn-primary" style="width:auto;" onclick="addPlayer()">Add</button>
                 </div>
@@ -290,6 +276,7 @@
                 </div>
                 <div style="text-align:center; margin-top:20px;">
                     <button class="btn-primary" onclick="setState('VERIFY')">Start Verification</button>
+                    <button class="btn-secondary" style="margin-top:10px;" onclick="setState('SETUP')">Edit Setup</button>
                 </div>
             `;
         }
@@ -341,11 +328,20 @@
                     </div>
                 `;
             }).join('');
+
+            // TRIGGER CONFETTI IF CORRECT
+            if(allCorrect) {
+                setTimeout(() => {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                }, 100);
+            }
+
             app.innerHTML = `
                 <h1>${allCorrect ? '🎉 Perfect!' : '😬 So Close!'}</h1>
                 <p>${allCorrect ? 'Correct order!' : 'Incorrect order.'}</p>
                 <div class="list-wrap">${listHtml}</div>
-                <button class="btn-primary" onclick="location.reload()">New Game</button>
+                <button class="btn-primary" onclick="restartSamePlayers()">🔄 Play Again (Same Players)</button>
+                <button class="btn-secondary" style="margin-top:10px;" onclick="resetGameData()">New Game (Reset All)</button>
             `;
         }
 
@@ -395,8 +391,9 @@
             input.value = '';
             renderSetup();
             setTimeout(() => document.getElementById('nameInput').focus(), 50);
+            saveState();
         }
-        function removePlayer(i) { state.players.splice(i, 1); renderSetup(); }
+        function removePlayer(i) { state.players.splice(i, 1); renderSetup(); saveState(); }
         
         function startGame() {
             const min = parseInt(document.getElementById('minInput').value);
@@ -420,9 +417,7 @@
         async function shareLink(url, name) {
             if (navigator.share) {
                 try { await navigator.share({ title: 'Line Up!', text: `Your secret number for ${name}`, url: url }); } catch (err) {}
-            } else {
-                copyLink(url);
-            }
+            } else { copyLink(url); }
         }
 
         function showQr(url, name) {
@@ -440,9 +435,10 @@
             if (target < 0 || target >= state.players.length) return;
             [state.players[index], state.players[target]] = [state.players[target], state.players[index]];
             renderVerify();
+            saveState(); // Save order as they move it
         }
         function checkOrder() { setState('RESULTS'); }
-        function setState(s) { state.step = s; render(); }
+        function setState(s) { state.step = s; saveState(); render(); }
         function render() {
             const params = new URLSearchParams(window.location.search);
             if (params.get('p')) return renderPlayerView(params.get('p'));
@@ -451,6 +447,9 @@
             else if (state.step === 'VERIFY') renderVerify();
             else if (state.step === 'RESULTS') renderResults();
         }
+
+        // Init
+        loadState();
         render();
     </script>
 </body>
