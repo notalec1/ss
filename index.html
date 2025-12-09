@@ -147,13 +147,26 @@
         .btn-sm { padding: 8px 14px; font-size: 0.85rem; width: auto; border-radius: 12px; }
         .btn-icon { width: 44px; padding: 0; font-size: 1.2rem; flex-shrink: 0; }
         
-        /* Quick Add Chips */
-        .chip-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; margin-bottom: 20px; }
+        /* Quick Add Chips - 3 Per Line */
+        .chip-container { 
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px; 
+            margin-top: 10px; 
+            margin-bottom: 20px; 
+        }
         .chip-btn { 
-            background: var(--bg-item); border: 1px solid var(--border); 
-            padding: 6px 12px; border-radius: 50px; font-size: 0.85rem; 
-            font-weight: 700; cursor: pointer; transition: all 0.2s;
+            width: 100%;
+            background: var(--bg-item); 
+            border: 1px solid var(--border); 
+            padding: 10px 4px; 
+            border-radius: 12px; 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: all 0.2s;
             color: var(--text-sub);
+            text-align: center;
         }
         .chip-btn:hover { background: var(--bg-card); color: var(--primary); transform: translateY(-2px); border-color: var(--primary); }
         .chip-btn.added { opacity: 0.3; cursor: default; transform: none; text-decoration: line-through; }
