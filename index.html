@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Line Up! Ultimate</title>
     
-    <!-- Fonts & Libraries -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -57,7 +56,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Snow Overlay */
         #snowCanvas {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 0; opacity: 0.5;
@@ -76,56 +74,50 @@
 
         /* TV MODE STYLES */
         body.is-tv-mode .app-card {
-            max-width: 90vw;
-            width: 90vw;
-            height: 85vh;
-            display: flex;
-            flex-direction: column;
-            padding: 2rem;
+            max-width: 95vw; width: 95vw; height: 90vh;
+            display: flex; flex-direction: column; padding: 2rem;
         }
 
         .split-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            height: 100%;
+            display: flex; flex-direction: column; gap: 20px; height: 100%;
         }
 
         body.is-tv-mode .split-container {
-            flex-direction: row;
-            align-items: stretch;
+            flex-direction: row; align-items: stretch;
         }
 
-        .left-panel, .right-panel { flex: 1; }
-        
-        body.is-tv-mode .right-panel {
+        .left-panel { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-right: 20px; }
+        .right-panel { 
+            flex: 1.5; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px;
+            height: 100%;
+        }
+
+        /* Right Panel Split (Game Status vs Leaderboard) */
+        .game-status-panel {
             flex: 1.5;
-            background: rgba(0,0,0,0.05);
-            border-radius: 20px;
-            padding: 20px;
-            overflow-y: auto;
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-        }
-
-        body.is-tv-mode .left-panel {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding-right: 20px;
+            background: rgba(0,0,0,0.05); border-radius: 20px; padding: 20px;
+            overflow-y: auto; border: 1px solid var(--border);
+            display: flex; flex-direction: column;
         }
         
-        /* Typography */
+        .leaderboard-panel {
+            flex: 1;
+            background: rgba(245, 158, 11, 0.1); border-radius: 20px; padding: 20px;
+            overflow-y: auto; border: 1px solid var(--gold);
+        }
+
         h1 { margin: 0 0 10px 0; color: var(--primary); font-weight: 900; text-align: center; font-size: 2.2rem; }
         h2 { margin: 0 0 15px 0; font-size: 1.6rem; text-align: center; font-weight: 800; }
+        h3 { margin: 0 0 10px 0; font-size: 1.2rem; font-weight: 800; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
         p { margin: 0 0 25px 0; color: var(--text-sub); text-align: center; line-height: 1.6; }
         .label { display: block; font-size: 0.8rem; font-weight: 800; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
 
         body.is-tv-mode h1 { font-size: 3.5rem; }
         body.is-tv-mode h2 { font-size: 2.5rem; }
 
-        /* Inputs & Buttons */
         .row { display: flex; gap: 12px; }
         .col { flex: 1; }
 
@@ -155,7 +147,6 @@
         .btn-sm { padding: 8px 14px; font-size: 0.85rem; width: auto; border-radius: 12px; }
         .btn-icon { width: 44px; padding: 0; font-size: 1.2rem; flex-shrink: 0; }
         
-        /* The Mode Switch Back Button */
         .top-left-btn { 
             position: absolute; top: 15px; left: 15px; z-index: 10; 
             font-size: 1.2rem; background: none; border: none; 
@@ -164,9 +155,7 @@
         }
         .top-left-btn:hover { opacity: 1; transform: scale(1.1); }
 
-        /* Lists */
         .list-wrap { display: flex; flex-direction: column; gap: 12px; margin: 25px 0; max-height: 400px; overflow-y: auto; padding-right: 4px; }
-        
         body.is-tv-mode .list-wrap { max-height: 100%; flex: 1; margin: 10px 0; }
 
         .item-card {
@@ -178,6 +167,22 @@
         .item-card.gold { background: rgba(245, 158, 11, 0.15); border-color: var(--gold); }
         .rank-badge { background: var(--text-main); color: var(--bg-card); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; margin-right: 12px; }
         
+        /* Grid View for QR Codes */
+        .qr-grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            padding: 10px;
+            overflow-y: auto;
+            max-height: 75vh;
+        }
+        .qr-card {
+            background: white; color: black;
+            border-radius: 16px; padding: 15px;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+        }
+        .qr-card canvas, .qr-card img { width: 100% !important; height: auto !important; }
+
         /* Timer & Secret */
         .timer-badge { background: var(--text-main); color: var(--bg-card); padding: 6px 16px; border-radius: 50px; font-weight: 800; font-family: monospace; font-size: 1.2rem; display: inline-block; margin-bottom: 15px; }
         body.is-tv-mode .timer-badge { font-size: 2rem; padding: 10px 30px; }
@@ -245,6 +250,15 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="qrGridModal" onclick="closeModal('qrGridModal')">
+        <div class="modal-content" style="max-width:900px; width:95%; height:90vh;" onclick="event.stopPropagation()">
+            <h2 style="margin-bottom:5px;">Scan Your Name</h2>
+            <p>Everyone scan their own code!</p>
+            <div id="qrGridTarget" class="qr-grid-container"></div>
+            <button class="btn-secondary" onclick="closeModal('qrGridModal')">Close</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="presetsModal" onclick="closeModal('presetsModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h2>💾 Saved Groups</h2>
@@ -270,6 +284,7 @@
             </div>
             <input type="file" id="fileInput" style="display:none" onchange="importData(event)" accept=".json">
             <div class="divider"></div>
+            <button class="btn-danger" style="margin-bottom:10px" onclick="resetScores()">🧹 Reset Scores</button>
             <button class="btn-danger" onclick="wipeData()">🗑️ Factory Reset</button>
             <br><br>
             <button class="btn-secondary" onclick="closeModal('dataModal')">Close</button>
@@ -295,7 +310,7 @@
         let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
         let timerInterval = null;
         let godMode = false;
-        let viewMode = sessionStorage.getItem('lineUpViewMode') || null; // 'mobile' or 'tv'
+        let viewMode = sessionStorage.getItem('lineUpViewMode') || null; 
         const app = document.getElementById('app');
 
         // --- UTILS ---
@@ -305,6 +320,10 @@
             const t = document.getElementById('toast');
             t.textContent = msg; t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 2000);
+        }
+        function formatTime(s) { 
+            if(s === null) return "0:00";
+            return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`; 
         }
 
         function setViewMode(mode) {
@@ -371,11 +390,44 @@
             if (!new URLSearchParams(window.location.search).has('p')) localStorage.setItem('lineUpState', JSON.stringify(state));
         }
 
+        function getLeaderboard() {
+            try { return JSON.parse(localStorage.getItem('lineUpLeaderboard')) || {}; } catch(e) { return {}; }
+        }
+
+        function updateScores() {
+            const sorted = [...state.players].sort((a, b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
+            const scores = getLeaderboard();
+            let changed = false;
+            
+            state.players.forEach((p, i) => {
+                if (p.name === sorted[i].name) {
+                    // +10 Points for correct position
+                    scores[p.name] = (scores[p.name] || 0) + 10;
+                    changed = true;
+                } else {
+                    // Ensure entry exists
+                    scores[p.name] = scores[p.name] || 0;
+                }
+            });
+
+            if(changed) localStorage.setItem('lineUpLeaderboard', JSON.stringify(scores));
+            return scores;
+        }
+
+        function resetScores() {
+            if(confirm("Reset all player scores to 0?")) {
+                localStorage.removeItem('lineUpLeaderboard');
+                showToast("Scores Reset");
+                render();
+            }
+        }
+
         function exportData() {
             const data = {
                 presets: localStorage.getItem('lineUpPresets'),
                 history: localStorage.getItem('lineUpHistory'),
-                state: localStorage.getItem('lineUpState')
+                state: localStorage.getItem('lineUpState'),
+                leaderboard: localStorage.getItem('lineUpLeaderboard')
             };
             const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
@@ -395,6 +447,7 @@
                     if (data.presets) localStorage.setItem('lineUpPresets', data.presets);
                     if (data.history) localStorage.setItem('lineUpHistory', data.history);
                     if (data.state) localStorage.setItem('lineUpState', data.state);
+                    if (data.leaderboard) localStorage.setItem('lineUpLeaderboard', data.leaderboard);
                     showToast("Data Restored!");
                     setTimeout(() => location.reload(), 1000);
                 } catch(err) { showToast("Invalid File"); }
@@ -553,11 +606,6 @@
             }
         }
 
-        function formatTime(s) { 
-            if(s === null) return "0:00";
-            return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`; 
-        }
-
         function startTimerTicker() {
             if(timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(() => {
@@ -595,7 +643,21 @@
             else if(state.step === 'RESULTS') renderResults();
         }
 
-        // --- VIEW TEMPLATES ---
+        // --- COMPONENTS ---
+        function getLeaderboardHtml() {
+            const scores = getLeaderboard();
+            const entries = Object.entries(scores).sort((a,b) => b[1] - a[1]);
+            if (entries.length === 0) return `<div style="text-align:center; opacity:0.6">No scores yet</div>`;
+            return entries.map((e, i) => `
+                <div class="item-card" style="padding:10px 15px; margin-bottom:8px; border:none; background:rgba(255,255,255,0.5);">
+                    <div style="display:flex; align-items:center;">
+                        <span style="font-weight:900; width:25px; opacity:0.6;">${i+1}</span>
+                        <span style="font-weight:700;">${e[0]}</span>
+                    </div>
+                    <strong style="color:var(--primary-dark)">${e[1]} pts</strong>
+                </div>
+            `).join('');
+        }
 
         function renderModeSelection() {
             app.innerHTML = `
@@ -653,7 +715,7 @@
                 </div>
             `;
 
-            const rightContent = `
+            const rosterHtml = `
                 <div class="list-wrap">
                     ${state.players.length === 0 ? '<div style="text-align:center; opacity:0.5; padding:20px;">Add players...</div>' : ''}
                     ${state.players.map((p, i) => `
@@ -669,7 +731,12 @@
                 ${switchBtn}
                 <div class="split-container">
                     <div class="left-panel">${leftContent}</div>
-                    ${viewMode === 'tv' ? `<div class="right-panel"><h2>Roster</h2>${rightContent}</div>` : `<div style="margin-top:10px">${rightContent}</div>`}
+                    ${viewMode === 'tv' ? `
+                        <div class="right-panel">
+                            <div class="game-status-panel"><h3>Current Roster</h3>${rosterHtml}</div>
+                            <div class="leaderboard-panel"><h3>🏆 Total Scores</h3>${getLeaderboardHtml()}</div>
+                        </div>` 
+                    : `<div style="margin-top:10px">${rosterHtml}</div>`}
                 </div>
             `;
             if(viewMode === 'tv') document.body.classList.add('is-tv-mode');
@@ -689,6 +756,7 @@
                     <button class="btn-primary" onclick="setState('VERIFY')">Start Verification</button>
                     <button class="btn-secondary" style="margin-top:10px;" onclick="setState('SETUP')">Back</button>
                 </div>
+                ${viewMode === 'tv' ? `<button class="btn-secondary" style="margin-top:20px; border-color:var(--primary); color:var(--primary)" onclick="openQrGrid()">📺 Grid View (All QRs)</button>` : ''}
             `;
 
             const listHtml = `
@@ -712,7 +780,13 @@
                 </div>`;
 
             if (viewMode === 'tv') {
-                app.innerHTML = `${switchBtn}<div class="split-container"><div class="left-panel">${controlsHtml}</div><div class="right-panel"><h2>Players</h2>${listHtml}</div></div>`;
+                app.innerHTML = `${switchBtn}<div class="split-container">
+                    <div class="left-panel">${controlsHtml}</div>
+                    <div class="right-panel">
+                        <div class="game-status-panel"><h3>Links</h3>${listHtml}</div>
+                        <div class="leaderboard-panel"><h3>🏆 Total Scores</h3>${getLeaderboardHtml()}</div>
+                    </div>
+                </div>`;
             } else {
                 app.innerHTML = `${switchBtn}${controlsHtml}${listHtml}`;
             }
@@ -787,7 +861,13 @@
             `;
 
             if (viewMode === 'tv') {
-                app.innerHTML = `${switchBtn}<div class="split-container"><div class="left-panel">${controlsHtml}</div><div class="right-panel"><h2>Current Order</h2>${listHtml}</div></div>`;
+                app.innerHTML = `${switchBtn}<div class="split-container">
+                    <div class="left-panel">${controlsHtml}</div>
+                    <div class="right-panel">
+                        <div class="game-status-panel"><h3>Current Order</h3>${listHtml}</div>
+                        <div class="leaderboard-panel"><h3>🏆 Total Scores</h3>${getLeaderboardHtml()}</div>
+                    </div>
+                </div>`;
             } else {
                 app.innerHTML = `${switchBtn}${controlsHtml}${listHtml}`;
             }
@@ -826,7 +906,7 @@
                             </div>
                             <div style="font-size:0.85rem; margin-top:6px; margin-left:40px; opacity:0.8;">Number: <strong>${p.number}</strong>${!isCorrect ? `(Should be #${realRank})` : ''}</div>
                         </div>
-                        <div style="font-size:1.5rem;">${isCorrect ? '✅' : '❌'}</div>
+                        <div style="font-size:1.5rem;">${isCorrect ? `✅<br><span style="font-size:0.6rem; font-weight:bold; color:var(--success)">+10pts</span>` : '❌'}</div>
                     </div>`;
             }).join('');
 
@@ -835,11 +915,14 @@
                 const duration = Math.floor((Date.now() - state.startTime) / 1000);
                 if(!state.finalTime) { 
                     state.finalTime = duration; saveState(); saveHistory(true); 
+                    updateScores(); // Add Points
                     setTimeout(() => confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } }), 200); 
                 }
                 timeMsg = `<div class="timer-badge" style="background:var(--gold); color:white; animation: popIn 0.5s;">Time: ${formatTime(state.finalTime)}</div>`;
             } else if (!state.finalTime) { 
-                state.finalTime = Math.floor((Date.now() - state.startTime) / 1000); saveHistory(false); 
+                state.finalTime = Math.floor((Date.now() - state.startTime) / 1000); 
+                saveHistory(false); 
+                updateScores(); // Add Points even if lost
             }
 
             const headerHtml = `<div style="text-align:center;">${timeMsg}</div><h1>${allCorrect ? '🎉 Perfect!' : '😬 Close!'}</h1>`;
@@ -854,7 +937,10 @@
                     ${switchBtn}
                     <div class="split-container">
                         <div class="left-panel" style="justify-content:center;">${headerHtml}<div style="margin-top:30px">${buttonsHtml}</div></div>
-                        <div class="right-panel"><h2>Scoreboard</h2>${listHtml}</div>
+                        <div class="right-panel">
+                            <div class="game-status-panel"><h3>Results</h3>${listHtml}</div>
+                            <div class="leaderboard-panel"><h3>🏆 Total Scores</h3>${getLeaderboardHtml()}</div>
+                        </div>
                     </div>`;
             } else {
                 app.innerHTML = `${switchBtn}${headerHtml}${listHtml}${buttonsHtml}`;
@@ -892,7 +978,27 @@
 
         function copyLink(url) { navigator.clipboard.writeText(url); showToast("Link copied!"); pulse(); }
         async function shareLink(url, name) { pulse(); if (navigator.share) { try { await navigator.share({ title: 'Line Up!', text: `Number for ${name}`, url: url }); } catch (err) {} } else { copyLink(url); } }
-        function showQr(url, name) { pulse(); openModal('qrModal'); document.getElementById('qrName').textContent = name; const c = document.getElementById('qrDisplay'); c.innerHTML = ''; new QRCode(c, { text: url, width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H }); }
+        function showQr(url, name) { pulse(); openModal('qrModal'); document.getElementById('qrName').textContent = name; const c = document.getElementById('qrDisplay'); c.innerHTML = ''; new QRCode(c, { text: url, width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L }); }
+        
+        function openQrGrid() {
+            openModal('qrGridModal');
+            const target = document.getElementById('qrGridTarget');
+            target.innerHTML = '';
+            const baseUrl = window.location.href.split('?')[0];
+            const encodeData = (obj) => btoa(JSON.stringify(obj));
+            
+            // Generate all QRs
+            state.players.forEach(p => {
+                const payload = { n: p.name, v: p.number, min: state.settings.min, max: state.settings.max, o: state.settings.order };
+                const link = `${baseUrl}?p=${encodeData(payload)}`;
+                const card = document.createElement('div');
+                card.className = 'qr-card';
+                card.innerHTML = `<div style="font-weight:800; margin-bottom:10px;">${p.name}</div><div id="qr-${p.name}"></div>`;
+                target.appendChild(card);
+                new QRCode(document.getElementById(`qr-${p.name}`), { text: link, width: 128, height: 128 });
+            });
+        }
+        
         function checkOrder() { setState('RESULTS'); pulse(50); }
 
         // Start
