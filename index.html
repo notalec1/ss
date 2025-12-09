@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Line Up!</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
-    <!-- QR Code Lib -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Confetti Lib -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -16,6 +14,7 @@
             --primary: #6366f1; --primary-dark: #4f46e5;
             --success: #10b981; --success-bg: #ecfdf5;
             --danger: #ef4444; --danger-bg: #fef2f2;
+            --gold: #f59e0b; --gold-bg: #fef3c7;
             --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --card-bg: rgba(255, 255, 255, 0.95);
             --item-bg: #ffffff; --item-border: #e5e7eb;
@@ -31,6 +30,7 @@
                 --primary: #818cf8; --primary-dark: #6366f1;
                 --success: #34d399; --success-bg: rgba(16, 185, 129, 0.2);
                 --danger: #f87171; --danger-bg: rgba(239, 68, 68, 0.2);
+                --gold: #fbbf24; --gold-bg: rgba(245, 158, 11, 0.2);
                 --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
                 --card-bg: rgba(30, 41, 59, 0.95);
                 --item-bg: #334155; --item-border: #475569;
@@ -40,21 +40,9 @@
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        body {
-            font-family: 'Nunito', sans-serif; background: var(--bg-gradient);
-            margin: 0; padding: 20px; min-height: 100vh;
-            display: flex; justify-content: center; align-items: center;
-            color: var(--text-main);
-        }
-
-        .app-card {
-            background: var(--card-bg); width: 100%; max-width: 500px;
-            padding: 2rem; border-radius: var(--radius);
-            box-shadow: var(--shadow); backdrop-filter: blur(10px);
-            animation: slideUp 0.4s ease-out; position: relative; z-index: 1;
-        }
-
+        body { font-family: 'Nunito', sans-serif; background: var(--bg-gradient); margin: 0; padding: 20px; min-height: 100vh; display: flex; justify-content: center; align-items: center; color: var(--text-main); }
+        
+        .app-card { background: var(--card-bg); width: 100%; max-width: 500px; padding: 2rem; border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(10px); animation: slideUp 0.4s ease-out; position: relative; z-index: 1; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         h1 { margin: 0 0 10px 0; color: var(--primary); font-weight: 900; text-align: center; font-size: 2rem; }
@@ -64,19 +52,10 @@
 
         .row { display: flex; gap: 10px; }
         .col { flex: 1; }
-
-        input, select {
-            width: 100%; padding: 14px; border: 2px solid var(--item-border);
-            border-radius: 12px; font-size: 1rem; font-family: inherit; font-weight: 600;
-            transition: all 0.2s; background: var(--input-bg); color: var(--text-main);
-        }
+        input, select { width: 100%; padding: 14px; border: 2px solid var(--item-border); border-radius: 12px; font-size: 1rem; font-family: inherit; font-weight: 600; transition: all 0.2s; background: var(--input-bg); color: var(--text-main); }
         input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
 
-        button {
-            width: 100%; padding: 16px; border: none; border-radius: 12px;
-            font-size: 1rem; font-weight: 800; font-family: inherit; cursor: pointer;
-            transition: transform 0.1s, opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
+        button { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 800; font-family: inherit; cursor: pointer; transition: transform 0.1s, opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         button:active { transform: scale(0.98); }
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
         .btn-primary:hover { background: var(--primary-dark); }
@@ -88,59 +67,31 @@
         .btn-sm { padding: 10px 12px; font-size: 0.9rem; width: auto; }
 
         .list-wrap { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; max-height: 400px; overflow-y: auto; }
-
-        .item-card {
-            background: var(--item-bg); padding: 12px 16px; border-radius: 12px;
-            border: 1px solid var(--item-border); display: flex; align-items: center; justify-content: space-between;
-        }
+        .item-card { background: var(--item-bg); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--item-border); display: flex; align-items: center; justify-content: space-between; }
         .item-card.correct { background: var(--success-bg); border-color: var(--success); }
         .item-card.wrong { background: var(--danger-bg); border-color: var(--danger); }
+        .item-card.gold { background: var(--gold-bg); border-color: var(--gold); }
         
-        .rank-badge {
-            background: var(--text-main); color: var(--item-bg); width: 24px; height: 24px;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 0.75rem; font-weight: bold; margin-right: 10px;
-        }
+        .rank-badge { background: var(--text-main); color: var(--item-bg); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; margin-right: 10px; }
 
-        /* SECRET BOX */
-        .secret-container {
-            position: relative; margin: 30px 0; cursor: pointer;
-            user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: manipulation;
-        }
+        /* TIMER & SCOREBOARD */
+        .timer-badge { background: var(--text-main); color: var(--item-bg); padding: 5px 12px; border-radius: 20px; font-weight: bold; font-family: monospace; font-size: 1.1rem; display: inline-block; margin-bottom: 10px; }
+        
+        .secret-container { position: relative; margin: 30px 0; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }
         .secret-blur { filter: blur(20px); opacity: 0.3; transition: all 0.2s ease; }
-        .secret-overlay {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: var(--text-main); color: var(--item-bg); padding: 10px 20px;
-            border-radius: 30px; font-size: 1rem; font-weight: bold; pointer-events: none;
-            transition: opacity 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); white-space: nowrap;
-        }
+        .secret-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--text-main); color: var(--item-bg); padding: 10px 20px; border-radius: 30px; font-size: 1rem; font-weight: bold; pointer-events: none; transition: opacity 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); white-space: nowrap; }
         .secret-container.revealed .secret-blur { filter: blur(0); opacity: 1; }
         .secret-container.revealed .secret-overlay { opacity: 0; }
         .big-number { font-size: 6rem; font-weight: 900; color: var(--primary); text-align: center; line-height: 1; }
 
-        /* MODAL */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 100;
-            display: flex; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 100; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .modal-overlay.active { opacity: 1; pointer-events: all; }
-        .modal-content {
-            background: var(--modal-bg); padding: 30px; border-radius: 20px;
-            text-align: center; width: 90%; max-width: 320px; transform: scale(0.9);
-            transition: transform 0.3s; border: 1px solid var(--item-border);
-        }
+        .modal-content { background: var(--modal-bg); padding: 30px; border-radius: 20px; text-align: center; width: 90%; max-width: 320px; transform: scale(0.9); transition: transform 0.3s; border: 1px solid var(--item-border); }
         .modal-overlay.active .modal-content { transform: scale(1); }
         #qrDisplay { margin: 20px auto; display: flex; justify-content: center; background: white; padding: 10px; border-radius: 10px; width: fit-content; }
 
         .divider { height: 1px; background: var(--item-border); margin: 20px 0; }
-        .toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: var(--text-main); color: var(--item-bg); padding: 12px 24px; border-radius: 50px;
-            font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 1000;
-        }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text-main); color: var(--item-bg); padding: 12px 24px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 20px rgba(0,0,0,0.2); opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 1000; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
 </head>
@@ -162,24 +113,34 @@
 
     <script>
         // --- DATA ---
-        const DEFAULT_STATE = { step: 'SETUP', players: [], settings: { min: 1, max: 200, order: 'asc' } };
-        let state = JSON.parse(JSON.stringify(DEFAULT_STATE)); // Deep copy
+        const DEFAULT_STATE = { 
+            step: 'SETUP', 
+            players: [], 
+            settings: { min: 1, max: 200, order: 'asc' },
+            startTime: null,
+            finalTime: null
+        };
+        let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        let timerInterval = null;
 
         const app = document.getElementById('app');
 
         // --- PERSISTENCE ---
         function loadState() {
-            // Only load for HOST (not players visiting via link)
             if (new URLSearchParams(window.location.search).has('p')) return; 
-            
             const saved = localStorage.getItem('lineUpState');
             if (saved) {
-                try { state = JSON.parse(saved); } catch(e) { console.error('Save file corrupted'); }
+                try { 
+                    state = JSON.parse(saved); 
+                    // If returning to a running game, restart the ticker
+                    if((state.step === 'DISTRIBUTE' || state.step === 'VERIFY') && state.startTime) {
+                        startTimerTicker();
+                    }
+                } catch(e) {}
             }
         }
         
         function saveState() {
-            // Don't save if in player view
             if (!new URLSearchParams(window.location.search).has('p')) {
                 localStorage.setItem('lineUpState', JSON.stringify(state));
             }
@@ -193,13 +154,42 @@
             }
         }
 
-        function restartSamePlayers() {
-            state.step = 'SETUP';
-            // Reset numbers but keep names
-            state.players.forEach(p => p.number = 0);
-            saveState();
-            render();
-            showToast("Ready for Round 2!");
+        // --- LEADERBOARD LOGIC ---
+        function getLeaderboard() {
+            try { return JSON.parse(localStorage.getItem('lineUpLeaderboard')) || []; } catch(e) { return []; }
+        }
+
+        function saveScore(timeInSec) {
+            const history = getLeaderboard();
+            const date = new Date().toLocaleDateString();
+            history.push({ 
+                date, 
+                players: state.players.length, 
+                time: timeInSec 
+            });
+            // Keep best times (sort by time asc)
+            history.sort((a, b) => a.time - b.time);
+            // Cap at 20 records
+            if(history.length > 20) history.pop();
+            localStorage.setItem('lineUpLeaderboard', JSON.stringify(history));
+        }
+
+        // --- TIMER LOGIC ---
+        function startTimerTicker() {
+            if(timerInterval) clearInterval(timerInterval);
+            const el = document.getElementById('timerDisplay');
+            timerInterval = setInterval(() => {
+                if(document.getElementById('timerDisplay')) {
+                    const diff = Math.floor((Date.now() - state.startTime) / 1000);
+                    document.getElementById('timerDisplay').innerText = `⏱️ ${formatTime(diff)}`;
+                }
+            }, 1000);
+        }
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m}:${s.toString().padStart(2, '0')}`;
         }
 
         // --- UTILS ---
@@ -212,6 +202,7 @@
         const decodeData = (str) => { try { return JSON.parse(atob(str)); } catch(e) { return null; } };
 
         // --- VIEWS ---
+
         function renderSetup() {
             app.innerHTML = `
                 <h1>🔢 Line Up!</h1>
@@ -230,7 +221,10 @@
                 <div class="divider"></div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <label class="label" style="margin:0;">Players (${state.players.length})</label>
-                    ${state.players.length > 0 ? `<button class="btn-secondary btn-sm" style="width:auto; padding:4px 8px; font-size:0.75rem;" onclick="resetGameData()">Reset All</button>` : ''}
+                    <div>
+                        <button class="btn-secondary btn-sm" style="width:auto; padding:4px 8px; font-size:0.75rem; margin-right:5px;" onclick="setState('LEADERBOARD')">🏆 Scores</button>
+                        ${state.players.length > 0 ? `<button class="btn-secondary btn-sm" style="width:auto; padding:4px 8px; font-size:0.75rem;" onclick="resetGameData()">Reset</button>` : ''}
+                    </div>
                 </div>
                 <div class="row" style="margin-top:10px; margin-bottom:15px;">
                     <input type="text" id="nameInput" placeholder="Enter name" onkeydown="if(event.key==='Enter') addPlayer()">
@@ -251,7 +245,12 @@
 
         function renderDistribute() {
             const baseUrl = window.location.href.split('?')[0];
+            const currentSeconds = Math.floor((Date.now() - state.startTime) / 1000);
+            
             app.innerHTML = `
+                <div style="text-align:center;">
+                    <div id="timerDisplay" class="timer-badge">⏱️ ${formatTime(currentSeconds)}</div>
+                </div>
                 <h2>🔗 Send Links</h2>
                 <p>Distribute secret numbers.</p>
                 <div class="list-wrap">
@@ -279,11 +278,17 @@
                     <button class="btn-secondary" style="margin-top:10px;" onclick="setState('SETUP')">Edit Setup</button>
                 </div>
             `;
+            startTimerTicker();
         }
 
         function renderVerify() {
             const orderText = state.settings.order === 'asc' ? 'Smallest to Biggest' : 'Biggest to Smallest';
+            const currentSeconds = Math.floor((Date.now() - state.startTime) / 1000);
+            
             app.innerHTML = `
+                <div style="text-align:center;">
+                    <div id="timerDisplay" class="timer-badge">⏱️ ${formatTime(currentSeconds)}</div>
+                </div>
                 <h2>🧐 Verify Order</h2>
                 <p>Goal: <strong>${orderText}</strong></p>
                 <div class="list-wrap">
@@ -303,11 +308,14 @@
                 <button class="btn-primary" style="background:var(--success);" onclick="checkOrder()">Reveal Results</button>
                 <button class="btn-secondary" style="margin-top:10px;" onclick="setState('DISTRIBUTE')">Back</button>
             `;
+            startTimerTicker();
         }
 
         function renderResults() {
+            clearInterval(timerInterval);
             const sorted = [...state.players].sort((a, b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
             let allCorrect = true;
+            
             const listHtml = state.players.map((p, i) => {
                 const isCorrect = p.name === sorted[i].name;
                 if (!isCorrect) allCorrect = false;
@@ -329,19 +337,58 @@
                 `;
             }).join('');
 
-            // TRIGGER CONFETTI IF CORRECT
+            let timeMsg = "";
             if(allCorrect) {
-                setTimeout(() => {
-                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                }, 100);
+                // Save Score Logic
+                const duration = Math.floor((Date.now() - state.startTime) / 1000);
+                // Only save if it's a new run (prevent dupes on refresh)
+                if(!state.finalTime) {
+                    saveScore(duration);
+                    state.finalTime = duration; 
+                    saveState();
+                    setTimeout(() => confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }), 100);
+                }
+                timeMsg = `<div class="timer-badge" style="background:var(--gold); color:white;">Completed in ${formatTime(state.finalTime || duration)}</div>`;
             }
 
             app.innerHTML = `
+                ${timeMsg}
                 <h1>${allCorrect ? '🎉 Perfect!' : '😬 So Close!'}</h1>
-                <p>${allCorrect ? 'Correct order!' : 'Incorrect order.'}</p>
+                <p>${allCorrect ? 'Correct order!' : 'Incorrect order. Time not saved.'}</p>
                 <div class="list-wrap">${listHtml}</div>
                 <button class="btn-primary" onclick="restartSamePlayers()">🔄 Play Again (Same Players)</button>
+                <button class="btn-secondary" style="margin-top:10px;" onclick="setState('LEADERBOARD')">🏆 View Leaderboard</button>
                 <button class="btn-secondary" style="margin-top:10px;" onclick="resetGameData()">New Game (Reset All)</button>
+            `;
+        }
+        
+        function renderLeaderboard() {
+            const scores = getLeaderboard();
+            
+            // Filter scores by current player count to make it relevant
+            const playerCount = state.players.length || 0;
+            const relevantScores = scores.filter(s => s.players === playerCount);
+            
+            const list = relevantScores.length ? relevantScores.map((s, i) => `
+                <div class="item-card ${i===0 ? 'gold' : ''}">
+                    <div style="display:flex; align-items:center;">
+                        <div class="rank-badge" style="${i===0 ? 'background:var(--gold); color:white;' : ''}">#${i+1}</div>
+                        <div>
+                            <strong>${formatTime(s.time)}</strong>
+                            <div style="font-size:0.8rem; opacity:0.7;">${s.date}</div>
+                        </div>
+                    </div>
+                    <div style="font-size:0.9rem; font-weight:bold;">${s.players} Players</div>
+                </div>
+            `).join('') : `<div style="text-align:center; padding:20px; color:var(--text-sub);">No records for ${playerCount} players yet.</div>`;
+
+            app.innerHTML = `
+                <h1>🏆 Leaderboard</h1>
+                <p>Best times for <strong>${playerCount} players</strong>.</p>
+                <div class="list-wrap">
+                    ${list}
+                </div>
+                <button class="btn-secondary" onclick="setState('SETUP')">Back to Setup</button>
             `;
         }
 
@@ -400,24 +447,28 @@
             const max = parseInt(document.getElementById('maxInput').value);
             if (min >= max) return showToast("Min must be < Max!");
             state.settings = { min, max, order: document.getElementById('orderInput').value };
+            
             const used = new Set();
             state.players.forEach(p => {
                 let num, attempts = 0;
                 do { num = Math.floor(Math.random() * (max - min + 1)) + min; attempts++; } while (used.has(num) && attempts < 1000);
                 used.add(num); p.number = num;
             });
+            
+            state.startTime = Date.now();
+            state.finalTime = null;
             setState('DISTRIBUTE');
         }
-
-        function copyLink(url) {
-            navigator.clipboard.writeText(url);
-            showToast("Link copied!");
+        
+        function restartSamePlayers() {
+            state.startTime = null;
+            state.finalTime = null;
+            startGame(); // Re-rolls numbers and starts immediately
         }
 
+        function copyLink(url) { navigator.clipboard.writeText(url); showToast("Link copied!"); }
         async function shareLink(url, name) {
-            if (navigator.share) {
-                try { await navigator.share({ title: 'Line Up!', text: `Your secret number for ${name}`, url: url }); } catch (err) {}
-            } else { copyLink(url); }
+            if (navigator.share) { try { await navigator.share({ title: 'Line Up!', text: `Your secret number for ${name}`, url: url }); } catch (err) {} } else { copyLink(url); }
         }
 
         function showQr(url, name) {
@@ -435,10 +486,11 @@
             if (target < 0 || target >= state.players.length) return;
             [state.players[index], state.players[target]] = [state.players[target], state.players[index]];
             renderVerify();
-            saveState(); // Save order as they move it
+            saveState();
         }
         function checkOrder() { setState('RESULTS'); }
         function setState(s) { state.step = s; saveState(); render(); }
+        
         function render() {
             const params = new URLSearchParams(window.location.search);
             if (params.get('p')) return renderPlayerView(params.get('p'));
@@ -446,6 +498,7 @@
             else if (state.step === 'DISTRIBUTE') renderDistribute();
             else if (state.step === 'VERIFY') renderVerify();
             else if (state.step === 'RESULTS') renderResults();
+            else if (state.step === 'LEADERBOARD') renderLeaderboard();
         }
 
         // Init
