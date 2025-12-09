@@ -4,24 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Line Up!</title>
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
-    <!-- QR Code Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <style>
         :root {
+            /* Light Mode Defaults */
             --primary: #6366f1;
             --primary-dark: #4f46e5;
-            --accent: #ec4899;
             --success: #10b981;
+            --success-bg: #ecfdf5;
             --danger: #ef4444;
+            --danger-bg: #fef2f2;
             --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --card-bg: rgba(255, 255, 255, 0.95);
+            --item-bg: #ffffff;
+            --item-border: #e5e7eb;
             --text-main: #1f2937;
             --text-sub: #6b7280;
+            --input-bg: #ffffff;
             --radius: 16px;
             --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+            --modal-bg: #ffffff;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                /* Dark Mode Overrides */
+                --primary: #818cf8;
+                --primary-dark: #6366f1;
+                --success: #34d399;
+                --success-bg: rgba(16, 185, 129, 0.2);
+                --danger: #f87171;
+                --danger-bg: rgba(239, 68, 68, 0.2);
+                --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+                --card-bg: rgba(30, 41, 59, 0.95);
+                --item-bg: #334155;
+                --item-border: #475569;
+                --text-main: #f1f5f9;
+                --text-sub: #94a3b8;
+                --input-bg: #1e293b;
+                --modal-bg: #1e293b;
+            }
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -38,7 +62,6 @@
             color: var(--text-main);
         }
 
-        /* --- CONTAINER --- */
         .app-card {
             background: var(--card-bg);
             width: 100%;
@@ -57,198 +80,127 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- TYPOGRAPHY --- */
-        h1 { margin: 0 0 10px 0; color: var(--primary-dark); font-weight: 900; text-align: center; font-size: 2rem; }
+        h1 { margin: 0 0 10px 0; color: var(--primary); font-weight: 900; text-align: center; font-size: 2rem; }
         h2 { margin: 0 0 15px 0; font-size: 1.5rem; text-align: center; }
         p { margin: 0 0 20px 0; color: var(--text-sub); text-align: center; line-height: 1.6; }
 
         .label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--text-sub);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            display: block; font-size: 0.85rem; font-weight: 700;
+            color: var(--text-sub); margin-bottom: 6px;
+            text-transform: uppercase; letter-spacing: 0.5px;
         }
 
-        /* --- FORMS & INPUTS --- */
-        .input-group { margin-bottom: 15px; }
-        .row { display: flex; gap: 15px; }
+        .row { display: flex; gap: 10px; }
         .col { flex: 1; }
 
         input, select {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-family: inherit;
-            font-weight: 600;
+            width: 100%; padding: 14px;
+            border: 2px solid var(--item-border);
+            border-radius: 12px; font-size: 1rem;
+            font-family: inherit; font-weight: 600;
             transition: all 0.2s;
-            background: white;
+            background: var(--input-bg);
+            color: var(--text-main);
         }
 
         input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
+            outline: none; border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
 
-        /* --- BUTTONS --- */
         button {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 800;
-            font-family: inherit;
-            cursor: pointer;
+            width: 100%; padding: 16px; border: none;
+            border-radius: 12px; font-size: 1rem; font-weight: 800;
+            font-family: inherit; cursor: pointer;
             transition: transform 0.1s, opacity 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-
         button:active { transform: scale(0.98); }
         
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
         .btn-primary:hover { background: var(--primary-dark); }
-        .btn-primary:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
+        .btn-primary:disabled { background: var(--text-sub); opacity: 0.5; box-shadow: none; cursor: not-allowed; }
 
-        .btn-secondary { background: #f3f4f6; color: var(--text-main); border: 1px solid #e5e7eb; }
-        .btn-secondary:hover { background: #e5e7eb; }
+        .btn-secondary { background: var(--item-bg); color: var(--text-main); border: 1px solid var(--item-border); }
+        .btn-secondary:hover { filter: brightness(0.95); }
 
-        .btn-danger { background: #fee2e2; color: var(--danger); }
+        .btn-danger { background: var(--danger-bg); color: var(--danger); }
         .btn-icon { width: 44px; padding: 0; font-size: 1.2rem; flex-shrink: 0; }
-        .btn-sm { padding: 10px 16px; font-size: 0.9rem; width: auto; }
+        .btn-sm { padding: 10px 12px; font-size: 0.9rem; width: auto; }
 
-        /* --- LIST ITEMS --- */
         .list-wrap {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin: 20px 0;
-            max-height: 400px;
-            overflow-y: auto;
+            display: flex; flex-direction: column; gap: 10px;
+            margin: 20px 0; max-height: 400px; overflow-y: auto;
         }
 
         .item-card {
-            background: white;
-            padding: 12px 16px;
-            border-radius: 12px;
-            border: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: all 0.2s;
+            background: var(--item-bg); padding: 12px 16px;
+            border-radius: 12px; border: 1px solid var(--item-border);
+            display: flex; align-items: center; justify-content: space-between;
         }
         
-        .item-card.correct { background: #ecfdf5; border-color: var(--success); }
-        .item-card.wrong { background: #fef2f2; border-color: var(--danger); }
+        .item-card.correct { background: var(--success-bg); border-color: var(--success); }
+        .item-card.wrong { background: var(--danger-bg); border-color: var(--danger); }
 
         .rank-badge {
-            background: var(--text-main);
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: bold;
-            margin-right: 10px;
+            background: var(--text-main); color: var(--item-bg);
+            width: 24px; height: 24px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: bold; margin-right: 10px;
         }
 
-        /* --- PLAYER REVEAL --- */
+        /* SECRET BOX */
         .secret-container {
-            position: relative;
-            margin: 30px 0;
-            cursor: pointer;
-            
-            /* CRITICAL MOBILE FIXES */
-            user-select: none; /* Stops text highlighting */
-            -webkit-user-select: none;
-            -webkit-touch-callout: none; /* Stops 'Copy' menu */
-            touch-action: manipulation;
+            position: relative; margin: 30px 0; cursor: pointer;
+            user-select: none; -webkit-user-select: none;
+            -webkit-touch-callout: none; touch-action: manipulation;
         }
-
-        .secret-blur { 
-            filter: blur(20px); 
-            opacity: 0.3; 
-            transition: all 0.2s ease; 
-        }
-        
+        .secret-blur { filter: blur(20px); opacity: 0.3; transition: all 0.2s ease; }
         .secret-overlay {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: var(--text-main); color: white; padding: 10px 20px;
+            background: var(--text-main); color: var(--item-bg); padding: 10px 20px;
             border-radius: 30px; font-size: 1rem; font-weight: bold;
             pointer-events: none; transition: opacity 0.2s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); white-space: nowrap;
         }
-
-        /* State Classes (toggled by JS now) */
         .secret-container.revealed .secret-blur { filter: blur(0); opacity: 1; }
         .secret-container.revealed .secret-overlay { opacity: 0; }
-        
         .big-number { font-size: 6rem; font-weight: 900; color: var(--primary); text-align: center; line-height: 1; }
 
-        /* --- MODAL (QR CODE) --- */
+        /* MODAL */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(4px);
-            z-index: 100;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
+            z-index: 100; display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
         }
         .modal-overlay.active { opacity: 1; pointer-events: all; }
-        
         .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            width: 90%;
-            max-width: 320px;
-            transform: scale(0.9);
-            transition: transform 0.3s;
+            background: var(--modal-bg); padding: 30px; border-radius: 20px;
+            text-align: center; width: 90%; max-width: 320px;
+            transform: scale(0.9); transition: transform 0.3s;
+            border: 1px solid var(--item-border);
         }
         .modal-overlay.active .modal-content { transform: scale(1); }
         
         #qrDisplay {
-            margin: 20px auto;
-            display: flex;
-            justify-content: center;
+            margin: 20px auto; display: flex; justify-content: center;
+            background: white; padding: 10px; border-radius: 10px; width: fit-content;
         }
 
-        /* --- UTILS --- */
-        .hidden { display: none; }
-        .divider { height: 1px; background: #e5e7eb; margin: 20px 0; }
+        .divider { height: 1px; background: var(--item-border); margin: 20px 0; }
         .toast {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: #1f2937; color: white; padding: 12px 24px; border-radius: 50px;
+            background: var(--text-main); color: var(--item-bg); padding: 12px 24px; border-radius: 50px;
             font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 1000;
+            opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 1000;
         }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
     </style>
 </head>
 <body>
 
-    <div class="app-card" id="app">
-        <!-- Content injected by JS -->
-    </div>
+    <div class="app-card" id="app"></div>
 
     <!-- QR MODAL -->
     <div class="modal-overlay" id="qrModal" onclick="closeQr()">
@@ -260,91 +212,46 @@
         </div>
     </div>
     
-    <!-- TOAST -->
     <div id="toast" class="toast">Link copied!</div>
 
     <script>
-        // --- GAME STATE ---
-        const state = {
-            step: 'SETUP', 
-            players: [],
-            settings: { min: 1, max: 200, order: 'asc' }
-        };
-
+        const state = { step: 'SETUP', players: [], settings: { min: 1, max: 200, order: 'asc' } };
         const app = document.getElementById('app');
 
-        // --- UTILS ---
         const showToast = (msg) => {
             const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('show');
+            t.textContent = msg; t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 2000);
         };
 
         const encodeData = (obj) => btoa(JSON.stringify(obj));
-        const decodeData = (str) => {
-            try { return JSON.parse(atob(str)); } catch(e) { return null; }
-        };
-
-        // --- QR LOGIC ---
-        function showQr(url, name) {
-            const modal = document.getElementById('qrModal');
-            const container = document.getElementById('qrDisplay');
-            const title = document.getElementById('qrName');
-            
-            container.innerHTML = '';
-            title.textContent = name;
-            
-            new QRCode(container, {
-                text: url, width: 200, height: 200,
-                colorDark : "#000000", colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
-
-            modal.classList.add('active');
-        }
-
-        function closeQr() {
-            document.getElementById('qrModal').classList.remove('active');
-        }
+        const decodeData = (str) => { try { return JSON.parse(atob(str)); } catch(e) { return null; } };
 
         // --- VIEWS ---
 
-        // 1. SETUP VIEW
         function renderSetup() {
             app.innerHTML = `
                 <h1>🔢 Line Up!</h1>
                 <p>The party game of hidden numbers.</p>
-                
                 <div class="row">
-                    <div class="col">
-                        <label class="label">Min Number</label>
-                        <input type="number" id="minInput" value="${state.settings.min}">
-                    </div>
-                    <div class="col">
-                        <label class="label">Max Number</label>
-                        <input type="number" id="maxInput" value="${state.settings.max}">
-                    </div>
+                    <div class="col"><label class="label">Min</label><input type="number" id="minInput" value="${state.settings.min}"></div>
+                    <div class="col"><label class="label">Max</label><input type="number" id="maxInput" value="${state.settings.max}"></div>
                 </div>
-                
-                <div class="input-group" style="margin-top:15px;">
+                <div style="margin-top:15px;">
                     <label class="label">Sort Order</label>
                     <select id="orderInput">
                         <option value="asc" ${state.settings.order === 'asc' ? 'selected' : ''}>Smallest → Biggest</option>
                         <option value="desc" ${state.settings.order === 'desc' ? 'selected' : ''}>Biggest → Smallest</option>
                     </select>
                 </div>
-
                 <div class="divider"></div>
-
                 <label class="label">Players (${state.players.length})</label>
                 <div class="row" style="margin-bottom:15px;">
-                    <input type="text" id="nameInput" placeholder="Enter name (e.g. Dad)" onkeydown="if(event.key==='Enter') addPlayer()">
+                    <input type="text" id="nameInput" placeholder="Enter name" onkeydown="if(event.key==='Enter') addPlayer()">
                     <button class="btn-primary" style="width:auto;" onclick="addPlayer()">Add</button>
                 </div>
-
                 <div class="list-wrap">
-                    ${state.players.length === 0 ? '<div style="text-align:center; color:#ccc; font-style:italic; padding:20px;">No players yet</div>' : ''}
+                    ${state.players.length === 0 ? '<div style="text-align:center; opacity:0.5; padding:20px;">No players yet</div>' : ''}
                     ${state.players.map((p, i) => `
                         <div class="item-card">
                             <span style="font-weight:700;">${p.name}</span>
@@ -352,63 +259,46 @@
                         </div>
                     `).join('')}
                 </div>
-
-                <button class="btn-primary" onclick="startGame()" ${state.players.length < 2 ? 'disabled' : ''}>
-                    ${state.players.length < 2 ? 'Add Players to Start' : 'Generate & Start Game'}
-                </button>
+                <button class="btn-primary" onclick="startGame()" ${state.players.length < 2 ? 'disabled' : ''}>${state.players.length < 2 ? 'Add Players to Start' : 'Generate & Start Game'}</button>
             `;
         }
 
-        // 2. DISTRIBUTE VIEW
         function renderDistribute() {
             const baseUrl = window.location.href.split('?')[0];
-            
             app.innerHTML = `
                 <h2>🔗 Send Links</h2>
-                <p>Use QR codes or send links to players.</p>
-                
+                <p>Distribute secret numbers.</p>
                 <div class="list-wrap">
                     ${state.players.map(p => {
                         const payload = { n: p.name, v: p.number, min: state.settings.min, max: state.settings.max, o: state.settings.order };
                         const link = `${baseUrl}?p=${encodeData(payload)}`;
-                        
                         return `
                         <div class="item-card" style="flex-direction:column; align-items:stretch; gap:10px;">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
                                 <span style="font-weight:800;">${p.name}</span>
-                                <span style="font-size:0.75rem; background:#e0e7ff; color:var(--primary); padding:2px 8px; border-radius:10px; font-weight:700;">HIDDEN</span>
+                                <span style="font-size:0.75rem; background:var(--primary); color:white; padding:2px 8px; border-radius:10px; font-weight:700;">HIDDEN</span>
                             </div>
                             <div class="row" style="gap:8px;">
-                                <button class="btn-secondary btn-icon" style="flex:0 0 auto;" onclick="showQr('${link}', '${p.name}')">
-                                    <span style="font-size:1.4rem">🏁</span>
-                                </button>
-                                <button class="btn-secondary btn-sm" style="flex:1" onclick="shareLink('${link}', '${p.name}')">
-                                    <span style="font-size:1.1rem">📤</span> Send
-                                </button>
-                                <button class="btn-secondary btn-sm" style="flex:1" onclick="window.open('${link}', '_blank')">
-                                    <span style="font-size:1.1rem">👁️</span> Open
-                                </button>
+                                <button class="btn-secondary btn-icon" onclick="showQr('${link}', '${p.name}')" title="QR Code">🏁</button>
+                                <button class="btn-secondary btn-sm" style="flex:1" onclick="copyLink('${link}')" title="Copy Link">📋 Copy</button>
+                                <button class="btn-secondary btn-icon" onclick="shareLink('${link}', '${p.name}')" title="Share">📤</button>
+                                <button class="btn-secondary btn-icon" onclick="window.open('${link}', '_blank')" title="Open">👁️</button>
                             </div>
                         </div>
                         `;
                     }).join('')}
                 </div>
-
                 <div style="text-align:center; margin-top:20px;">
-                    <p style="font-size:0.9rem;">Once everyone is in line:</p>
                     <button class="btn-primary" onclick="setState('VERIFY')">Start Verification</button>
                 </div>
             `;
         }
 
-        // 3. VERIFY VIEW
         function renderVerify() {
             const orderText = state.settings.order === 'asc' ? 'Smallest to Biggest' : 'Biggest to Smallest';
-            
             app.innerHTML = `
                 <h2>🧐 Verify Order</h2>
-                <p>Match the list below to the real life line.<br>Goal: <strong>${orderText}</strong></p>
-
+                <p>Goal: <strong>${orderText}</strong></p>
                 <div class="list-wrap">
                     ${state.players.map((p, i) => `
                         <div class="item-card">
@@ -423,33 +313,26 @@
                         </div>
                     `).join('')}
                 </div>
-
                 <button class="btn-primary" style="background:var(--success);" onclick="checkOrder()">Reveal Results</button>
                 <button class="btn-secondary" style="margin-top:10px;" onclick="setState('DISTRIBUTE')">Back</button>
             `;
         }
 
-        // 4. RESULTS VIEW
         function renderResults() {
-            const sorted = [...state.players].sort((a, b) => {
-                return state.settings.order === 'asc' ? a.number - b.number : b.number - a.number;
-            });
-
+            const sorted = [...state.players].sort((a, b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
             let allCorrect = true;
             const listHtml = state.players.map((p, i) => {
                 const isCorrect = p.name === sorted[i].name;
                 if (!isCorrect) allCorrect = false;
-                
                 const realRank = sorted.findIndex(x => x.name === p.name) + 1;
-
                 return `
                     <div class="item-card ${isCorrect ? 'correct' : 'wrong'}">
                         <div>
                             <div style="display:flex; align-items:center;">
-                                <div class="rank-badge" style="background:${isCorrect ? '#10b981' : '#ef4444'}">${i+1}</div>
+                                <div class="rank-badge" style="background:${isCorrect ? 'var(--success)' : 'var(--danger)'}; color:white;">${i+1}</div>
                                 <strong>${p.name}</strong>
                             </div>
-                            <div style="font-size:0.85rem; margin-top:4px; margin-left:34px; color:#555;">
+                            <div style="font-size:0.85rem; margin-top:4px; margin-left:34px; opacity:0.8;">
                                 Number: <strong>${p.number}</strong>
                                 ${!isCorrect ? `(Should be #${realRank})` : ''}
                             </div>
@@ -458,24 +341,17 @@
                     </div>
                 `;
             }).join('');
-
             app.innerHTML = `
                 <h1>${allCorrect ? '🎉 Perfect!' : '😬 So Close!'}</h1>
-                <p>${allCorrect ? 'You guys are mind readers!' : 'Looks like we have some shuffling to do.'}</p>
-                
-                <div class="list-wrap">
-                    ${listHtml}
-                </div>
-
+                <p>${allCorrect ? 'Correct order!' : 'Incorrect order.'}</p>
+                <div class="list-wrap">${listHtml}</div>
                 <button class="btn-primary" onclick="location.reload()">New Game</button>
             `;
         }
 
-        // 5. PLAYER VIEW
         function renderPlayerView(encodedData) {
             const data = decodeData(encodedData);
             if (!data) return app.innerHTML = `<h2>Error</h2><p>Broken link.</p>`;
-
             const orderArrow = data.o === 'asc' ? '↗️' : '↘️';
             const orderText = data.o === 'asc' ? 'Smallest to Biggest' : 'Biggest to Smallest';
 
@@ -485,47 +361,31 @@
                     <h2>Hi, ${data.n}!</h2>
                     <p>Tap & hold below to reveal.</p>
                 </div>
-
                 <div class="secret-container" id="secretBox">
                     <div class="secret-overlay">HOLD TO REVEAL</div>
                     <div class="big-number secret-blur">${data.v}</div>
                 </div>
-                
-                <div style="background:#f0f9ff; padding:20px; border-radius:12px; text-align:left; border:1px solid #bae6fd;">
-                    <label class="label" style="color:#0284c7;">Mission</label>
-                    <ul style="padding-left:20px; margin:5px 0; color:#334155; line-height:1.6;">
+                <div style="background:var(--item-bg); padding:20px; border-radius:12px; text-align:left; border:1px solid var(--item-border);">
+                    <label class="label" style="color:var(--primary);">Mission</label>
+                    <ul style="padding-left:20px; margin:5px 0; line-height:1.6;">
                         <li>Range: <strong>${data.min} - ${data.max}</strong></li>
                         <li>Order: <strong>${orderText} ${orderArrow}</strong></li>
                         <li>Give hints, but <strong>never</strong> say your number!</li>
                     </ul>
                 </div>
             `;
-
-            // --- MOBILE/DESKTOP TOUCH LOGIC ---
             const box = document.getElementById('secretBox');
-            
-            const reveal = (e) => {
-                if(e.cancelable) e.preventDefault(); // Prevents selection
-                box.classList.add('revealed');
-            };
-            const hide = (e) => {
-                if(e.cancelable) e.preventDefault();
-                box.classList.remove('revealed');
-            };
-
-            // Touch (Mobile)
+            const reveal = (e) => { if(e.cancelable) e.preventDefault(); box.classList.add('revealed'); };
+            const hide = (e) => { if(e.cancelable) e.preventDefault(); box.classList.remove('revealed'); };
             box.addEventListener('touchstart', reveal, { passive: false });
             box.addEventListener('touchend', hide);
             box.addEventListener('touchcancel', hide);
-
-            // Mouse (Desktop)
             box.addEventListener('mousedown', reveal);
             box.addEventListener('mouseup', hide);
             box.addEventListener('mouseleave', hide);
         }
 
-        // --- CONTROLLER ---
-
+        // --- ACTIONS ---
         function addPlayer() {
             const input = document.getElementById('nameInput');
             const name = input.value.trim();
@@ -536,51 +396,44 @@
             renderSetup();
             setTimeout(() => document.getElementById('nameInput').focus(), 50);
         }
-
-        function removePlayer(i) {
-            state.players.splice(i, 1);
-            renderSetup();
-        }
-
+        function removePlayer(i) { state.players.splice(i, 1); renderSetup(); }
+        
         function startGame() {
             const min = parseInt(document.getElementById('minInput').value);
             const max = parseInt(document.getElementById('maxInput').value);
-            
-            if (min >= max) return showToast("Min must be smaller than Max!");
-
-            state.settings = { 
-                min, max, 
-                order: document.getElementById('orderInput').value 
-            };
-
+            if (min >= max) return showToast("Min must be < Max!");
+            state.settings = { min, max, order: document.getElementById('orderInput').value };
             const used = new Set();
             state.players.forEach(p => {
                 let num, attempts = 0;
-                do {
-                    num = Math.floor(Math.random() * (max - min + 1)) + min;
-                    attempts++;
-                } while (used.has(num) && attempts < 1000);
-                used.add(num);
-                p.number = num;
+                do { num = Math.floor(Math.random() * (max - min + 1)) + min; attempts++; } while (used.has(num) && attempts < 1000);
+                used.add(num); p.number = num;
             });
-
             setState('DISTRIBUTE');
+        }
+
+        function copyLink(url) {
+            navigator.clipboard.writeText(url);
+            showToast("Link copied!");
         }
 
         async function shareLink(url, name) {
             if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: 'Your Secret Number',
-                        text: `Here is your number for the game, ${name}!`,
-                        url: url
-                    });
-                    return;
-                } catch (err) {}
+                try { await navigator.share({ title: 'Line Up!', text: `Your secret number for ${name}`, url: url }); } catch (err) {}
+            } else {
+                copyLink(url);
             }
-            navigator.clipboard.writeText(url);
-            showToast(`Link for ${name} copied!`);
         }
+
+        function showQr(url, name) {
+            const modal = document.getElementById('qrModal');
+            const container = document.getElementById('qrDisplay');
+            document.getElementById('qrName').textContent = name;
+            container.innerHTML = '';
+            new QRCode(container, { text: url, width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
+            modal.classList.add('active');
+        }
+        function closeQr() { document.getElementById('qrModal').classList.remove('active'); }
 
         function movePlayer(index, dir) {
             const target = index + dir;
@@ -588,23 +441,17 @@
             [state.players[index], state.players[target]] = [state.players[target], state.players[index]];
             renderVerify();
         }
-
         function checkOrder() { setState('RESULTS'); }
-        
         function setState(s) { state.step = s; render(); }
-        
         function render() {
             const params = new URLSearchParams(window.location.search);
             if (params.get('p')) return renderPlayerView(params.get('p'));
-            
             if (state.step === 'SETUP') renderSetup();
             else if (state.step === 'DISTRIBUTE') renderDistribute();
             else if (state.step === 'VERIFY') renderVerify();
             else if (state.step === 'RESULTS') renderResults();
         }
-
         render();
-
     </script>
 </body>
 </html>
