@@ -147,6 +147,17 @@
         .btn-sm { padding: 8px 14px; font-size: 0.85rem; width: auto; border-radius: 12px; }
         .btn-icon { width: 44px; padding: 0; font-size: 1.2rem; flex-shrink: 0; }
         
+        /* Quick Add Chips */
+        .chip-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; margin-bottom: 20px; }
+        .chip-btn { 
+            background: var(--bg-item); border: 1px solid var(--border); 
+            padding: 6px 12px; border-radius: 50px; font-size: 0.85rem; 
+            font-weight: 700; cursor: pointer; transition: all 0.2s;
+            color: var(--text-sub);
+        }
+        .chip-btn:hover { background: var(--bg-card); color: var(--primary); transform: translateY(-2px); border-color: var(--primary); }
+        .chip-btn.added { opacity: 0.3; cursor: default; transform: none; text-decoration: line-through; }
+
         .top-left-btn { 
             position: absolute; top: 15px; left: 15px; z-index: 10; 
             font-size: 1.2rem; background: none; border: none; 
@@ -314,6 +325,7 @@
     <script>
         // --- CONFIG & STATE ---
         const GOD_PASSWORD = "1234";
+        const AUTO_NAMES = ["Alec", "Alain", "Nada", "Hoda", "Fadi", "Noa", "Gio", "Neo", "Nounou", "Assaad", "Chris", "Eliott"];
         const DEFAULT_STATE = { 
             step: 'SETUP', 
             players: [], 
@@ -476,14 +488,18 @@
         }
 
         // --- GAME LOGIC ---
-        function addPlayer() {
+        function addPlayer(optionalName) {
             const input = document.getElementById('nameInput');
-            const name = input.value.trim();
+            const name = optionalName || input.value.trim();
             if (!name) return;
+            // Prevent exact duplicates
+            const exists = state.players.some(p => p.name.toLowerCase() === name.toLowerCase());
+            if(exists) return showToast("Already added!");
+            
             state.players.push({ name, number: 0 });
-            input.value = '';
+            if(input) input.value = '';
             setState('SETUP');
-            setTimeout(() => { const el = document.getElementById('nameInput'); if(el) el.focus(); }, 50);
+            if(!optionalName) setTimeout(() => { const el = document.getElementById('nameInput'); if(el) el.focus(); }, 50);
             pulse();
         }
 
@@ -720,9 +736,16 @@
                         <button class="btn-secondary btn-sm" onclick="savePreset()">+Save</button>
                     </div>
                 </div>
-                <div class="row" style="margin-top:10px; margin-bottom:15px;">
+                <div class="row" style="margin-top:10px; margin-bottom:10px;">
                     <input type="text" id="nameInput" placeholder="Name" onkeydown="if(event.key==='Enter') addPlayer()">
                     <button class="btn-primary" style="width:auto;" onclick="addPlayer()">Add</button>
+                </div>
+                
+                <div class="chip-container">
+                    ${AUTO_NAMES.map(n => {
+                        const isAdded = state.players.some(p => p.name.toLowerCase() === n.toLowerCase());
+                        return `<button class="chip-btn ${isAdded ? 'added' : ''}" onclick="addPlayer('${n}')">${n}</button>`;
+                    }).join('')}
                 </div>
                 
                 <div style="margin-top:auto;">
