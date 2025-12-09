@@ -95,7 +95,7 @@
             height: 100%;
         }
 
-        /* Right Panel Split (Game Status vs Leaderboard) */
+        /* Panels */
         .game-status-panel {
             flex: 1.5;
             background: rgba(0,0,0,0.05); border-radius: 20px; padding: 20px;
@@ -167,7 +167,7 @@
         .item-card.gold { background: rgba(245, 158, 11, 0.15); border-color: var(--gold); }
         .rank-badge { background: var(--text-main); color: var(--bg-card); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; margin-right: 12px; }
         
-        /* Grid View for QR Codes */
+        /* Grid View */
         .qr-grid-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -250,12 +250,29 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="leaderboardModal" onclick="closeModal('leaderboardModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2>🏆 Leaderboard</h2>
+            <div id="mobileLeaderboardList" style="margin:20px 0; text-align:left; max-height: 300px; overflow-y:auto;"></div>
+            <button class="btn-secondary" onclick="closeModal('leaderboardModal')">Close</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="qrGridModal" onclick="closeModal('qrGridModal')">
         <div class="modal-content" style="max-width:900px; width:95%; height:90vh;" onclick="event.stopPropagation()">
             <h2 style="margin-bottom:5px;">Scan Your Name</h2>
             <p>Everyone scan their own code!</p>
             <div id="qrGridTarget" class="qr-grid-container"></div>
             <button class="btn-secondary" onclick="closeModal('qrGridModal')">Close</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="roomQrModal" onclick="closeModal('roomQrModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2 style="margin-bottom:5px;">🏠 Room Mode</h2>
+            <p>Scan to join and pick your name</p>
+            <div id="roomQrDisplay" style="margin: 20px auto; background: white; padding: 10px; border-radius: 12px; width: fit-content;"></div>
+            <button class="btn-secondary" onclick="closeModal('roomQrModal')">Close</button>
         </div>
     </div>
 
@@ -325,7 +342,6 @@
             if(s === null) return "0:00";
             return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`; 
         }
-
         function setViewMode(mode) {
             viewMode = mode;
             sessionStorage.setItem('lineUpViewMode', mode);
@@ -333,7 +349,6 @@
             else document.body.classList.remove('is-tv-mode');
             render();
         }
-
         function resetViewMode() {
             viewMode = null;
             sessionStorage.removeItem('lineUpViewMode');
@@ -376,7 +391,8 @@
 
         // --- DATA MANAGEMENT ---
         function loadState() {
-            if (new URLSearchParams(window.location.search).has('p')) return;
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('p') || params.has('room')) return;
             try {
                 const saved = localStorage.getItem('lineUpState');
                 if (saved) {
@@ -401,11 +417,9 @@
             
             state.players.forEach((p, i) => {
                 if (p.name === sorted[i].name) {
-                    // +10 Points for correct position
                     scores[p.name] = (scores[p.name] || 0) + 10;
                     changed = true;
                 } else {
-                    // Ensure entry exists
                     scores[p.name] = scores[p.name] || 0;
                 }
             });
@@ -621,6 +635,9 @@
             const m = document.getElementById(id); m.classList.add('active'); 
             if(id==='presetsModal') renderPresetsList(); 
             if(id==='historyModal') renderHistoryList(); 
+            if(id==='leaderboardModal') {
+                document.getElementById('mobileLeaderboardList').innerHTML = getLeaderboardHtml();
+            }
             pulse(); 
         }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); pulse(); }
@@ -631,6 +648,7 @@
         function render() {
             const params = new URLSearchParams(window.location.search);
             if (params.get('p')) { renderPlayerView(params.get('p')); return; }
+            if (params.get('room')) { renderRoomView(params.get('room')); return; }
 
             // Mode Selection
             if (!viewMode) { renderModeSelection(); return; }
@@ -697,7 +715,7 @@
                     <label class="label" style="margin:0;">Players (${state.players.length})</label>
                     <div style="display:flex; gap:5px;">
                         <button class="btn-secondary btn-sm" onclick="openModal('presetsModal')">💾</button>
-                        <button class="btn-secondary btn-sm" onclick="openModal('historyModal')">📜</button>
+                        <button class="btn-secondary btn-sm" onclick="openModal('leaderboardModal')">🏆</button>
                         <button class="btn-secondary btn-sm" onclick="openModal('dataModal')">⚙️</button>
                         <button class="btn-secondary btn-sm" onclick="savePreset()">+Save</button>
                     </div>
@@ -756,7 +774,11 @@
                     <button class="btn-primary" onclick="setState('VERIFY')">Start Verification</button>
                     <button class="btn-secondary" style="margin-top:10px;" onclick="setState('SETUP')">Back</button>
                 </div>
-                ${viewMode === 'tv' ? `<button class="btn-secondary" style="margin-top:20px; border-color:var(--primary); color:var(--primary)" onclick="openQrGrid()">📺 Grid View (All QRs)</button>` : ''}
+                <div class="row" style="margin-top:15px;">
+                    ${viewMode === 'mobile' ? `<button class="btn-secondary" onclick="openModal('leaderboardModal')">🏆 Leaderboard</button>` : ''}
+                    <button class="btn-secondary" style="border-color:var(--primary); color:var(--primary)" onclick="openRoomQr()">🏠 Room Mode</button>
+                </div>
+                ${viewMode === 'tv' ? `<button class="btn-secondary" style="margin-top:10px;" onclick="openQrGrid()">📺 Grid View (All QRs)</button>` : ''}
             `;
 
             const listHtml = `
@@ -931,6 +953,8 @@
                 <button class="btn-secondary" style="margin-top:10px;" onclick="resetGameData()">New Game</button>
             `;
             const listHtml = `<div class="list-wrap">${listItems}</div>`;
+            const leaderboardHtml = `<div style="margin-top:20px; padding-top:20px; border-top:2px solid var(--border);">
+                <h3>🏆 Total Scores</h3>${getLeaderboardHtml()}</div>`;
 
             if(viewMode === 'tv') {
                 app.innerHTML = `
@@ -943,10 +967,11 @@
                         </div>
                     </div>`;
             } else {
-                app.innerHTML = `${switchBtn}${headerHtml}${listHtml}${buttonsHtml}`;
+                app.innerHTML = `${switchBtn}${headerHtml}${listHtml}${leaderboardHtml}${buttonsHtml}`;
             }
         }
 
+        // --- PLAYER VIEWS ---
         function renderPlayerView(encodedData) {
             let data = null;
             try { data = JSON.parse(atob(encodedData)); } catch(e) {}
@@ -957,6 +982,32 @@
                 <div style="background:var(--bg-item); padding:20px; border-radius:16px; text-align:left; font-size:0.95rem;">Range: <strong>${data.min} - ${data.max}</strong></div>
             `;
             bindSecretBox();
+        }
+
+        function renderRoomView(encodedData) {
+            let data = null;
+            try { data = JSON.parse(atob(encodedData)); } catch(e) {}
+            if (!data) return app.innerHTML = `<h2>Error</h2><p>Invalid Room Data</p>`;
+            
+            app.innerHTML = `
+                <h2 style="margin-bottom:5px;">🏠 Pick Name</h2>
+                <p>Tap your name to reveal your number</p>
+                <div class="list-wrap">
+                    ${data.players.map(p => `
+                        <button class="btn-secondary" style="margin-bottom:10px; justify-content:space-between; padding:20px;" 
+                            onclick="claimPlayer('${p.n}', ${p.v}, ${data.min}, ${data.max}, '${data.o}')">
+                            <span style="font-weight:bold; font-size:1.1rem;">${p.n}</span>
+                            <span>👉</span>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function claimPlayer(name, val, min, max, order) {
+            const payload = { n: name, v: val, min: min, max: max, o: order };
+            const encoded = btoa(JSON.stringify(payload));
+            window.location.search = `?p=${encoded}`;
         }
 
         // --- INTERACTION ---
@@ -986,8 +1037,6 @@
             target.innerHTML = '';
             const baseUrl = window.location.href.split('?')[0];
             const encodeData = (obj) => btoa(JSON.stringify(obj));
-            
-            // Generate all QRs
             state.players.forEach(p => {
                 const payload = { n: p.name, v: p.number, min: state.settings.min, max: state.settings.max, o: state.settings.order };
                 const link = `${baseUrl}?p=${encodeData(payload)}`;
@@ -997,6 +1046,24 @@
                 target.appendChild(card);
                 new QRCode(document.getElementById(`qr-${p.name}`), { text: link, width: 128, height: 128 });
             });
+        }
+
+        function openRoomQr() {
+            openModal('roomQrModal');
+            const c = document.getElementById('roomQrDisplay');
+            c.innerHTML = '';
+            
+            // Construct Room Payload (just names/numbers to keep URL short)
+            const roomData = {
+                players: state.players.map(p => ({n: p.name, v: p.number})),
+                min: state.settings.min, 
+                max: state.settings.max,
+                o: state.settings.order
+            };
+            const baseUrl = window.location.href.split('?')[0];
+            const url = `${baseUrl}?room=${btoa(JSON.stringify(roomData))}`;
+            
+            new QRCode(c, { text: url, width: 250, height: 250, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L });
         }
         
         function checkOrder() { setState('RESULTS'); pulse(50); }
