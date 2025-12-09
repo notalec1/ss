@@ -10,7 +10,6 @@
     
     <style>
         :root {
-            /* Colors */
             --primary: #6366f1; 
             --primary-dark: #4f46e5;
             --success: #10b981; 
@@ -44,15 +43,14 @@
             min-height: 100vh;
             display: flex; justify-content: center; align-items: center;
             color: var(--text-main);
-            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #4338ca); /* Winter Night Gradient */
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #4338ca);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
             overflow-x: hidden;
         }
 
-        /* TV MODE SCALE */
         body.tv-mode { zoom: 1.3; }
-        @media (max-width: 600px) { body.tv-mode { zoom: 1; } } /* Disable on mobile */
+        @media (max-width: 600px) { body.tv-mode { zoom: 1; } }
 
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
@@ -60,47 +58,36 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* --- SNOW CANVAS --- */
         #snowCanvas {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 0; opacity: 0.6;
         }
 
-        /* --- APP CONTAINER --- */
         .app-card {
             background: var(--bg-card);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border);
-            width: 100%; max-width: 500px;
-            padding: 2.5rem 2rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            position: relative;
-            z-index: 1;
-            view-transition-name: app-card;
+            width: 100%; max-width: 500px; padding: 2.5rem 2rem;
+            border-radius: var(--radius); box-shadow: var(--shadow);
+            position: relative; z-index: 1; view-transition-name: app-card;
         }
 
-        /* --- TYPOGRAPHY --- */
         h1 { margin: 0 0 10px 0; color: var(--primary); font-weight: 900; text-align: center; font-size: 2.2rem; letter-spacing: -1px; }
         h2 { margin: 0 0 15px 0; font-size: 1.6rem; text-align: center; font-weight: 800; }
         p { margin: 0 0 25px 0; color: var(--text-sub); text-align: center; line-height: 1.6; font-size: 1.05rem; }
         .label { display: block; font-size: 0.8rem; font-weight: 800; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* --- INPUTS & CONTROLS --- */
         .row { display: flex; gap: 12px; }
         .col { flex: 1; }
 
         input, select {
-            width: 100%; padding: 16px;
-            border: 2px solid transparent; border-radius: 16px;
+            width: 100%; padding: 16px; border: 2px solid transparent; border-radius: 16px;
             font-size: 1rem; font-family: inherit; font-weight: 700;
             background: var(--bg-item); color: var(--text-main);
             transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         input:focus, select:focus { outline: none; background: var(--bg-card); border-color: var(--primary); transform: translateY(-2px); }
 
-        /* --- BUTTONS --- */
         button {
             width: 100%; padding: 16px; border: none; border-radius: 18px;
             font-size: 1rem; font-weight: 800; font-family: inherit; cursor: pointer;
@@ -120,11 +107,9 @@
         .btn-icon { width: 44px; padding: 0; font-size: 1.2rem; flex-shrink: 0; }
         .btn-sm { padding: 8px 14px; font-size: 0.85rem; width: auto; border-radius: 12px; }
         
-        /* CORNER BUTTONS */
         .top-left-btn { position: absolute; top: 20px; left: 20px; z-index: 10; font-size: 1.5rem; background: none; border: none; cursor: pointer; opacity: 0.5; transition: opacity 0.2s; padding: 0; width: auto; }
         .top-left-btn:hover { opacity: 1; transform: scale(1.1); }
         
-        /* --- LIST ITEMS --- */
         .list-wrap { display: flex; flex-direction: column; gap: 12px; margin: 25px 0; max-height: 400px; overflow-y: auto; padding-right: 4px; }
         .item-card {
             background: var(--bg-item); padding: 14px 18px; border-radius: 16px; border: 1px solid var(--border);
@@ -140,7 +125,6 @@
         .rank-badge { background: var(--text-main); color: var(--bg-card); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; margin-right: 12px; }
         .timer-badge { background: var(--text-main); color: var(--bg-card); padding: 6px 16px; border-radius: 50px; font-weight: 800; font-family: monospace; font-size: 1.2rem; display: inline-block; margin-bottom: 15px; }
 
-        /* --- SECRET REVEAL --- */
         .secret-container { position: relative; margin: 30px 0; cursor: pointer; height: 140px; display: flex; align-items: center; justify-content: center; background: var(--bg-item); border-radius: 24px; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); user-select: none; -webkit-user-select: none; }
         .secret-container:active { transform: scale(0.96); }
         .secret-blur { filter: blur(25px); opacity: 0.4; transition: all 0.3s ease; }
@@ -149,7 +133,6 @@
         .secret-container.revealed .secret-overlay { opacity: 0; }
         .big-number { font-size: 5rem; font-weight: 900; color: var(--primary); line-height: 1; }
 
-        /* --- MODAL --- */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 100; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .modal-overlay.active { opacity: 1; pointer-events: all; }
         .modal-content { background: var(--bg-card); padding: 30px; border-radius: 24px; text-align: center; width: 90%; max-width: 320px; transform: scale(0.9); transition: transform 0.3s; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.2); max-height: 80vh; overflow-y: auto; }
@@ -162,6 +145,8 @@
         
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: var(--text-sub); border-radius: 10px; opacity: 0.2; }
+        
+        .btn-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -194,92 +179,103 @@
             <button class="btn-secondary" onclick="closeModal('historyModal')">Close</button>
         </div>
     </div>
+
+    <div class="modal-overlay" id="dataModal" onclick="closeModal('dataModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2>⚙️ Data Manager</h2>
+            <p>Backup, restore, or wipe your data.</p>
+            
+            <div class="btn-mini-grid">
+                <button class="btn-secondary" onclick="exportData()">📤 Export</button>
+                <button class="btn-secondary" onclick="document.getElementById('fileInput').click()">📥 Import</button>
+            </div>
+            <input type="file" id="fileInput" style="display:none" onchange="importData(event)" accept=".json">
+            
+            <div class="divider"></div>
+            
+            <button class="btn-danger" onclick="wipeData()">🗑️ Factory Reset</button>
+            <br>
+            <button class="btn-secondary" onclick="closeModal('dataModal')">Close</button>
+        </div>
+    </div>
     
     <div id="toast" class="toast">Action</div>
 
     <script>
-        // --- CONFIG ---
-        const GOD_PASSWORD = "1234"; // CHANGE THIS PASSWORD IF YOU WANT
-        
-        // --- DATA ---
-        const DEFAULT_STATE = { 
-            step: 'SETUP', players: [], settings: { min: 1, max: 200, order: 'asc' },
-            startTime: null, finalTime: null, passIndex: 0, viewingNumber: false
-        };
+        const GOD_PASSWORD = "1234";
+        const DEFAULT_STATE = { step: 'SETUP', players: [], settings: { min: 1, max: 200, order: 'asc' }, startTime: null, finalTime: null, passIndex: 0, viewingNumber: false };
         let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
         let timerInterval = null;
         let godMode = false;
-        
         const app = document.getElementById('app');
 
-        // --- HAPTICS & WAKE LOCK ---
-        function pulse(ms = 10) {
-            if (navigator.vibrate) navigator.vibrate(ms);
-        }
-        
-        async function requestWakeLock() {
-            if ('wakeLock' in navigator) {
-                try { await navigator.wakeLock.request('screen'); } catch (err) {}
-            }
-        }
+        function pulse(ms = 10) { if (navigator.vibrate) navigator.vibrate(ms); }
+        async function requestWakeLock() { if ('wakeLock' in navigator) { try { await navigator.wakeLock.request('screen'); } catch (err) {} } }
 
-        // --- SNOW EFFECT ---
         function initSnow() {
-            const canvas = document.getElementById('snowCanvas');
-            const ctx = canvas.getContext('2d');
-            let width = canvas.width = window.innerWidth;
-            let height = canvas.height = window.innerHeight;
+            const canvas = document.getElementById('snowCanvas'); const ctx = canvas.getContext('2d');
+            let width = canvas.width = window.innerWidth; let height = canvas.height = window.innerHeight;
             const snowflakes = [];
-
-            window.addEventListener('resize', () => {
-                width = canvas.width = window.innerWidth;
-                height = canvas.height = window.innerHeight;
-            });
-
-            for (let i = 0; i < 50; i++) {
-                snowflakes.push({
-                    x: Math.random() * width, y: Math.random() * height,
-                    r: Math.random() * 3 + 1, d: Math.random() * 50
-                });
-            }
-
+            window.addEventListener('resize', () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; });
+            for (let i = 0; i < 50; i++) snowflakes.push({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 50 });
             function draw() {
-                ctx.clearRect(0, 0, width, height);
-                ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-                ctx.beginPath();
-                for (let i = 0; i < 50; i++) {
-                    const f = snowflakes[i];
-                    ctx.moveTo(f.x, f.y);
-                    ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
-                }
-                ctx.fill();
-                update();
-                requestAnimationFrame(draw);
+                ctx.clearRect(0, 0, width, height); ctx.fillStyle = "rgba(255, 255, 255, 0.6)"; ctx.beginPath();
+                for (let i = 0; i < 50; i++) { const f = snowflakes[i]; ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true); }
+                ctx.fill(); update(); requestAnimationFrame(draw);
             }
-
-            function update() {
-                for (let i = 0; i < 50; i++) {
-                    const f = snowflakes[i];
-                    f.y += Math.pow(f.d, 2) + 1; // Speed
-                    f.y = f.y > height ? 0 : f.y;
-                    f.x += Math.sin(f.y / 50); // Wiggle
-                }
-            }
+            function update() { for (let i = 0; i < 50; i++) { const f = snowflakes[i]; f.y += Math.pow(f.d, 2) + 1; f.y = f.y > height ? 0 : f.y; f.x += Math.sin(f.y / 50); } }
             draw();
         }
 
-        // --- PERSISTENCE ---
         function loadState() {
             if (new URLSearchParams(window.location.search).has('p')) return; 
             const saved = localStorage.getItem('lineUpState');
-            if (saved) {
-                try { 
-                    state = JSON.parse(saved); 
-                    if((state.step === 'DISTRIBUTE' || state.step === 'VERIFY') && state.startTime) startTimerTicker();
-                } catch(e) {}
-            }
+            if (saved) { try { state = JSON.parse(saved); if((state.step === 'DISTRIBUTE' || state.step === 'VERIFY') && state.startTime) startTimerTicker(); } catch(e) {} }
         }
         function saveState() { if (!new URLSearchParams(window.location.search).has('p')) localStorage.setItem('lineUpState', JSON.stringify(state)); }
+
+        // --- DATA MANAGER ---
+        function exportData() {
+            const data = {
+                presets: localStorage.getItem('lineUpPresets'),
+                history: localStorage.getItem('lineUpHistory'),
+                leaderboard: localStorage.getItem('lineUpLeaderboard'),
+                state: localStorage.getItem('lineUpState')
+            };
+            const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'lineup-backup.json';
+            a.click();
+            showToast("Backup Downloaded");
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.presets) localStorage.setItem('lineUpPresets', data.presets);
+                    if (data.history) localStorage.setItem('lineUpHistory', data.history);
+                    if (data.leaderboard) localStorage.setItem('lineUpLeaderboard', data.leaderboard);
+                    if (data.state) localStorage.setItem('lineUpState', data.state);
+                    showToast("Data Restored!");
+                    setTimeout(() => location.reload(), 1000);
+                } catch(err) {
+                    showToast("Invalid File");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function wipeData() {
+            if(confirm("Are you sure? This deletes ALL history, groups, and settings.")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
 
         // --- PRESETS ---
         function savePreset() {
@@ -295,11 +291,8 @@
         function loadPreset(index) {
             const presets = JSON.parse(localStorage.getItem('lineUpPresets')) || [];
             if(presets[index]) {
-                state.players = JSON.parse(JSON.stringify(presets[index].players)); // Deep copy
-                saveState();
-                closeModal('presetsModal');
-                render();
-                showToast("Group Loaded!");
+                state.players = JSON.parse(JSON.stringify(presets[index].players));
+                saveState(); closeModal('presetsModal'); render(); showToast("Group Loaded!");
             }
         }
         function deletePreset(index) {
@@ -309,20 +302,13 @@
             renderPresetsList();
         }
 
-        // --- HISTORY ---
         function saveHistory(win) {
             const log = JSON.parse(localStorage.getItem('lineUpHistory')) || [];
-            log.unshift({
-                date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
-                players: state.players.length,
-                time: formatTime(state.finalTime),
-                win: win
-            });
+            log.unshift({ date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(), players: state.players.length, time: formatTime(state.finalTime), win: win });
             if(log.length > 20) log.pop();
             localStorage.setItem('lineUpHistory', JSON.stringify(log));
         }
 
-        // --- RENDER HELPERS ---
         function renderPresetsList() {
             const presets = JSON.parse(localStorage.getItem('lineUpPresets')) || [];
             const el = document.getElementById('presetsList');
@@ -334,8 +320,7 @@
                         <button class="btn-primary btn-sm" onclick="loadPreset(${i})">Load</button>
                         <button class="btn-danger btn-sm" onclick="deletePreset(${i})">X</button>
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('');
         }
 
         function renderHistoryList() {
@@ -344,76 +329,34 @@
             if(log.length === 0) { el.innerHTML = "<p>No games played yet.</p>"; return; }
             el.innerHTML = log.map(g => `
                 <div class="item-card" style="margin-bottom:8px; ${g.win ? 'border-color:var(--success)' : ''}">
-                    <div>
-                        <div style="font-size:0.8rem; opacity:0.7">${g.date}</div>
-                        <strong>${g.players} Players</strong>
-                    </div>
-                    <div style="text-align:right;">
-                        <div style="font-weight:bold;">${g.time}</div>
-                        <div>${g.win ? '✅' : '❌'}</div>
-                    </div>
-                </div>
-            `).join('');
+                    <div><div style="font-size:0.8rem; opacity:0.7">${g.date}</div><strong>${g.players} Players</strong></div>
+                    <div style="text-align:right;"><div style="font-weight:bold;">${g.time}</div><div>${g.win ? '✅' : '❌'}</div></div>
+                </div>`).join('');
         }
 
-        function toggleTvMode() {
-            document.body.classList.toggle('tv-mode');
-            pulse();
-        }
-
+        function toggleTvMode() { document.body.classList.toggle('tv-mode'); pulse(); }
         function toggleGodMode() {
-            if(godMode) {
-                godMode = false;
-                render();
-            } else {
-                const pass = prompt("Enter Admin Password:");
-                if(pass === GOD_PASSWORD) {
-                    godMode = true;
-                    showToast("🔓 God Mode Active");
-                    render();
-                } else {
-                    showToast("❌ Wrong Password");
-                }
-            }
+            if(godMode) { godMode = false; render(); } 
+            else { if(prompt("Enter Admin Password:") === GOD_PASSWORD) { godMode = true; showToast("🔓 God Mode Active"); render(); } else { showToast("❌ Wrong Password"); } }
         }
 
-        // --- CORE LOGIC ---
         function calculateMVP(sorted) {
-            const total = state.players.length;
-            if(total < 2) return null;
-            let bestDelta = Infinity;
-            let mvpName = "";
-            
-            // Normalize numbers to 0-1 range to find ideal placement
-            const min = state.settings.min;
-            const max = state.settings.max;
-            
+            const total = state.players.length; if(total < 2) return null;
+            let bestDelta = Infinity; let mvpName = "";
+            const min = state.settings.min; const max = state.settings.max;
             state.players.forEach((p, actualIndex) => {
-                // Where they SHOULD be mathematically
-                const idealPercent = (p.number - min) / (max - min); 
-                const idealIndex = idealPercent * (total - 1);
-                
-                // Difference between where they stood and mathematical perfection
+                const idealPercent = (p.number - min) / (max - min); const idealIndex = idealPercent * (total - 1);
                 const delta = Math.abs(actualIndex - idealIndex);
-                
-                if(delta < bestDelta) {
-                    bestDelta = delta;
-                    mvpName = p.name;
-                }
+                if(delta < bestDelta) { bestDelta = delta; mvpName = p.name; }
             });
             return mvpName;
         }
 
-        // --- VIEWS ---
-        function render() {
-            if (document.startViewTransition) document.startViewTransition(renderContent);
-            else renderContent();
-        }
+        function render() { if (document.startViewTransition) document.startViewTransition(renderContent); else renderContent(); }
 
         function renderContent() {
             const params = new URLSearchParams(window.location.search);
             if (params.get('p')) return renderPlayerView(params.get('p'));
-            
             if (state.step === 'SETUP') renderSetup();
             else if (state.step === 'DISTRIBUTE') renderDistribute();
             else if (state.step === 'PASS_PLAY') renderPassPlay();
@@ -443,6 +386,7 @@
                     <div style="display:flex; gap:5px;">
                         <button class="btn-secondary btn-sm" onclick="openModal('presetsModal')">💾 Groups</button>
                         <button class="btn-secondary btn-sm" onclick="openModal('historyModal')">📜 History</button>
+                        <button class="btn-secondary btn-sm" onclick="openModal('dataModal')">⚙️ Data</button>
                         <button class="btn-secondary btn-sm" onclick="savePreset()">+Save</button>
                     </div>
                 </div>
@@ -537,17 +481,13 @@
                         <div class="item-card" style="transition: transform 0.3s ease;">
                             <div style="display:flex; align-items:center;">
                                 <div class="rank-badge">${i + 1}</div>
-                                <div>
-                                    <span style="font-weight:700;">${p.name}</span>
-                                    ${godMode ? `<span style="margin-left:8px; color:var(--primary); font-weight:900;">(${p.number})</span>` : ''}
-                                </div>
+                                <div><span style="font-weight:700;">${p.name}</span>${godMode ? `<span style="margin-left:8px; color:var(--primary); font-weight:900;">(${p.number})</span>` : ''}</div>
                             </div>
                             <div style="display:flex; gap:8px;">
                                 <button class="btn-secondary btn-icon" onclick="movePlayer(${i}, -1)" ${i === 0 ? 'disabled' : ''}>▲</button>
                                 <button class="btn-secondary btn-icon" onclick="movePlayer(${i}, 1)" ${i === state.players.length - 1 ? 'disabled' : ''}>▼</button>
                             </div>
-                        </div>
-                    `).join('')}
+                        </div>`).join('')}
                 </div>
                 <button class="btn-primary" style="background:var(--success);" onclick="checkOrder()">Reveal Results</button>
                 <button class="btn-secondary" style="margin-top:10px;" onclick="setState('DISTRIBUTE')">Back</button>
@@ -558,26 +498,15 @@
         function renderResults() {
             clearInterval(timerInterval);
             const sorted = [...state.players].sort((a, b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
-            let allCorrect = true;
-            const mvp = calculateMVP(sorted);
-
+            let allCorrect = true; const mvp = calculateMVP(sorted);
             const listHtml = state.players.map((p, i) => {
-                const isCorrect = p.name === sorted[i].name;
-                if (!isCorrect) allCorrect = false;
-                const realRank = sorted.findIndex(x => x.name === p.name) + 1;
-                const isMvp = p.name === mvp;
+                const isCorrect = p.name === sorted[i].name; if (!isCorrect) allCorrect = false;
+                const realRank = sorted.findIndex(x => x.name === p.name) + 1; const isMvp = p.name === mvp;
                 return `
                     <div class="item-card ${isCorrect ? 'correct' : 'wrong'} ${isMvp ? 'gold' : ''}" style="animation-delay: ${i * 0.1}s">
                         <div>
-                            <div style="display:flex; align-items:center;">
-                                <div class="rank-badge" style="background:${isCorrect ? 'var(--success)' : 'var(--danger)'}; color:white;">${i+1}</div>
-                                <strong>${p.name}</strong>
-                                ${isMvp ? '<span style="margin-left:8px; font-size:0.8rem; background:var(--gold); color:white; padding:2px 6px; border-radius:4px;">⭐ MVP</span>' : ''}
-                            </div>
-                            <div style="font-size:0.85rem; margin-top:6px; margin-left:40px; opacity:0.8;">
-                                Number: <strong>${p.number}</strong>
-                                ${!isCorrect ? `(Should be #${realRank})` : ''}
-                            </div>
+                            <div style="display:flex; align-items:center;"><div class="rank-badge" style="background:${isCorrect ? 'var(--success)' : 'var(--danger)'}; color:white;">${i+1}</div><strong>${p.name}</strong>${isMvp ? '<span style="margin-left:8px; font-size:0.8rem; background:var(--gold); color:white; padding:2px 6px; border-radius:4px;">⭐ MVP</span>' : ''}</div>
+                            <div style="font-size:0.85rem; margin-top:6px; margin-left:40px; opacity:0.8;">Number: <strong>${p.number}</strong>${!isCorrect ? `(Should be #${realRank})` : ''}</div>
                         </div>
                         <div style="font-size:1.5rem;">${isCorrect ? '✅' : '❌'}</div>
                     </div>`;
@@ -586,16 +515,9 @@
             let timeMsg = "";
             if(allCorrect) {
                 const duration = Math.floor((Date.now() - state.startTime) / 1000);
-                if(!state.finalTime) {
-                    state.finalTime = duration; saveState(); saveHistory(true);
-                    setTimeout(() => confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } }), 200);
-                }
+                if(!state.finalTime) { state.finalTime = duration; saveState(); saveHistory(true); setTimeout(() => confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } }), 200); }
                 timeMsg = `<div class="timer-badge" style="background:var(--gold); color:white; animation: popIn 0.5s;">Time: ${formatTime(state.finalTime)}</div>`;
-            } else if (!state.finalTime) {
-                // Save loss once
-                 state.finalTime = Math.floor((Date.now() - state.startTime) / 1000);
-                 saveHistory(false);
-            }
+            } else if (!state.finalTime) { state.finalTime = Math.floor((Date.now() - state.startTime) / 1000); saveHistory(false); }
 
             app.innerHTML = `
                 <div style="text-align:center;">${timeMsg}</div>
@@ -609,87 +531,38 @@
         function renderPlayerView(encodedData) {
             const data = decodeData(encodedData);
             if (!data) return app.innerHTML = `<h2>Error</h2><p>Broken link.</p>`;
-            app.innerHTML = `
-                <div style="text-align:center;"><h2>Hi, ${data.n}!</h2><p>Tap & hold.</p></div>
-                <div class="secret-container" id="secretBox"><div class="secret-overlay">HOLD</div><div class="big-number secret-blur">${data.v}</div></div>
-                <div style="background:var(--bg-item); padding:20px; border-radius:16px; text-align:left; font-size:0.95rem;">
-                    Range: <strong>${data.min} - ${data.max}</strong>
-                </div>`;
+            app.innerHTML = `<div style="text-align:center;"><h2>Hi, ${data.n}!</h2><p>Tap & hold.</p></div><div class="secret-container" id="secretBox"><div class="secret-overlay">HOLD</div><div class="big-number secret-blur">${data.v}</div></div><div style="background:var(--bg-item); padding:20px; border-radius:16px; text-align:left; font-size:0.95rem;">Range: <strong>${data.min} - ${data.max}</strong></div>`;
             bindSecretBox();
         }
 
-        // --- CONTROLLER LOGIC ---
-        function addPlayer() {
-            const input = document.getElementById('nameInput');
-            const name = input.value.trim();
-            if (!name) return;
-            state.players.push({ name, number: 0 });
-            input.value = ''; setState('SETUP');
-            setTimeout(() => document.getElementById('nameInput').focus(), 50);
-            pulse();
-        }
+        function addPlayer() { const input = document.getElementById('nameInput'); const name = input.value.trim(); if (!name) return; state.players.push({ name, number: 0 }); input.value = ''; setState('SETUP'); setTimeout(() => document.getElementById('nameInput').focus(), 50); pulse(); }
         function removePlayer(i) { state.players.splice(i, 1); setState('SETUP'); pulse(); }
-        
         function generateNumbers() {
             const min = parseInt(document.getElementById('minInput') ? document.getElementById('minInput').value : state.settings.min);
             const max = parseInt(document.getElementById('maxInput') ? document.getElementById('maxInput').value : state.settings.max);
             if (min >= max) { showToast("Min must be < Max!"); return false; }
             state.settings.min = min; state.settings.max = max; 
             if(document.getElementById('orderInput')) state.settings.order = document.getElementById('orderInput').value;
-            const used = new Set();
-            state.players.forEach(p => {
-                let num; do { num = Math.floor(Math.random() * (max - min + 1)) + min; } while (used.has(num));
-                used.add(num); p.number = num;
-            });
+            const used = new Set(); state.players.forEach(p => { let num; do { num = Math.floor(Math.random() * (max - min + 1)) + min; } while (used.has(num)); used.add(num); p.number = num; });
             return true;
         }
 
         function startGame() { if(generateNumbers()) { state.startTime = Date.now(); state.finalTime = null; setState('DISTRIBUTE'); pulse(); requestWakeLock(); } }
         function startPassGame() { if(generateNumbers()) { state.passIndex = 0; state.viewingNumber = false; state.startTime = null; setState('PASS_PLAY'); pulse(); requestWakeLock(); } }
-        function nextPassPlayer() {
-            if (state.passIndex < state.players.length - 1) { state.passIndex++; state.viewingNumber = false; saveState(); render(); } 
-            else { state.startTime = Date.now(); setState('VERIFY'); }
-            pulse();
-        }
+        function nextPassPlayer() { if (state.passIndex < state.players.length - 1) { state.passIndex++; state.viewingNumber = false; saveState(); render(); } else { state.startTime = Date.now(); setState('VERIFY'); } pulse(); }
         function restartSamePlayers() { state.startTime = null; state.finalTime = null; startGame(); }
-        
-        function bindSecretBox() {
-            const box = document.getElementById('secretBox');
-            if(!box) return;
-            const reveal = (e) => { if(e.cancelable) e.preventDefault(); box.classList.add('revealed'); pulse(5); };
-            const hide = (e) => { if(e.cancelable) e.preventDefault(); box.classList.remove('revealed'); };
-            ['touchstart','mousedown'].forEach(e => box.addEventListener(e, reveal, {passive:false}));
-            ['touchend','touchcancel','mouseup','mouseleave'].forEach(e => box.addEventListener(e, hide));
-        }
-
+        function bindSecretBox() { const box = document.getElementById('secretBox'); if(!box) return; const reveal = (e) => { if(e.cancelable) e.preventDefault(); box.classList.add('revealed'); pulse(5); }; const hide = (e) => { if(e.cancelable) e.preventDefault(); box.classList.remove('revealed'); }; ['touchstart','mousedown'].forEach(e => box.addEventListener(e, reveal, {passive:false})); ['touchend','touchcancel','mouseup','mouseleave'].forEach(e => box.addEventListener(e, hide)); }
         function copyLink(url) { navigator.clipboard.writeText(url); showToast("Link copied!"); pulse(); }
-        async function shareLink(url, name) {
-            pulse();
-            if (navigator.share) { try { await navigator.share({ title: 'Line Up!', text: `Number for ${name}`, url: url }); } catch (err) {} } else { copyLink(url); }
-        }
-        function showQr(url, name) {
-            pulse(); openModal('qrModal');
-            document.getElementById('qrName').textContent = name;
-            const c = document.getElementById('qrDisplay'); c.innerHTML = '';
-            new QRCode(c, { text: url, width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
-        }
-        
-        function movePlayer(index, dir) {
-            const target = index + dir;
-            if (target < 0 || target >= state.players.length) return;
-            [state.players[index], state.players[target]] = [state.players[target], state.players[index]];
-            renderVerify(); saveState(); pulse();
-        }
-        
+        async function shareLink(url, name) { pulse(); if (navigator.share) { try { await navigator.share({ title: 'Line Up!', text: `Number for ${name}`, url: url }); } catch (err) {} } else { copyLink(url); } }
+        function showQr(url, name) { pulse(); openModal('qrModal'); document.getElementById('qrName').textContent = name; const c = document.getElementById('qrDisplay'); c.innerHTML = ''; new QRCode(c, { text: url, width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H }); }
+        function movePlayer(index, dir) { const target = index + dir; if (target < 0 || target >= state.players.length) return; [state.players[index], state.players[target]] = [state.players[target], state.players[index]]; renderVerify(); saveState(); pulse(); }
         function openModal(id) { document.getElementById(id).classList.add('active'); if(id==='presetsModal') renderPresetsList(); if(id==='historyModal') renderHistoryList(); pulse(); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); pulse(); }
         function checkOrder() { setState('RESULTS'); pulse(50); }
         function setState(s) { state.step = s; saveState(); render(); }
         function formatTime(s) { return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`; }
 
-        initSnow();
-        loadState();
-        render();
+        initSnow(); loadState(); render();
     </script>
 </body>
 </html>
