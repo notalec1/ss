@@ -93,6 +93,9 @@
         .divider { height: 1px; background: var(--item-border); margin: 20px 0; }
         .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text-main); color: var(--item-bg); padding: 12px 24px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 20px rgba(0,0,0,0.2); opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 1000; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        
+        /* Top Right Button */
+        .top-corner-btn { position: absolute; top: 20px; right: 20px; width: auto; padding: 8px 12px; font-size: 0.8rem; z-index: 10; }
     </style>
 </head>
 <body>
@@ -118,7 +121,9 @@
             players: [], 
             settings: { min: 1, max: 200, order: 'asc' },
             startTime: null,
-            finalTime: null
+            finalTime: null,
+            passIndex: 0,
+            viewingNumber: false
         };
         let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
         let timerInterval = null;
@@ -132,7 +137,6 @@
             if (saved) {
                 try { 
                     state = JSON.parse(saved); 
-                    // If returning to a running game, restart the ticker
                     if((state.step === 'DISTRIBUTE' || state.step === 'VERIFY') && state.startTime) {
                         startTimerTicker();
                     }
@@ -162,14 +166,8 @@
         function saveScore(timeInSec) {
             const history = getLeaderboard();
             const date = new Date().toLocaleDateString();
-            history.push({ 
-                date, 
-                players: state.players.length, 
-                time: timeInSec 
-            });
-            // Keep best times (sort by time asc)
+            history.push({ date, players: state.players.length, time: timeInSec });
             history.sort((a, b) => a.time - b.time);
-            // Cap at 20 records
             if(history.length > 20) history.pop();
             localStorage.setItem('lineUpLeaderboard', JSON.stringify(history));
         }
@@ -177,9 +175,8 @@
         // --- TIMER LOGIC ---
         function startTimerTicker() {
             if(timerInterval) clearInterval(timerInterval);
-            const el = document.getElementById('timerDisplay');
             timerInterval = setInterval(() => {
-                if(document.getElementById('timerDisplay')) {
+                if(document.getElementById('timerDisplay') && state.startTime) {
                     const diff = Math.floor((Date.now() - state.startTime) / 1000);
                     document.getElementById('timerDisplay').innerText = `⏱️ ${formatTime(diff)}`;
                 }
@@ -205,6 +202,7 @@
 
         function renderSetup() {
             app.innerHTML = `
+                <button class="btn-secondary top-corner-btn" onclick="startPassGame()">📱 Pass Mode</button>
                 <h1>🔢 Line Up!</h1>
                 <p>The party game of hidden numbers.</p>
                 <div class="row">
@@ -239,13 +237,13 @@
                         </div>
                     `).join('')}
                 </div>
-                <button class="btn-primary" onclick="startGame()" ${state.players.length < 2 ? 'disabled' : ''}>${state.players.length < 2 ? 'Add Players to Start' : 'Generate & Start Game'}</button>
+                <button class="btn-primary" onclick="startGame()" ${state.players.length < 2 ? 'disabled' : ''}>${state.players.length < 2 ? 'Add Players to Start' : 'Generate Links'}</button>
             `;
         }
 
         function renderDistribute() {
             const baseUrl = window.location.href.split('?')[0];
-            const currentSeconds = Math.floor((Date.now() - state.startTime) / 1000);
+            const currentSeconds = state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0;
             
             app.innerHTML = `
                 <div style="text-align:center;">
@@ -281,7 +279,50 @@
             startTimerTicker();
         }
 
+        function renderPassPlay() {
+            const p = state.players[state.passIndex];
+            const orderText = state.settings.order === 'asc' ? 'Smallest to Biggest' : 'Biggest to Smallest';
+            const orderArrow = state.settings.order === 'asc' ? '↗️' : '↘️';
+
+            if (!state.viewingNumber) {
+                // Hand-off screen
+                app.innerHTML = `
+                    <div style="text-align:center; margin-top:20px;">
+                        <h1 style="font-size:4rem; margin-bottom:20px;">📱</h1>
+                        <h2>Pass device to<br><span style="color:var(--primary); font-size:2rem;">${p.name}</span></h2>
+                        <div class="divider"></div>
+                        <button class="btn-primary" onclick="state.viewingNumber=true; saveState(); renderPassPlay()">I am ${p.name}</button>
+                    </div>
+                `;
+            } else {
+                // Reveal screen
+                app.innerHTML = `
+                    <div style="text-align:center;">
+                        <h2>Hi, ${p.name}!</h2>
+                        <p>Tap & hold below.</p>
+                    </div>
+                    <div class="secret-container" id="secretBox">
+                        <div class="secret-overlay">HOLD TO REVEAL</div>
+                        <div class="big-number secret-blur">${p.number}</div>
+                    </div>
+                    <div style="background:var(--item-bg); padding:15px; border-radius:12px; text-align:left; border:1px solid var(--item-border); font-size:0.9rem; margin-bottom:20px;">
+                        <ul style="padding-left:20px; margin:0; line-height:1.5;">
+                            <li>Range: <strong>${state.settings.min} - ${state.settings.max}</strong></li>
+                            <li>Order: <strong>${orderText} ${orderArrow}</strong></li>
+                        </ul>
+                    </div>
+                    <button class="btn-primary" onclick="nextPassPlayer()">
+                        ${state.passIndex < state.players.length - 1 ? 'Next Player' : 'Go to Line Up!'}
+                    </button>
+                `;
+                bindSecretBox();
+            }
+        }
+
         function renderVerify() {
+            // Ensure timer starts if coming from Pass Mode
+            if (!state.startTime) state.startTime = Date.now();
+            
             const orderText = state.settings.order === 'asc' ? 'Smallest to Biggest' : 'Biggest to Smallest';
             const currentSeconds = Math.floor((Date.now() - state.startTime) / 1000);
             
@@ -339,9 +380,7 @@
 
             let timeMsg = "";
             if(allCorrect) {
-                // Save Score Logic
                 const duration = Math.floor((Date.now() - state.startTime) / 1000);
-                // Only save if it's a new run (prevent dupes on refresh)
                 if(!state.finalTime) {
                     saveScore(duration);
                     state.finalTime = duration; 
@@ -364,8 +403,6 @@
         
         function renderLeaderboard() {
             const scores = getLeaderboard();
-            
-            // Filter scores by current player count to make it relevant
             const playerCount = state.players.length || 0;
             const relevantScores = scores.filter(s => s.players === playerCount);
             
@@ -417,15 +454,7 @@
                     </ul>
                 </div>
             `;
-            const box = document.getElementById('secretBox');
-            const reveal = (e) => { if(e.cancelable) e.preventDefault(); box.classList.add('revealed'); };
-            const hide = (e) => { if(e.cancelable) e.preventDefault(); box.classList.remove('revealed'); };
-            box.addEventListener('touchstart', reveal, { passive: false });
-            box.addEventListener('touchend', hide);
-            box.addEventListener('touchcancel', hide);
-            box.addEventListener('mousedown', reveal);
-            box.addEventListener('mouseup', hide);
-            box.addEventListener('mouseleave', hide);
+            bindSecretBox();
         }
 
         // --- ACTIONS ---
@@ -442,11 +471,13 @@
         }
         function removePlayer(i) { state.players.splice(i, 1); renderSetup(); saveState(); }
         
-        function startGame() {
-            const min = parseInt(document.getElementById('minInput').value);
-            const max = parseInt(document.getElementById('maxInput').value);
-            if (min >= max) return showToast("Min must be < Max!");
-            state.settings = { min, max, order: document.getElementById('orderInput').value };
+        function generateNumbers() {
+            const min = parseInt(document.getElementById('minInput') ? document.getElementById('minInput').value : state.settings.min);
+            const max = parseInt(document.getElementById('maxInput') ? document.getElementById('maxInput').value : state.settings.max);
+            
+            if (min >= max) { showToast("Min must be < Max!"); return false; }
+            state.settings.min = min; state.settings.max = max; 
+            if(document.getElementById('orderInput')) state.settings.order = document.getElementById('orderInput').value;
             
             const used = new Set();
             state.players.forEach(p => {
@@ -454,16 +485,53 @@
                 do { num = Math.floor(Math.random() * (max - min + 1)) + min; attempts++; } while (used.has(num) && attempts < 1000);
                 used.add(num); p.number = num;
             });
-            
+            return true;
+        }
+
+        function startGame() {
+            if(!generateNumbers()) return;
             state.startTime = Date.now();
             state.finalTime = null;
             setState('DISTRIBUTE');
         }
+
+        function startPassGame() {
+            if(state.players.length < 2) return showToast("Add players first!");
+            if(!generateNumbers()) return;
+            state.passIndex = 0;
+            state.viewingNumber = false;
+            state.startTime = null; // Timer starts after passing
+            setState('PASS_PLAY');
+        }
+
+        function nextPassPlayer() {
+            if (state.passIndex < state.players.length - 1) {
+                state.passIndex++;
+                state.viewingNumber = false;
+                saveState();
+                renderPassPlay();
+            } else {
+                state.startTime = Date.now(); // Start Timer NOW
+                setState('VERIFY');
+            }
+        }
         
         function restartSamePlayers() {
-            state.startTime = null;
-            state.finalTime = null;
-            startGame(); // Re-rolls numbers and starts immediately
+            state.startTime = null; state.finalTime = null;
+            startGame(); 
+        }
+
+        function bindSecretBox() {
+            const box = document.getElementById('secretBox');
+            if(!box) return;
+            const reveal = (e) => { if(e.cancelable) e.preventDefault(); box.classList.add('revealed'); };
+            const hide = (e) => { if(e.cancelable) e.preventDefault(); box.classList.remove('revealed'); };
+            box.addEventListener('touchstart', reveal, { passive: false });
+            box.addEventListener('touchend', hide);
+            box.addEventListener('touchcancel', hide);
+            box.addEventListener('mousedown', reveal);
+            box.addEventListener('mouseup', hide);
+            box.addEventListener('mouseleave', hide);
         }
 
         function copyLink(url) { navigator.clipboard.writeText(url); showToast("Link copied!"); }
@@ -496,12 +564,12 @@
             if (params.get('p')) return renderPlayerView(params.get('p'));
             if (state.step === 'SETUP') renderSetup();
             else if (state.step === 'DISTRIBUTE') renderDistribute();
+            else if (state.step === 'PASS_PLAY') renderPassPlay();
             else if (state.step === 'VERIFY') renderVerify();
             else if (state.step === 'RESULTS') renderResults();
             else if (state.step === 'LEADERBOARD') renderLeaderboard();
         }
 
-        // Init
         loadState();
         render();
     </script>
