@@ -554,25 +554,33 @@ body.is-tv-mode .timer-badge {
 
 /* =========================================
    12. MODALS
+/* =========================================
+   12. MODALS
    ========================================= */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    z-index: 100;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.modal-content { 
+    background: var(--bg-card); 
+    padding: 40px;            
+    border-radius: 24px; 
+    text-align: center; 
     
-    /* Hidden by default */
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.3s;
+    width: 90%;
+    max-width: 600px;         /* The width you just changed */
+    
+    /* --- NEW CHANGES START HERE --- */
+    min-height: 400px;        /* Forces the box to be at least 400px tall */
+    display: flex;            /* These 3 lines center the content vertically */
+    flex-direction: column;   
+    justify-content: center;  
+    
+    font-size: 1.3rem;        /* Increases the text size (Default is usually 1rem) */
+    /* --- NEW CHANGES END HERE --- */
+
+    transform: scale(1.4); 
+    transition: transform 0.8s; 
+    border: 1px solid var(--border); 
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2); 
+    max-height: 85vh;         /* Increased slightly so it can get really tall if needed */
+    overflow-y: auto; 
 }
 
 .modal-overlay.active {
