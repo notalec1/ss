@@ -2,11 +2,26 @@
 const GOD_PASSWORD = "line1up";
 const AUTO_NAMES = ["Alec", "Alain", "Nada", "Hoda", "Fadi", "Noa", "Gio", "Neo", "Nounou", "Assaad", "Chris", "Eliott"];
 
-// !!! UPDATE THIS LIST WITH YOUR FILES, TITLES, AND ARTISTS !!!
+// YOUR CUSTOM PLAYLIST
 const MUSIC_TRACKS = [
-    { file: "chill_vibes.mp3", title: "Chill Vibes", artist: "LoFi Beats" },
-    { file: "party_mix.mp3",   title: "Party Anthem", artist: "The DJ" },
-    { file: "suspense.mp3",    title: "Suspense",     artist: "Movie Scores" }
+    { file: "Metallica_ Nothing Else Matters (Official Music Video)(MP3_160K).mp3", title: "Nothing Else Matters", artist: "Metallica" },
+    { file: "Smells like teen spirit - Nirvana.mp3", title: "Smells Like Teen Spirit", artist: "Nirvana" },
+    { file: "rem-losing-my-religion.mp3", title: "Losing My Religion", artist: "R.E.M." },
+    { file: "No One Like You ~ Scorpions.mp3", title: "No One Like You", artist: "Scorpions" },
+    { file: "Supertramp - Breakfast In America.mp3", title: "Breakfast In America", artist: "Supertramp" },
+    { file: "Abba - Chiquitita (Official Music Video).mp3", title: "Chiquitita", artist: "ABBA" },
+    { file: "Guns N Roses - Sweet Child o Mine.mp3", title: "Sweet Child 'O Mine", artist: "Guns 'N' Roses" },
+    { file: "Scorpion_-_Always_Somewhere_(mp3.pm).mp3", title: "Always Somewhere", artist: "Scorpions" },
+    { file: "01071744.mp3", title: "Dream On", artist: "Aerosmith" },
+    { file: "y2mate.com - Led Zeppelin Stairway To Heaven Official Audio.mp3", title: "Stairway to Heaven", artist: "Led Zeppelin" },
+    { file: "ACDC - Thunderstruck.mp3", title: "Thunderstruck", artist: "AC/DC" },
+    { file: "ACDC - Highway to Hell.mp3", title: "Highway to Hell", artist: "AC/DC" },
+    { file: "Sailor.mp3", title: "Sailor", artist: "Chris De Burgh" },
+    { file: "11 Money For Nothing.mp3", title: "Money For Nothing", artist: "Dire Straits" },
+    { file: "01 Sultans Of Swings.mp3", title: "Sultans of Swing", artist: "Dire Straits" },
+    { file: "Ethereal Connection - Tame Impala.mp3", title: "Ethereal Connection", artist: "Tame Impala" },
+    { file: "End Of Summer - Tame Impala.mp3", title: "End of Summer", artist: "Tame Impala" },
+    { file: "Dracula - Tame Impala.mp3", title: "Dracula", artist: "Tame Impala" }
 ];
 
 const DEFAULT_STATE = { 
@@ -106,7 +121,7 @@ function playMusic(filename) {
         openMusicModal(); // Re-render to update icons
     }).catch(e => {
         console.error(e);
-        showToast("Error: Check filename in script.js");
+        showToast("Error: Check filename");
     });
 }
 
@@ -226,7 +241,11 @@ function importData(event) {
             if (data.state) localStorage.setItem('lineUpState', data.state);
             if (data.leaderboard) localStorage.setItem('lineUpLeaderboard', data.leaderboard);
             showToast("Data Restored!");
-            setTimeout(() => location.reload(), 1000);
+            
+            // RELOAD REPLACEMENT: Manually reload state without page refresh
+            loadState();
+            render();
+            closeModal('dataModal');
         } catch(err) { showToast("Invalid File"); }
     };
     reader.readAsText(file);
@@ -234,7 +253,13 @@ function importData(event) {
 
 function wipeData() {
     if(confirm("Are you sure? This deletes ALL history, groups, and settings.")) {
-        localStorage.clear(); location.reload();
+        localStorage.clear(); 
+        
+        // RELOAD REPLACEMENT: Reset state manually
+        state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        render();
+        closeModal('dataModal');
+        showToast("Factory Reset Complete");
     }
 }
 
@@ -786,10 +811,14 @@ function renderRoomView(encodedData) {
     `;
 }
 
+// RELOAD REPLACEMENT: Use History API instead of reload
 function claimPlayer(name, val, min, max, order) {
     const payload = { n: name, v: val, min: min, max: max, o: order };
     const encoded = btoa(JSON.stringify(payload));
-    window.location.search = `?p=${encoded}`;
+    
+    const newUrl = `${window.location.pathname}?p=${encoded}`;
+    window.history.pushState({path: newUrl}, '', newUrl);
+    render();
 }
 
 // --- INTERACTION ---
