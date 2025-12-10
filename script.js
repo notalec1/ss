@@ -1,6 +1,14 @@
 // --- CONFIG & STATE ---
 const GOD_PASSWORD = "line1up";
 const AUTO_NAMES = ["Alec", "Alain", "Nada", "Hoda", "Fadi", "Noa", "Gio", "Neo", "Nounou", "Assaad", "Chris", "Eliott"];
+
+// !!! UPDATE THIS LIST WITH YOUR EXACT MP3 FILENAMES !!!
+const MUSIC_TRACKS = [
+    "chill_vibes.mp3",
+    "party_mix.mp3",
+    "suspense.mp3"
+];
+
 const DEFAULT_STATE = { 
     step: 'SETUP', 
     players: [], 
@@ -42,6 +50,57 @@ function resetViewMode() {
     document.body.classList.remove('is-tv-mode');
     render();
 }
+
+// --- MUSIC SYSTEM ---
+let currentTrack = null;
+
+function openMusicModal() {
+    const list = document.getElementById('musicList');
+    list.innerHTML = MUSIC_TRACKS.map(track => {
+        const isPlaying = currentTrack === track;
+        return `
+        <div class="item-card" style="margin-bottom:8px; ${isPlaying ? 'border-color:var(--primary); background:rgba(99, 102, 241, 0.1);' : ''}" onclick="playMusic('${track}')">
+            <div style="display:flex; align-items:center; width:100%; cursor:pointer;">
+                <span style="font-size:1.2rem; margin-right:10px;">${isPlaying ? '▶️' : '🎵'}</span>
+                <span style="font-weight:700;">${track}</span>
+            </div>
+        </div>`;
+    }).join('');
+    
+    if(MUSIC_TRACKS.length === 0) {
+        list.innerHTML = `<p style="opacity:0.6; font-size:0.9rem;">No music found.<br>Add files to "music" folder and update script.js</p>`;
+    }
+    
+    openModal('musicModal');
+}
+
+function playMusic(filename) {
+    const audio = document.getElementById('bgAudio');
+    if (currentTrack === filename && !audio.paused) {
+        // If clicking same track, do nothing or pause? Let's keep playing.
+        return; 
+    }
+    
+    audio.src = `music/${filename}`;
+    audio.volume = 0.5;
+    audio.play().then(() => {
+        currentTrack = filename;
+        showToast("Now Playing: " + filename);
+        openMusicModal(); // Re-render to update icons
+    }).catch(e => {
+        console.error(e);
+        showToast("Error playing file");
+    });
+}
+
+function stopMusic() {
+    const audio = document.getElementById('bgAudio');
+    audio.pause();
+    audio.currentTime = 0;
+    currentTrack = null;
+    openMusicModal(); // Re-render
+}
+
 
 // --- SNOW FX ---
 function initSnow() {
@@ -405,6 +464,7 @@ function renderSetup() {
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <label class="label" style="margin:0;">Players (${state.players.length})</label>
             <div style="display:flex; gap:5px;">
+                <button class="btn-secondary btn-sm" onclick="openMusicModal()">🎵</button>
                 <button class="btn-secondary btn-sm" onclick="openModal('presetsModal')">💾</button>
                 <button class="btn-secondary btn-sm" onclick="openModal('leaderboardModal')">🏆</button>
                 <button class="btn-secondary btn-sm" onclick="openModal('dataModal')">⚙️</button>
