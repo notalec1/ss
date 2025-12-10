@@ -54,6 +54,13 @@ function resetViewMode() {
 // --- MUSIC SYSTEM ---
 let currentTrackFile = null;
 
+// Helper to generate the floating button HTML
+function getMusicBtn() {
+    return `<button class="btn-secondary btn-icon" 
+        style="position:absolute; top:15px; right:15px; z-index:50; width:44px; height:44px; border-radius:50%; box-shadow:0 4px 12px rgba(0,0,0,0.15);" 
+        onclick="openMusicModal()" title="Music Player">🎵</button>`;
+}
+
 function openMusicModal() {
     const list = document.getElementById('musicList');
     
@@ -440,6 +447,7 @@ function getLeaderboardHtml() {
 
 function renderModeSelection() {
     app.innerHTML = `
+        ${getMusicBtn()}
         <h1>Welcome</h1>
         <p>Choose your display mode</p>
         <div class="row" style="margin-top:20px;">
@@ -475,7 +483,6 @@ function renderSetup() {
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <label class="label" style="margin:0;">Players (${state.players.length})</label>
             <div style="display:flex; gap:5px;">
-                <button class="btn-secondary btn-sm" onclick="openModal('musicModal')">🎵</button>
                 <button class="btn-secondary btn-sm" onclick="openModal('presetsModal')">💾</button>
                 <button class="btn-secondary btn-sm" onclick="openModal('leaderboardModal')">🏆</button>
                 <button class="btn-secondary btn-sm" onclick="openModal('dataModal')">⚙️</button>
@@ -516,6 +523,7 @@ function renderSetup() {
 
     app.innerHTML = `
         ${switchBtn}
+        ${getMusicBtn()}
         <div class="split-container">
             <div class="left-panel">${leftContent}</div>
             ${viewMode === 'tv' ? `
@@ -571,7 +579,7 @@ function renderDistribute() {
         </div>`;
 
     if (viewMode === 'tv') {
-        app.innerHTML = `${switchBtn}<div class="split-container">
+        app.innerHTML = `${switchBtn}${getMusicBtn()}<div class="split-container">
             <div class="left-panel">${controlsHtml}</div>
             <div class="right-panel">
                 <div class="game-status-panel"><h3>Links</h3>${listHtml}</div>
@@ -579,7 +587,7 @@ function renderDistribute() {
             </div>
         </div>`;
     } else {
-        app.innerHTML = `${switchBtn}${controlsHtml}${listHtml}`;
+        app.innerHTML = `${switchBtn}${getMusicBtn()}${controlsHtml}${listHtml}`;
     }
     startTimerTicker();
 }
@@ -592,6 +600,7 @@ function renderPassPlay() {
     if (!state.viewingNumber) {
         app.innerHTML = `
             ${switchBtn}
+            ${getMusicBtn()}
             <div style="text-align:center; margin-top:20px;">
                 <h1 style="font-size:4rem; margin-bottom:20px;">📱</h1>
                 <h2>Pass to<br><span style="color:var(--primary); font-size:2.5rem;">${p.name}</span></h2>
@@ -601,6 +610,7 @@ function renderPassPlay() {
     } else {
         app.innerHTML = `
             ${switchBtn}
+            ${getMusicBtn()}
             <div style="text-align:center;"><h2>Hi, ${p.name}!</h2><p>Tap & hold to reveal.</p></div>
             <div class="secret-container" id="secretBox"><div class="secret-overlay">HOLD</div><div class="big-number secret-blur">${p.number}</div></div>
             <div style="background:var(--bg-item); padding:15px; border-radius:16px; text-align:left; font-size:0.95rem; margin-bottom:20px;">
@@ -652,7 +662,7 @@ function renderVerify() {
     `;
 
     if (viewMode === 'tv') {
-        app.innerHTML = `${switchBtn}<div class="split-container">
+        app.innerHTML = `${switchBtn}${getMusicBtn()}<div class="split-container">
             <div class="left-panel">${controlsHtml}</div>
             <div class="right-panel">
                 <div class="game-status-panel"><h3>Current Order</h3>${listHtml}</div>
@@ -660,7 +670,7 @@ function renderVerify() {
             </div>
         </div>`;
     } else {
-        app.innerHTML = `${switchBtn}${controlsHtml}${listHtml}`;
+        app.innerHTML = `${switchBtn}${getMusicBtn()}${controlsHtml}${listHtml}`;
     }
     startTimerTicker();
 }
@@ -728,6 +738,7 @@ function renderResults() {
     if(viewMode === 'tv') {
         app.innerHTML = `
             ${switchBtn}
+            ${getMusicBtn()}
             <div class="split-container">
                 <div class="left-panel" style="justify-content:center;">${headerHtml}<div style="margin-top:30px">${buttonsHtml}</div></div>
                 <div class="right-panel">
@@ -736,7 +747,7 @@ function renderResults() {
                 </div>
             </div>`;
     } else {
-        app.innerHTML = `${switchBtn}${headerHtml}${listHtml}${leaderboardHtml}${buttonsHtml}`;
+        app.innerHTML = `${switchBtn}${getMusicBtn()}${headerHtml}${listHtml}${leaderboardHtml}${buttonsHtml}`;
     }
 }
 
@@ -746,6 +757,7 @@ function renderPlayerView(encodedData) {
     try { data = JSON.parse(atob(encodedData)); } catch(e) {}
     if (!data) return app.innerHTML = `<h2>Error</h2><p>Broken link.</p>`;
     app.innerHTML = `
+        ${getMusicBtn()}
         <div style="text-align:center;"><h2>Hi, ${data.n}!</h2><p>Tap & hold.</p></div>
         <div class="secret-container" id="secretBox"><div class="secret-overlay">HOLD</div><div class="big-number secret-blur">${data.v}</div></div>
         <div style="background:var(--bg-item); padding:20px; border-radius:16px; text-align:left; font-size:0.95rem;">Range: <strong>${data.min} - ${data.max}</strong></div>
@@ -759,6 +771,7 @@ function renderRoomView(encodedData) {
     if (!data) return app.innerHTML = `<h2>Error</h2><p>Invalid Room Data</p>`;
     
     app.innerHTML = `
+        ${getMusicBtn()}
         <h2 style="margin-bottom:5px;">🏠 Pick Name</h2>
         <p>Tap your name to reveal your number</p>
         <div class="list-wrap">
