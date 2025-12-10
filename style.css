@@ -1,243 +1,676 @@
+/* =========================================
+   1. CSS VARIABLES (THEME CONFIGURATION)
+   ========================================= */
 :root {
-    --primary: #6366f1; 
-    --primary-dark: #4f46e5;
-    --success: #10b981; 
-    --danger: #ef4444; 
-    --gold: #f59e0b;
-    --text-main: #1e293b;
-    --text-sub: #64748b;
-    --bg-card: rgba(255, 255, 255, 0.9);
-    --bg-item: rgba(255, 255, 255, 0.6);
-    --border: rgba(255, 255, 255, 0.6);
-    --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-    --radius: 24px;
+    /* Core Brand Colors */
+    --primary: #6366f1;          /* Main button/accent color (Indigo) */
+    --primary-dark: #4f46e5;     /* Darker shade for hover states */
+    
+    /* Status Colors */
+    --success: #10b981;          /* Green for correct answers */
+    --danger: #ef4444;           /* Red for wrong answers/errors */
+    --gold: #f59e0b;             /* Orange/Gold for leaderboard or highlights */
+    
+    /* Text Colors */
+    --text-main: #1e293b;        /* Primary text color (Dark Blue-Grey) */
+    --text-sub: #64748b;         /* Secondary text color (Lighter Grey) */
+    
+    /* Backgrounds & Glassmorphism */
+    --bg-card: rgba(255, 255, 255, 0.9);   /* Main app container background */
+    --bg-item: rgba(255, 255, 255, 0.6);   /* Inner list items background */
+    
+    /* Borders & Effects */
+    --border: rgba(255, 255, 255, 0.6);    /* Subtle white border for glass effect */
+    --shadow: 0 10px 32px 0 rgba(31, 38, 135, 0.3); /* Deep shadow for depth */
+    --radius: 32px;                        /* Rounded corner curvature */
 }
 
+/* =========================================
+   2. DARK MODE OVERRIDES
+   ========================================= */
+/* Automatically applies if the user's device is set to Dark Mode */
 @media (prefers-color-scheme: dark) {
     :root {
         --text-main: #f8fafc;
         --text-sub: #94a3b8;
-        --bg-card: rgba(30, 41, 59, 0.85);
-        --bg-item: rgba(15, 23, 42, 0.4);
-        --border: rgba(255, 255, 255, 0.1);
+        --bg-card: rgba(30, 41, 59, 0.85);  /* Darker slate background */
+        --bg-item: rgba(15, 23, 42, 0.4);   /* Darker item background */
+        --border: rgba(255, 255, 255, 0.1); /* Fainter border for dark mode */
         --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     }
 }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* =========================================
+   3. GLOBAL RESET & BODY
+   ========================================= */
+* {
+    box-sizing: border-box; /* Ensures padding doesn't affect width calculations */
+    -webkit-tap-highlight-color: transparent; /* Removes blue tap highlight on mobile */
+}
 
 body {
     font-family: 'Nunito', sans-serif;
-    margin: 0; padding: 20px;
+    margin: 0;
+    padding: 20px;
     min-height: 100vh;
-    display: flex; justify-content: center; align-items: center;
+    
+    /* Flexbox centers the app on the screen */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
     color: var(--text-main);
+    
+    /* Animated Gradient Background */
     background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #4338ca);
     background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
-    overflow-x: hidden;
+    animation: gradientBG 6s ease infinite;
+    
+    overflow-x: hidden; /* Prevents horizontal scrolling */
 }
 
+/* Background Animation Keyframes */
 @keyframes gradientBG {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
 
+/* Snow Overlay Canvas */
 #snowCanvas {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; z-index: 0; opacity: 0.5;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Allows clicking through the snow */
+    z-index: 0;
+    opacity: 0.65;
 }
 
-/* App Container */
+/* =========================================
+   4. MAIN APP CONTAINER (THE CARD)
+   ========================================= */
 .app-card {
     background: var(--bg-card);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    
+    /* The "Glass" blur effect behind the card */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    
     border: 1px solid var(--border);
-    width: 100%; max-width: 500px; padding: 2.5rem 2rem;
-    border-radius: var(--radius); box-shadow: var(--shadow);
-    position: relative; z-index: 2; 
-    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 500px; /* Standard mobile/desktop width */
+    padding: 2.5rem 2rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    
+    position: relative;
+    z-index: 2; /* Sits above the snow */
+    transition: all 0.67s ease;
 }
 
-/* TV MODE STYLES */
+/* =========================================
+   5. TV MODE LAYOUT
+   ========================================= */
+/* Styles applied when 'is-tv-mode' class is added to body */
 body.is-tv-mode .app-card {
-    max-width: 95vw; width: 95vw; height: 90vh;
-    display: flex; flex-direction: column; padding: 2rem;
+    max-width: 95vw;
+    width: 95vw;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    padding: 2.3rem;
 }
 
 .split-container {
-    display: flex; flex-direction: column; gap: 20px; height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
 }
 
 body.is-tv-mode .split-container {
-    flex-direction: row; align-items: stretch;
+    flex-direction: row; /* Side-by-side layout on TV */
+    align-items: stretch;
 }
 
-.left-panel { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-right: 20px; }
-.right-panel { 
-    flex: 1.5; 
-    display: flex; 
-    flex-direction: column; 
+/* Left side of TV mode */
+.left-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-right: 20px;
+}
+
+/* Right side of TV mode */
+.right-panel {
+    flex: 1.5;
+    display: flex;
+    flex-direction: column;
     gap: 15px;
     height: 100%;
 }
 
-/* Panels */
+/* Panels inside TV Mode */
 .game-status-panel {
     flex: 1.5;
-    background: rgba(0,0,0,0.05); border-radius: 20px; padding: 20px;
-    overflow-y: auto; border: 1px solid var(--border);
-    display: flex; flex-direction: column;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 20px;
+    padding: 20px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
 }
 
 .leaderboard-panel {
     flex: 1;
-    background: rgba(245, 158, 11, 0.1); border-radius: 20px; padding: 20px;
-    overflow-y: auto; border: 1px solid var(--gold);
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 20px;
+    padding: 20px;
+    overflow-y: auto;
+    border: 2.5px solid var(--gold);
 }
 
-h1 { margin: 0 0 10px 0; color: var(--primary); font-weight: 900; text-align: center; font-size: 2.2rem; }
-h2 { margin: 0 0 15px 0; font-size: 1.6rem; text-align: center; font-weight: 800; }
-h3 { margin: 0 0 10px 0; font-size: 1.2rem; font-weight: 800; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
-p { margin: 0 0 25px 0; color: var(--text-sub); text-align: center; line-height: 1.6; }
-.label { display: block; font-size: 0.8rem; font-weight: 800; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+/* =========================================
+   6. TYPOGRAPHY
+   ========================================= */
+h1 {
+    margin: 0 0 10px 0;
+    color: var(--primary);
+    font-weight: 900;
+    text-align: center;
+    font-size: 2.2rem;
+}
 
+h2 {
+    margin: 0 0 15px 0;
+    font-size: 1.6rem;
+    text-align: center;
+    font-weight: 800;
+}
+
+h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+p {
+    margin: 0 0 25px 0;
+    color: var(--text-sub);
+    text-align: center;
+    line-height: 1.6;
+}
+
+.label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--text-sub);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Typography scaling for TV Mode */
 body.is-tv-mode h1 { font-size: 3.5rem; }
 body.is-tv-mode h2 { font-size: 2.5rem; }
 
+/* =========================================
+   7. INPUTS & BUTTONS
+   ========================================= */
 .row { display: flex; gap: 12px; }
 .col { flex: 1; }
 
 input, select {
-    width: 100%; padding: 16px; border: 2px solid transparent; border-radius: 16px;
-    font-size: 1rem; font-family: inherit; font-weight: 700;
-    background: var(--bg-item); color: var(--text-main);
+    width: 100%;
+    padding: 16px;
+    border: 2px solid transparent;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: 700;
+    background: var(--bg-item);
+    color: var(--text-main);
     transition: all 0.2s;
 }
-input:focus, select:focus { outline: none; background: var(--bg-card); border-color: var(--primary); transform: translateY(-2px); }
+
+/* Focus state for inputs */
+input:focus, select:focus {
+    outline: none;
+    background: var(--bg-card);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
 
 button {
-    width: 100%; padding: 16px; border: none; border-radius: 18px;
-    font-size: 1rem; font-weight: 800; font-family: inherit; cursor: pointer;
-    transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-button:active { transform: scale(0.95); }
-
-.btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
-.btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-.btn-secondary { background: var(--bg-item); color: var(--text-main); border: 1px solid var(--border); }
-.btn-secondary:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
-.btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-.btn-sm { padding: 8px 14px; font-size: 0.85rem; width: auto; border-radius: 12px; }
-.btn-icon { width: 44px; padding: 0; font-size: 1.2rem; flex-shrink: 0; }
-
-/* Quick Add Chips - 3 Per Line */
-.chip-container { 
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 8px; 
-    margin-top: 10px; 
-    margin-bottom: 20px; 
-}
-.chip-btn { 
     width: 100%;
-    background: var(--bg-item); 
-    border: 1px solid var(--border); 
-    padding: 10px 4px; 
-    border-radius: 12px; 
-    font-size: 0.85rem; 
-    font-weight: 700; 
-    cursor: pointer; 
+    padding: 16px;
+    border: none;
+    border-radius: 18px;
+    font-size: 1.5rem;
+    font-weight: 900;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.5s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Click animation */
+button:active { transform: scale(0.8); }
+
+/* Primary Action Button */
+.btn-primary {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-5px);
+}
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Secondary/Ghost Button */
+.btn-secondary {
+    background: var(--bg-item);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+}
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Danger/Delete Button */
+.btn-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+/* Small Button Variant */
+.btn-sm {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    width: auto;
+    border-radius: 12px;
+}
+
+/* Icon Only Button */
+.btn-icon {
+    width: 44px;
+    padding: 0;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+/* Top Left Back/Menu Button */
+.top-left-btn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 10;
+    font-size: 1.6rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.4;
+    padding: 8px;
+    width: auto;
+    transition: opacity 0.2s;
+}
+.top-left-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* =========================================
+   8. QUICK ADD CHIPS
+   ========================================= */
+.chip-container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr); /* 6 columns */
+    gap: 8px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.chip-btn {
+    width: 100%;
+    background: var(--bg-item);
+    border: 1px solid var(--border);
+    padding: 10px 4px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
     transition: all 0.2s;
     color: var(--text-sub);
     text-align: center;
 }
-.chip-btn:hover { background: var(--bg-card); color: var(--primary); transform: translateY(-2px); border-color: var(--primary); }
-.chip-btn.added { opacity: 0.3; cursor: default; transform: none; text-decoration: line-through; }
 
-.top-left-btn { 
-    position: absolute; top: 15px; left: 15px; z-index: 10; 
-    font-size: 1.2rem; background: none; border: none; 
-    cursor: pointer; opacity: 0.4; padding: 5px; width: auto; 
-    transition: opacity 0.2s;
+.chip-btn:hover {
+    background: var(--bg-card);
+    color: var(--primary);
+    transform: translateY(-2px);
+    border-color: var(--primary);
 }
-.top-left-btn:hover { opacity: 1; transform: scale(1.1); }
 
-.list-wrap { display: flex; flex-direction: column; gap: 12px; margin: 25px 0; max-height: 400px; overflow-y: auto; padding-right: 4px; }
-body.is-tv-mode .list-wrap { max-height: 100%; flex: 1; margin: 10px 0; }
+/* State for when a chip is already selected */
+.chip-btn.added {
+    opacity: 0.3;
+    cursor: default;
+    transform: none;
+    text-decoration: line-through;
+}
 
+/* =========================================
+   9. LISTS & ITEMS
+   ========================================= */
+.list-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 25px 0;
+    max-height: 400px; /* Scrollable area height */
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+body.is-tv-mode .list-wrap {
+    max-height: 100%;
+    flex: 1;
+    margin: 10px 0;
+}
+
+/* Individual Item Card */
 .item-card {
-    background: var(--bg-item); padding: 14px 18px; border-radius: 16px; border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg-item);
+    padding: 14px 18px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
-.item-card.correct { background: rgba(16, 185, 129, 0.15); border-color: var(--success); }
-.item-card.wrong { background: rgba(239, 68, 68, 0.15); border-color: var(--danger); }
-.item-card.gold { background: rgba(245, 158, 11, 0.15); border-color: var(--gold); }
-.rank-badge { background: var(--text-main); color: var(--bg-card); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; margin-right: 12px; }
 
-/* Grid View */
+/* Item States */
+.item-card.correct {
+    background: rgba(16, 185, 129, 0.3);
+    border-color: var(--success);
+}
+
+.item-card.wrong {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: var(--danger);
+}
+
+.item-card.gold {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: var(--gold);
+}
+
+/* Rank Number Circle */
+.rank-badge {
+    background: var(--text-main);
+    color: var(--bg-card);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-right: 12px;
+}
+
+/* =========================================
+   10. QR & GRID VIEW
+   ========================================= */
 .qr-grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Responsive Grid */
     gap: 15px;
     padding: 10px;
     overflow-y: auto;
     max-height: 75vh;
 }
+
 .qr-card {
-    background: white; color: black;
-    border-radius: 16px; padding: 15px;
-    display: flex; flex-direction: column; align-items: center; text-align: center;
+    background: #3B444B;
+    color: #F0F8FF;
+    border-radius: 20px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
-.qr-card canvas, .qr-card img { width: 100% !important; height: auto !important; }
 
-/* Timer & Secret */
-.timer-badge { background: var(--text-main); color: var(--bg-card); padding: 6px 16px; border-radius: 50px; font-weight: 800; font-family: monospace; font-size: 1.2rem; display: inline-block; margin-bottom: 15px; }
-body.is-tv-mode .timer-badge { font-size: 2rem; padding: 10px 30px; }
-
-.secret-container { position: relative; margin: 30px 0; cursor: pointer; height: 140px; display: flex; align-items: center; justify-content: center; background: var(--bg-item); border-radius: 24px; user-select: none; }
-.secret-blur { filter: blur(25px); opacity: 0.4; transition: all 0.3s ease; }
-.secret-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--text-main); color: var(--bg-card); padding: 12px 24px; border-radius: 50px; font-size: 0.9rem; font-weight: 800; pointer-events: none; transition: opacity 0.2s; white-space: nowrap; }
-.secret-container.revealed .secret-blur { filter: blur(0); opacity: 1; transform: scale(1.1); }
-.secret-container.revealed .secret-overlay { opacity: 0; }
-.big-number { font-size: 5rem; font-weight: 900; color: var(--primary); line-height: 1; }
-
-/* Modals */
-.modal-overlay { 
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-    background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); 
-    z-index: 100; display: flex; justify-content: center; align-items: center; 
-    opacity: 0; visibility: hidden; pointer-events: none; 
-    transition: opacity 0.3s; 
+/* Forces QR images to fit container */
+.qr-card canvas, 
+.qr-card img {
+    width: 100% !important;
+    height: auto !important;
 }
-.modal-overlay.active { opacity: 1; visibility: visible; pointer-events: all; }
 
-.modal-content { 
-    background: var(--bg-card); padding: 30px; border-radius: 24px; 
-    text-align: center; width: 90%; max-width: 320px; 
-    transform: scale(0.9); transition: transform 0.3s; 
-    border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.2); 
-    max-height: 80vh; overflow-y: auto; 
+#qrDisplay {
+    margin: 20px auto;
+    display: flex;
+    justify-content: center;
+    background: white;
+    padding: 15px;
+    border-radius: 16px;
+    width: fit-content;
 }
-.modal-overlay.active .modal-content { transform: scale(1); }
 
-/* Mode Selection Screen */
-.mode-btn { 
-    height: 150px; flex-direction: column; font-size: 1.5rem; gap: 15px;
-    background: var(--bg-item); border: 2px solid var(--border);
+/* =========================================
+   11. GAME ELEMENTS (Timer & Secret)
+   ========================================= */
+.timer-badge {
+    background: var(--text-main);
+    color: var(--bg-card);
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-weight: 800;
+    font-family: monospace;
+    font-size: 1.2rem;
+    display: inline-block;
+    margin-bottom: 15px;
 }
-.mode-btn:hover { background: var(--bg-card); border-color: var(--primary); transform: scale(1.02); }
-.mode-icon { font-size: 3rem; }
 
-/* Utils */
-#qrDisplay { margin: 20px auto; display: flex; justify-content: center; background: white; padding: 15px; border-radius: 16px; width: fit-content; }
-.divider { height: 2px; background: var(--border); margin: 25px 0; border-radius: 2px; }
-.toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text-main); color: var(--bg-card); padding: 14px 28px; border-radius: 50px; font-weight: 700; font-size: 0.95rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; pointer-events: none; transition: all 0.4s; z-index: 1000; }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+body.is-tv-mode .timer-badge {
+    font-size: 3.5rem;
+    padding: 10px 30px;
+}
 
-.btn-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-.emergency-reset { position: fixed; bottom: 10px; right: 10px; opacity: 0.3; font-size: 20px; cursor: pointer; z-index: 9999; }
+/* Secret Number Reveal Box */
+.secret-container {
+    position: relative;
+    margin: 40px 0;
+    cursor: pointer;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-item);
+    border-radius: 24px;
+    user-select: none;
+}
+
+.secret-blur {
+    filter: blur(38px);
+    opacity: 0.3;
+    transition: all 0.67s ease;
+}
+
+.secret-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--text-main);
+    color: var(--bg-card);
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+}
+
+/* Reveal State */
+.secret-container.revealed .secret-blur {
+    filter: blur(0);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.secret-container.revealed .secret-overlay {
+    opacity: 0;
+}
+
+.big-number {
+    font-size: 7rem;
+    font-weight: 11000;
+    color: var(--primary);
+    line-height: 1;
+}
+
+/* =========================================
+   12. MODALS
+   ========================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* Hidden by default */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+}
+
+.modal-content {
+    background: var(--bg-card);
+    padding: 30px;
+    border-radius: 24px;
+    text-align: center;
+    width: 90%;
+    max-width: 320px;
+    
+    /* Zoom effect on open */
+    transform: scale(1.4);
+    transition: transform 0.8s;
+    
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1);
+}
+
+/* Mode Selection (Big Buttons) */
+.mode-btn {
+    height: 150px;
+    flex-direction: column;
+    font-size: 1.5rem;
+    gap: 15px;
+    background: var(--bg-item);
+    border: 2px solid var(--border);
+}
+
+.mode-btn:hover {
+    background: var(--bg-card);
+    border-color: var(--primary);
+    transform: scale(1.02);
+}
+
+.mode-icon {
+    font-size: 3rem;
+}
+
+/* =========================================
+   13. UTILITIES & MISC
+   ========================================= */
+.divider {
+    height: 2px;
+    background: var(--border);
+    margin: 25px 0;
+    border-radius: 2px;
+}
+
+.btn-mini-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.emergency-reset {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    opacity: 0.3;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 9999;
+}
+
+/* Toast Notifications */
+.toast {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text-main);
+    color: var(--bg-card);
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s;
+    z-index: 1000;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}  
