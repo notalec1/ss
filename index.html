@@ -3,399 +3,340 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- PWA -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0f172a">
     <title>Line Up! Ultimate</title>
     
-    <!-- Modern Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
-    
-    <!-- Libs -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     
     <style>
         :root {
-            --bg-deep: #020617;
-            --bg-glass: rgba(15, 23, 42, 0.6);
-            --bg-glass-strong: rgba(15, 23, 42, 0.85);
-            --bg-item: rgba(255, 255, 255, 0.03);
-            --bg-item-hover: rgba(255, 255, 255, 0.08);
-            
-            --primary: #6366f1;
-            --primary-glow: rgba(99, 102, 241, 0.5);
-            --accent: #d946ef;
-            --success: #10b981;
-            --danger: #f43f5e;
-            --gold: #eab308;
-            
-            --text-main: #f8fafc;
-            --text-sub: #94a3b8;
-            
-            --border: rgba(255, 255, 255, 0.08);
-            --border-glow: rgba(255, 255, 255, 0.15);
-            
-            --radius-lg: 24px;
-            --radius-md: 16px;
-            --radius-sm: 12px;
-            
-            --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            --font-main: 'Outfit', sans-serif;
+            --primary: #6366f1; 
+            --primary-dark: #4f46e5;
+            --success: #10b981; 
+            --danger: #ef4444; 
+            --gold: #f59e0b;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --bg-card: rgba(255, 255, 255, 0.9);
+            --bg-item: rgba(255, 255, 255, 0.6);
+            --border: rgba(255, 255, 255, 0.6);
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --radius: 24px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text-main: #f8fafc;
+                --text-sub: #94a3b8;
+                --bg-card: rgba(30, 41, 59, 0.85);
+                --bg-item: rgba(15, 23, 42, 0.4);
+                --border: rgba(255, 255, 255, 0.1);
+                --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            }
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: var(--font-main);
-            margin: 0; padding: 0;
+            font-family: 'Nunito', sans-serif;
+            margin: 0; padding: 20px;
             min-height: 100vh;
-            background: var(--bg-deep);
-            color: var(--text-main);
             display: flex; justify-content: center; align-items: center;
+            color: var(--text-main);
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #4338ca);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             overflow-x: hidden;
-            /* Prevent pull-to-refresh on mobile */
-            overscroll-behavior: none; 
         }
 
-        /* --- BACKGROUNDS --- */
-        #bgCanvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; pointer-events: none;
-            background: radial-gradient(circle at 50% 10%, #1e1b4b, #0f172a 60%, #020617);
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
+
         #snowCanvas {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 1; opacity: 0.3; mix-blend-mode: overlay;
-        }
-        #redOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 2; transition: opacity 1s linear; opacity: 0;
-            background: radial-gradient(circle, transparent 40%, rgba(220, 20, 60, 0.4) 100%);
+            pointer-events: none; z-index: 0; opacity: 0.5;
         }
 
-        /* --- APP CONTAINER --- */
+        /* App Container */
         .app-card {
-            width: 100%; max-width: 480px; 
-            min-height: 100vh; /* Full screen on mobile */
-            background: var(--bg-glass);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            position: relative; z-index: 10;
-            display: flex; flex-direction: column;
-            padding: 20px 24px 40px 24px;
-            box-shadow: var(--shadow-glass);
-            transition: all 0.4s ease;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            width: 100%; max-width: 500px; padding: 2.5rem 2rem;
+            border-radius: var(--radius); box-shadow: var(--shadow);
+            position: relative; z-index: 2; 
+            transition: all 0.3s ease;
         }
 
-        @media (min-width: 768px) {
-            .app-card {
-                min-height: auto;
-                border-radius: var(--radius-lg);
-                border: 1px solid var(--border);
-                margin: 40px;
-                height: auto;
-                max-height: 90vh;
-                overflow-y: auto;
-            }
-        }
-
-        /* --- TV MODE LAYOUT --- */
+        /* TV MODE STYLES */
         body.is-tv-mode .app-card {
-            max-width: 96vw; width: 96vw; height: 92vh; margin: 0;
-            display: grid; 
-            grid-template-columns: 1fr 1.5fr; 
-            gap: 30px;
-            padding: 40px;
-            background: var(--bg-glass-strong);
-            overflow: hidden;
+            max-width: 95vw; width: 95vw; height: 90vh;
+            display: flex; flex-direction: column; padding: 2rem;
+        }
+
+        .split-container {
+            display: flex; flex-direction: column; gap: 20px; height: 100%;
+        }
+
+        body.is-tv-mode .split-container {
+            flex-direction: row; align-items: stretch;
+        }
+
+        .left-panel { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-right: 20px; }
+        .right-panel { 
+            flex: 1.5; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px;
+            height: 100%;
+        }
+
+        /* Panels */
+        .game-status-panel {
+            flex: 1.5;
+            background: rgba(0,0,0,0.05); border-radius: 20px; padding: 20px;
+            overflow-y: auto; border: 1px solid var(--border);
+            display: flex; flex-direction: column;
         }
         
-        .tv-panel-left { display: flex; flex-direction: column; justify-content: center; height: 100%; }
-        .tv-panel-right { display: flex; flex-direction: column; gap: 20px; height: 100%; overflow: hidden; }
-
-        .glass-panel {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 20px;
-            overflow-y: auto;
+        .leaderboard-panel {
             flex: 1;
+            background: rgba(245, 158, 11, 0.1); border-radius: 20px; padding: 20px;
+            overflow-y: auto; border: 1px solid var(--gold);
         }
 
-        /* --- TYPOGRAPHY --- */
-        h1 { 
-            font-size: 2.5rem; margin: 0 0 5px 0; font-weight: 900; letter-spacing: -1px; text-align: center;
-            background: linear-gradient(135deg, #fff 30%, var(--primary) 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        h2 { font-size: 1.5rem; margin: 0 0 15px 0; font-weight: 700; text-align: center; color: var(--text-main); }
-        h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-sub); margin-bottom: 15px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-        h3::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-        p { color: var(--text-sub); text-align: center; margin-bottom: 25px; font-weight: 300; }
-        
-        /* --- FORMS & INPUTS --- */
-        .input-group { position: relative; margin-bottom: 15px; }
-        .label-text { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-sub); margin-bottom: 6px; display: block; letter-spacing: 1px; }
-        
-        input, select {
-            width: 100%; padding: 16px; 
-            background: var(--bg-item); 
-            border: 1px solid var(--border); 
-            border-radius: var(--radius-sm);
-            color: white; font-family: var(--font-main); font-size: 1rem; font-weight: 500;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        input:focus, select:focus { 
-            outline: none; 
-            background: rgba(255,255,255,0.05); 
-            border-color: var(--primary); 
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-        }
+        h1 { margin: 0 0 10px 0; color: var(--primary); font-weight: 900; text-align: center; font-size: 2.2rem; }
+        h2 { margin: 0 0 15px 0; font-size: 1.6rem; text-align: center; font-weight: 800; }
+        h3 { margin: 0 0 10px 0; font-size: 1.2rem; font-weight: 800; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
+        p { margin: 0 0 25px 0; color: var(--text-sub); text-align: center; line-height: 1.6; }
+        .label { display: block; font-size: 0.8rem; font-weight: 800; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* --- BUTTONS --- */
-        button {
-            width: 100%; padding: 16px; border: none; border-radius: var(--radius-sm);
-            font-family: var(--font-main); font-size: 1rem; font-weight: 700; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative; overflow: hidden;
-        }
-        button:active { transform: scale(0.96); }
+        body.is-tv-mode h1 { font-size: 3.5rem; }
+        body.is-tv-mode h2 { font-size: 2.5rem; }
 
-        .btn-primary { 
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-glow) 100%);
-            color: white; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
-        }
-        .btn-primary:hover { filter: brightness(1.2); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5); }
-        .btn-primary:disabled { background: var(--border); color: var(--text-sub); box-shadow: none; cursor: not-allowed; }
-
-        .btn-secondary { background: var(--bg-item); color: var(--text-main); border: 1px solid var(--border); }
-        .btn-secondary:hover { background: var(--bg-item-hover); border-color: var(--border-glow); }
-        
-        .btn-danger { background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.2); }
-        .btn-danger:hover { background: rgba(244, 63, 94, 0.2); }
-
-        .btn-icon { width: 42px; height: 42px; padding: 0; flex-shrink: 0; border-radius: 50%; }
-        .btn-sm { padding: 8px 16px; font-size: 0.8rem; border-radius: 50px; width: auto; }
-
-        /* --- LIST ITEMS & CARDS --- */
-        .list-wrap { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; padding: 4px; }
-        
-        .item-card {
-            background: var(--bg-item); 
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 12px 16px;
-            display: flex; align-items: center; justify-content: space-between;
-            transition: transform 0.2s, background 0.2s;
-            animation: fadeIn 0.3s ease forwards;
-        }
-        .item-card:hover { background: var(--bg-item-hover); border-color: var(--border-glow); }
-        
-        .avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--border); margin-right: 12px; background: #000; object-fit: cover; }
-        
-        /* Drag & Drop Specifics */
-        .sortable-ghost { opacity: 0.2; background: var(--primary); }
-        .sortable-drag { background: var(--bg-glass-strong); border: 1px solid var(--primary); transform: scale(1.02); box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 999; }
-        .grab-handle { 
-            cursor: grab; padding: 10px; color: var(--text-sub); font-size: 1.2rem;
-            touch-action: none; /* CRITICAL FOR TOUCH DRAG */
-        }
-
-        /* --- CHIPS & TAGS --- */
-        .chip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; margin: 15px 0; }
-        .chip {
-            background: var(--bg-item); border: 1px solid var(--border);
-            padding: 8px; border-radius: var(--radius-sm);
-            font-size: 0.8rem; font-weight: 600; color: var(--text-sub);
-            cursor: pointer; text-align: center; transition: all 0.2s;
-        }
-        .chip:hover { background: var(--primary); color: white; border-color: var(--primary); }
-        .chip.disabled { opacity: 0.3; pointer-events: none; text-decoration: line-through; }
-
-        /* --- GAME ELEMENTS --- */
-        .timer-float {
-            font-family: 'Courier New', monospace; font-weight: 900; font-size: 2rem;
-            color: var(--text-main); text-shadow: 0 0 20px var(--primary);
-            text-align: center; margin: 10px 0;
-        }
-        
-        .secret-box {
-            position: relative; height: 180px; margin: 20px 0;
-            background: black; border-radius: var(--radius-lg);
-            border: 1px solid var(--border);
-            display: flex; justify-content: center; align-items: center;
-            overflow: hidden; cursor: pointer;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
-        }
-        .secret-text { font-size: 6rem; font-weight: 900; color: white; opacity: 0; filter: blur(20px); transition: all 0.2s; z-index: 2; }
-        .secret-overlay { position: absolute; z-index: 3; font-weight: 700; letter-spacing: 2px; color: var(--text-sub); pointer-events: none; transition: opacity 0.2s; }
-        .secret-box.revealed .secret-text { opacity: 1; filter: blur(0); text-shadow: 0 0 30px var(--primary); }
-        .secret-box.revealed .secret-overlay { opacity: 0; }
-        /* Matrix Rain effect for secret box background */
-        .secret-box::before {
-            content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
-            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(99, 102, 241, 0.1) 4px);
-            z-index: 1; opacity: 0.5;
-        }
-
-        /* --- HEADER ACTIONS --- */
-        .header-bar {
-            position: absolute; top: 15px; left: 15px; right: 15px;
-            display: flex; justify-content: space-between; z-index: 50;
-            pointer-events: none; /* Let clicks pass through to content if needed */
-        }
-        .header-actions { pointer-events: auto; display: flex; gap: 8px; }
-        .icon-btn { 
-            background: rgba(0,0,0,0.3); border: 1px solid var(--border);
-            width: 36px; height: 36px; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1rem; cursor: pointer; color: var(--text-sub); transition: all 0.2s;
-        }
-        .icon-btn:hover { background: var(--bg-item-hover); color: white; transform: scale(1.1); }
-
-        /* --- MODALS --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
-            z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .modal-overlay.active { opacity: 1; pointer-events: all; }
-        .modal-card {
-            background: var(--bg-deep); border: 1px solid var(--border);
-            width: 90%; max-width: 400px; padding: 30px; border-radius: var(--radius-lg);
-            transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-        .modal-overlay.active .modal-card { transform: scale(1); }
-
-        /* --- UTILS --- */
         .row { display: flex; gap: 12px; }
         .col { flex: 1; }
-        .divider { height: 1px; background: var(--border); margin: 20px 0; width: 100%; }
-        .toast { 
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: white; color: black; padding: 10px 20px; border-radius: 50px;
-            font-weight: 700; opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 2000;
-        }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        input, select {
+            width: 100%; padding: 16px; border: 2px solid transparent; border-radius: 16px;
+            font-size: 1rem; font-family: inherit; font-weight: 700;
+            background: var(--bg-item); color: var(--text-main);
+            transition: all 0.2s;
+        }
+        input:focus, select:focus { outline: none; background: var(--bg-card); border-color: var(--primary); transform: translateY(-2px); }
+
+        button {
+            width: 100%; padding: 16px; border: none; border-radius: 18px;
+            font-size: 1rem; font-weight: 800; font-family: inherit; cursor: pointer;
+            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        button:active { transform: scale(0.95); }
         
-        /* Grid for TV QR */
-        .qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
-        .qr-card { background: white; padding: 10px; border-radius: var(--radius-sm); display: flex; flex-direction: column; align-items: center; }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-        /* Mode Select Buttons */
-        .mode-select-btn {
-            height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px;
-            background: linear-gradient(180deg, var(--bg-item) 0%, rgba(0,0,0,0) 100%);
-            border: 1px solid var(--border);
+        .btn-secondary { background: var(--bg-item); color: var(--text-main); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .btn-sm { padding: 8px 14px; font-size: 0.85rem; width: auto; border-radius: 12px; }
+        .btn-icon { width: 44px; padding: 0; font-size: 1.2rem; flex-shrink: 0; }
+        
+        /* Quick Add Chips - 3 Per Line */
+        .chip-container { 
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px; 
+            margin-top: 10px; 
+            margin-bottom: 20px; 
         }
-        .mode-select-btn:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
-        .big-icon { font-size: 3rem; margin-bottom: 5px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
+        .chip-btn { 
+            width: 100%;
+            background: var(--bg-item); 
+            border: 1px solid var(--border); 
+            padding: 10px 4px; 
+            border-radius: 12px; 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: all 0.2s;
+            color: var(--text-sub);
+            text-align: center;
+        }
+        .chip-btn:hover { background: var(--bg-card); color: var(--primary); transform: translateY(-2px); border-color: var(--primary); }
+        .chip-btn.added { opacity: 0.3; cursor: default; transform: none; text-decoration: line-through; }
+
+        .top-left-btn { 
+            position: absolute; top: 15px; left: 15px; z-index: 10; 
+            font-size: 1.2rem; background: none; border: none; 
+            cursor: pointer; opacity: 0.4; padding: 5px; width: auto; 
+            transition: opacity 0.2s;
+        }
+        .top-left-btn:hover { opacity: 1; transform: scale(1.1); }
+
+        .list-wrap { display: flex; flex-direction: column; gap: 12px; margin: 25px 0; max-height: 400px; overflow-y: auto; padding-right: 4px; }
+        body.is-tv-mode .list-wrap { max-height: 100%; flex: 1; margin: 10px 0; }
+
+        .item-card {
+            background: var(--bg-item); padding: 14px 18px; border-radius: 16px; border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .item-card.correct { background: rgba(16, 185, 129, 0.15); border-color: var(--success); }
+        .item-card.wrong { background: rgba(239, 68, 68, 0.15); border-color: var(--danger); }
+        .item-card.gold { background: rgba(245, 158, 11, 0.15); border-color: var(--gold); }
+        .rank-badge { background: var(--text-main); color: var(--bg-card); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; margin-right: 12px; }
+        
+        /* Grid View */
+        .qr-grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            padding: 10px;
+            overflow-y: auto;
+            max-height: 75vh;
+        }
+        .qr-card {
+            background: white; color: black;
+            border-radius: 16px; padding: 15px;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+        }
+        .qr-card canvas, .qr-card img { width: 100% !important; height: auto !important; }
+
+        /* Timer & Secret */
+        .timer-badge { background: var(--text-main); color: var(--bg-card); padding: 6px 16px; border-radius: 50px; font-weight: 800; font-family: monospace; font-size: 1.2rem; display: inline-block; margin-bottom: 15px; }
+        body.is-tv-mode .timer-badge { font-size: 2rem; padding: 10px 30px; }
+        
+        .secret-container { position: relative; margin: 30px 0; cursor: pointer; height: 140px; display: flex; align-items: center; justify-content: center; background: var(--bg-item); border-radius: 24px; user-select: none; }
+        .secret-blur { filter: blur(25px); opacity: 0.4; transition: all 0.3s ease; }
+        .secret-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--text-main); color: var(--bg-card); padding: 12px 24px; border-radius: 50px; font-size: 0.9rem; font-weight: 800; pointer-events: none; transition: opacity 0.2s; white-space: nowrap; }
+        .secret-container.revealed .secret-blur { filter: blur(0); opacity: 1; transform: scale(1.1); }
+        .secret-container.revealed .secret-overlay { opacity: 0; }
+        .big-number { font-size: 5rem; font-weight: 900; color: var(--primary); line-height: 1; }
+
+        /* Modals */
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); 
+            z-index: 100; display: flex; justify-content: center; align-items: center; 
+            opacity: 0; visibility: hidden; pointer-events: none; 
+            transition: opacity 0.3s; 
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; pointer-events: all; }
+        
+        .modal-content { 
+            background: var(--bg-card); padding: 30px; border-radius: 24px; 
+            text-align: center; width: 90%; max-width: 320px; 
+            transform: scale(0.9); transition: transform 0.3s; 
+            border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.2); 
+            max-height: 80vh; overflow-y: auto; 
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+
+        /* Mode Selection Screen */
+        .mode-btn { 
+            height: 150px; flex-direction: column; font-size: 1.5rem; gap: 15px;
+            background: var(--bg-item); border: 2px solid var(--border);
+        }
+        .mode-btn:hover { background: var(--bg-card); border-color: var(--primary); transform: scale(1.02); }
+        .mode-icon { font-size: 3rem; }
+
+        /* Utils */
+        #qrDisplay { margin: 20px auto; display: flex; justify-content: center; background: white; padding: 15px; border-radius: 16px; width: fit-content; }
+        .divider { height: 2px; background: var(--border); margin: 25px 0; border-radius: 2px; }
+        .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text-main); color: var(--bg-card); padding: 14px 28px; border-radius: 50px; font-weight: 700; font-size: 0.95rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; pointer-events: none; transition: all 0.4s; z-index: 1000; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        
+        .btn-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .emergency-reset { position: fixed; bottom: 10px; right: 10px; opacity: 0.3; font-size: 20px; cursor: pointer; z-index: 9999; }
     </style>
 </head>
 <body>
 
-    <!-- Background Layers -->
-    <div id="bgCanvas"></div>
-    <div id="redOverlay"></div>
     <canvas id="snowCanvas"></canvas>
-    
-    <!-- Audio -->
-    <audio id="lobbyMusic" loop>
-        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112762.mp3" type="audio/mpeg">
-    </audio>
 
-    <!-- Header UI (Absolute) -->
-    <div class="header-bar">
-        <div class="header-actions">
-            <!-- Left Side Actions -->
-        </div>
-        <div class="header-actions">
-            <button class="icon-btn" onclick="resetViewMode()" title="Switch View">↔️</button>
-            <button class="icon-btn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
-            <button class="icon-btn" id="musicBtn" onclick="toggleMusic()" title="Sound">🔇</button>
-        </div>
-    </div>
-
-    <!-- Main App Container -->
-    <div id="app" class="app-card">
-        <!-- Content Injected via JS -->
-        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
-            <h1>Line Up!</h1>
-            <p>Loading...</p>
+    <div class="app-card" id="app">
+        <div style="text-align:center;">
+            <h1>Loading...</h1>
         </div>
     </div>
 
     <!-- MODALS -->
     <div class="modal-overlay" id="qrModal" onclick="closeModal('qrModal')">
-        <div class="modal-card" onclick="event.stopPropagation()">
-            <h2 id="qrName">Player</h2>
-            <div id="qrDisplay" style="background:white; padding:15px; border-radius:12px; margin:20px auto; width:fit-content;"></div>
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2 id="qrName" style="margin-bottom:5px;">Player</h2>
+            <div id="qrDisplay"></div>
             <button class="btn-secondary" onclick="closeModal('qrModal')">Close</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="leaderboardModal" onclick="closeModal('leaderboardModal')">
-        <div class="modal-card" onclick="event.stopPropagation()">
+        <div class="modal-content" onclick="event.stopPropagation()">
             <h2>🏆 Leaderboard</h2>
-            <div id="mobileLeaderboardList" class="list-wrap" style="max-height:300px;"></div>
-            <button class="btn-secondary" style="margin-top:20px;" onclick="closeModal('leaderboardModal')">Close</button>
-        </div>
-    </div>
-    
-    <div class="modal-overlay" id="roomQrModal" onclick="closeModal('roomQrModal')">
-        <div class="modal-card" onclick="event.stopPropagation()">
-            <h2>🏠 Join Room</h2>
-            <p>Scan to pick your name</p>
-            <div id="roomQrDisplay" style="background:white; padding:15px; border-radius:12px; margin:20px auto; width:fit-content;"></div>
-            <button class="btn-secondary" onclick="closeModal('roomQrModal')">Close</button>
+            <div id="mobileLeaderboardList" style="margin:20px 0; text-align:left; max-height: 300px; overflow-y:auto;"></div>
+            <button class="btn-secondary" onclick="closeModal('leaderboardModal')">Close</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="qrGridModal" onclick="closeModal('qrGridModal')">
-        <div class="modal-card" style="max-width:800px; width:95%; height:90vh; overflow:hidden; display:flex; flex-direction:column;" onclick="event.stopPropagation()">
-            <h2>Scan Your Code</h2>
-            <div id="qrGridTarget" class="qr-grid" style="overflow-y:auto; padding:10px; flex:1;"></div>
-            <button class="btn-secondary" style="margin-top:10px;" onclick="closeModal('qrGridModal')">Close</button>
+        <div class="modal-content" style="max-width:900px; width:95%; height:90vh;" onclick="event.stopPropagation()">
+            <h2 style="margin-bottom:5px;">Scan Your Name</h2>
+            <p>Everyone scan their own code!</p>
+            <div id="qrGridTarget" class="qr-grid-container"></div>
+            <button class="btn-secondary" onclick="closeModal('qrGridModal')">Close</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="roomQrModal" onclick="closeModal('roomQrModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2 style="margin-bottom:5px;">🏠 Room Mode</h2>
+            <p>Scan to join and pick your name</p>
+            <div id="roomQrDisplay" style="margin: 20px auto; background: white; padding: 10px; border-radius: 12px; width: fit-content;"></div>
+            <button class="btn-secondary" onclick="closeModal('roomQrModal')">Close</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="presetsModal" onclick="closeModal('presetsModal')">
-        <div class="modal-card" onclick="event.stopPropagation()">
+        <div class="modal-content" onclick="event.stopPropagation()">
             <h2>💾 Saved Groups</h2>
-            <div id="presetsList" class="list-wrap" style="max-height:300px;"></div>
-            <button class="btn-secondary" style="margin-top:20px;" onclick="closeModal('presetsModal')">Close</button>
+            <div id="presetsList" style="margin:20px 0; text-align:left;"></div>
+            <button class="btn-secondary" onclick="closeModal('presetsModal')">Close</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="historyModal" onclick="closeModal('historyModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2>📜 Game History</h2>
+            <div id="historyList" style="margin:20px 0; text-align:left;"></div>
+            <button class="btn-secondary" onclick="closeModal('historyModal')">Close</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="dataModal" onclick="closeModal('dataModal')">
-        <div class="modal-card" onclick="event.stopPropagation()">
-            <h2>⚙️ Settings</h2>
-            <div class="row">
-                <button class="btn-secondary col" onclick="exportData()">📤 Export</button>
-                <button class="btn-secondary col" onclick="document.getElementById('fileInput').click()">📥 Import</button>
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2>⚙️ Data Manager</h2>
+            <div class="btn-mini-grid">
+                <button class="btn-secondary" onclick="exportData()">📤 Export</button>
+                <button class="btn-secondary" onclick="document.getElementById('fileInput').click()">📥 Import</button>
             </div>
             <input type="file" id="fileInput" style="display:none" onchange="importData(event)" accept=".json">
             <div class="divider"></div>
-            <button class="btn-danger" style="margin-bottom:10px;" onclick="resetScores()">🧹 Reset Scores</button>
+            <button class="btn-danger" style="margin-bottom:10px" onclick="resetScores()">🧹 Reset Scores</button>
             <button class="btn-danger" onclick="wipeData()">🗑️ Factory Reset</button>
-            <button class="btn-secondary" style="margin-top:20px;" onclick="closeModal('dataModal')">Close</button>
+            <br><br>
+            <button class="btn-secondary" onclick="closeModal('dataModal')">Close</button>
         </div>
     </div>
-
-    <!-- Feedback -->
-    <div id="toast" class="toast">Message</div>
+    
+    <div id="toast" class="toast">Action</div>
+    <div class="emergency-reset" onclick="if(confirm('Hard Reset?')) { localStorage.clear(); location.reload(); }">🗑️</div>
 
     <script>
-        // --- CONSTANTS & CONFIG ---
+        // --- CONFIG & STATE ---
         const GOD_PASSWORD = "line1up";
         const AUTO_NAMES = ["Alec", "Alain", "Nada", "Hoda", "Fadi", "Noa", "Gio", "Neo", "Nounou", "Assaad", "Chris", "Eliott"];
         const DEFAULT_STATE = { 
@@ -408,16 +349,11 @@
             viewingNumber: false 
         };
         
-        // --- STATE ---
         let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
         let timerInterval = null;
         let godMode = false;
         let viewMode = sessionStorage.getItem('lineUpViewMode') || null; 
-        let isMusicPlaying = false;
-        
-        // --- DOM ---
         const app = document.getElementById('app');
-        const audioEl = document.getElementById('lobbyMusic');
 
         // --- UTILS ---
         function pulse(ms = 10) { if (navigator.vibrate) navigator.vibrate(ms); }
@@ -427,533 +363,754 @@
             t.textContent = msg; t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 2000);
         }
-        function formatTime(s) { if(s === null) return "0:00"; return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`; }
-        function getAvatar(name) { return `https://api.dicebear.com/7.x/initials/svg?seed=${name}&backgroundColor=1e293b&textColor=f8fafc`; }
-        function toggleFullscreen() { if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(e=>{}); } else { if (document.exitFullscreen) document.exitFullscreen(); } }
-        
-        function toggleMusic() {
-            if(isMusicPlaying) { audioEl.pause(); isMusicPlaying = false; }
-            else { audioEl.volume = 0.3; audioEl.play().catch(e=>showToast("Audio Blocked")); isMusicPlaying = true; }
-            document.getElementById('musicBtn').innerText = isMusicPlaying ? '🔊' : '🔇';
+        function formatTime(s) { 
+            if(s === null) return "0:00";
+            return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`; 
+        }
+        function setViewMode(mode) {
+            viewMode = mode;
+            sessionStorage.setItem('lineUpViewMode', mode);
+            if(mode === 'tv') document.body.classList.add('is-tv-mode');
+            else document.body.classList.remove('is-tv-mode');
+            render();
+        }
+        function resetViewMode() {
+            viewMode = null;
+            sessionStorage.removeItem('lineUpViewMode');
+            document.body.classList.remove('is-tv-mode');
+            render();
         }
 
-        // --- SNOW FX (Subtle) ---
+        // --- SNOW FX ---
         function initSnow() {
             const canvas = document.getElementById('snowCanvas');
             const ctx = canvas.getContext('2d');
-            let w = canvas.width = window.innerWidth, h = canvas.height = window.innerHeight;
-            const flakes = Array.from({length: 40}, () => ({x: Math.random()*w, y: Math.random()*h, r: Math.random()*2+1, d: Math.random()*50}));
-            window.onresize = () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; };
-            function loop() {
-                ctx.clearRect(0,0,w,h); ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.beginPath();
-                flakes.forEach(f => { ctx.moveTo(f.x,f.y); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); f.y+=Math.pow(f.d,2)/2000+0.5; if(f.y>h)f.y=0; f.x+=Math.sin(f.y/50)*0.2; });
-                ctx.fill(); requestAnimationFrame(loop);
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+            const snowflakes = [];
+            window.addEventListener('resize', () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; });
+            for (let i = 0; i < 50; i++) snowflakes.push({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 50 });
+            function draw() {
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+                ctx.beginPath();
+                for (let i = 0; i < 50; i++) {
+                    const f = snowflakes[i];
+                    ctx.moveTo(f.x, f.y);
+                    ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
+                }
+                ctx.fill();
+                update();
+                requestAnimationFrame(draw);
             }
-            loop();
+            function update() {
+                for (let i = 0; i < 50; i++) {
+                    const f = snowflakes[i];
+                    f.y += Math.pow(f.d, 2) + 1;
+                    f.y = f.y > height ? 0 : f.y;
+                    f.x += Math.sin(f.y / 50);
+                }
+            }
+            draw();
         }
 
-        // --- CORE LOGIC ---
+        // --- DATA MANAGEMENT ---
         function loadState() {
             const params = new URLSearchParams(window.location.search);
             if (params.has('p') || params.has('room')) return;
             try {
-                const s = localStorage.getItem('lineUpState');
-                if (s) {
-                    state = JSON.parse(s);
+                const saved = localStorage.getItem('lineUpState');
+                if (saved) {
+                    state = JSON.parse(saved);
                     if ((state.step === 'DISTRIBUTE' || state.step === 'VERIFY') && state.startTime) startTimerTicker();
                 }
             } catch (e) { state = JSON.parse(JSON.stringify(DEFAULT_STATE)); }
         }
-        function saveState() { if (!new URLSearchParams(window.location.search).has('p')) localStorage.setItem('lineUpState', JSON.stringify(state)); }
-        function setState(s) { state.step = s; saveState(); render(); }
-        
-        function setViewMode(m) {
-            viewMode = m; sessionStorage.setItem('lineUpViewMode', m);
-            document.body.classList.toggle('is-tv-mode', m === 'tv');
-            render();
+
+        function saveState() {
+            if (!new URLSearchParams(window.location.search).has('p')) localStorage.setItem('lineUpState', JSON.stringify(state));
         }
-        function resetViewMode() { setViewMode(null); }
+
+        function getLeaderboard() {
+            try { return JSON.parse(localStorage.getItem('lineUpLeaderboard')) || {}; } catch(e) { return {}; }
+        }
+
+        function updateScores() {
+            const sorted = [...state.players].sort((a, b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
+            const scores = getLeaderboard();
+            let changed = false;
+            
+            state.players.forEach((p, i) => {
+                if (p.name === sorted[i].name) {
+                    scores[p.name] = (scores[p.name] || 0) + 10;
+                    changed = true;
+                } else {
+                    scores[p.name] = scores[p.name] || 0;
+                }
+            });
+
+            if(changed) localStorage.setItem('lineUpLeaderboard', JSON.stringify(scores));
+            return scores;
+        }
+
+        function resetScores() {
+            if(confirm("Reset all player scores to 0?")) {
+                localStorage.removeItem('lineUpLeaderboard');
+                showToast("Scores Reset");
+                render();
+            }
+        }
+
+        function exportData() {
+            const data = {
+                presets: localStorage.getItem('lineUpPresets'),
+                history: localStorage.getItem('lineUpHistory'),
+                state: localStorage.getItem('lineUpState'),
+                leaderboard: localStorage.getItem('lineUpLeaderboard')
+            };
+            const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'lineup-backup.json';
+            a.click();
+            showToast("Backup Downloaded");
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.presets) localStorage.setItem('lineUpPresets', data.presets);
+                    if (data.history) localStorage.setItem('lineUpHistory', data.history);
+                    if (data.state) localStorage.setItem('lineUpState', data.state);
+                    if (data.leaderboard) localStorage.setItem('lineUpLeaderboard', data.leaderboard);
+                    showToast("Data Restored!");
+                    setTimeout(() => location.reload(), 1000);
+                } catch(err) { showToast("Invalid File"); }
+            };
+            reader.readAsText(file);
+        }
+
+        function wipeData() {
+            if(confirm("Are you sure? This deletes ALL history, groups, and settings.")) {
+                localStorage.clear(); location.reload();
+            }
+        }
+
+        // --- GAME LOGIC ---
+        function addPlayer(optionalName) {
+            const input = document.getElementById('nameInput');
+            const name = optionalName || input.value.trim();
+            if (!name) return;
+            // Prevent exact duplicates
+            const exists = state.players.some(p => p.name.toLowerCase() === name.toLowerCase());
+            if(exists) return showToast("Already added!");
+            
+            state.players.push({ name, number: 0 });
+            if(input) input.value = '';
+            setState('SETUP');
+            if(!optionalName) setTimeout(() => { const el = document.getElementById('nameInput'); if(el) el.focus(); }, 50);
+            pulse();
+        }
+
+        function removePlayer(i) { state.players.splice(i, 1); setState('SETUP'); pulse(); }
 
         function generateNumbers() {
-            const min = parseInt(state.settings.min), max = parseInt(state.settings.max);
-            if (min >= max) { showToast("Min must be < Max"); return false; }
+            const minEl = document.getElementById('minInput');
+            const maxEl = document.getElementById('maxInput');
+            const min = parseInt(minEl ? minEl.value : state.settings.min);
+            const max = parseInt(maxEl ? maxEl.value : state.settings.max);
+
+            if (min >= max) { showToast("Min must be < Max!"); return false; }
+            state.settings.min = min; state.settings.max = max;
+            const orderEl = document.getElementById('orderInput');
+            if(orderEl) state.settings.order = orderEl.value;
+
             const used = new Set();
             state.players.forEach(p => {
-                let num; do { num = Math.floor(Math.random()*(max-min+1))+min; } while(used.has(num));
+                let num;
+                do { num = Math.floor(Math.random() * (max - min + 1)) + min; } while (used.has(num));
                 used.add(num); p.number = num;
             });
             return true;
         }
 
-        // --- RENDERERS ---
-        function render() {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('p')) return renderPlayer(params.get('p'));
-            if (params.get('room')) return renderRoom(params.get('room'));
-
-            if (!viewMode) return renderModeSelect();
-
-            const isTV = viewMode === 'tv';
-            let content = '';
-
-            // STATE DISPATCHER
-            switch(state.step) {
-                case 'SETUP': content = renderSetup(isTV); break;
-                case 'DISTRIBUTE': content = renderDistribute(isTV); break;
-                case 'PASS_PLAY': content = renderPassPlay(); break;
-                case 'VERIFY': content = renderVerify(isTV); break;
-                case 'RESULTS': content = renderResults(isTV); break;
-            }
-
-            // TV WRAPPER
-            if (isTV) {
-                // Split logic handles inside specific render functions for TV
-                app.innerHTML = content;
-            } else {
-                app.innerHTML = content;
+        function startGame() {
+            if (generateNumbers()) {
+                state.startTime = Date.now(); state.finalTime = null;
+                setState('DISTRIBUTE'); pulse(); requestWakeLock();
             }
         }
 
-        // --- COMPONENT TEMPLATES ---
-        function renderModeSelect() {
+        function startPassGame() {
+            if (state.players.length < 2) return showToast("Need 2+ players!");
+            if (generateNumbers()) {
+                state.passIndex = 0; state.viewingNumber = false; state.startTime = null;
+                setState('PASS_PLAY'); pulse(); requestWakeLock();
+            }
+        }
+
+        function nextPassPlayer() {
+            if (state.passIndex < state.players.length - 1) {
+                state.passIndex++; state.viewingNumber = false; saveState(); render();
+            } else {
+                state.startTime = Date.now(); setState('VERIFY');
+            }
+            pulse();
+        }
+
+        function restartSamePlayers() { state.startTime = null; state.finalTime = null; startGame(); }
+        function resetGameData() { state = JSON.parse(JSON.stringify(DEFAULT_STATE)); saveState(); render(); }
+
+        // --- PRESETS & HISTORY ---
+        function savePreset() {
+            if(state.players.length === 0) return showToast("No players");
+            const name = prompt("Name this group:");
+            if(name) {
+                const presets = JSON.parse(localStorage.getItem('lineUpPresets')) || [];
+                presets.push({ 
+                    name, 
+                    players: state.players.map(p => ({ name: p.name, number: 0 })),
+                    min: state.settings.min,
+                    max: state.settings.max
+                });
+                localStorage.setItem('lineUpPresets', JSON.stringify(presets));
+                showToast("Saved!");
+            }
+        }
+
+        function loadPreset(index) {
+            const presets = JSON.parse(localStorage.getItem('lineUpPresets')) || [];
+            if(presets[index]) {
+                state.players = JSON.parse(JSON.stringify(presets[index].players));
+                if(presets[index].min !== undefined) state.settings.min = presets[index].min;
+                if(presets[index].max !== undefined) state.settings.max = presets[index].max;
+                saveState();
+                closeModal('presetsModal');
+                render();
+                showToast("Loaded!");
+            }
+        }
+
+        function deletePreset(index) {
+            const presets = JSON.parse(localStorage.getItem('lineUpPresets')) || [];
+            presets.splice(index, 1);
+            localStorage.setItem('lineUpPresets', JSON.stringify(presets));
+            renderPresetsList();
+        }
+
+        function renderPresetsList() {
+            const presets = JSON.parse(localStorage.getItem('lineUpPresets')) || [];
+            const el = document.getElementById('presetsList');
+            if(presets.length === 0) { el.innerHTML = "<p>No saved groups.</p>"; return; }
+            el.innerHTML = presets.map((p, i) => {
+                const rangeInfo = (p.min !== undefined) ? `<br><small style="opacity:0.6">Range: ${p.min}-${p.max}</small>` : '';
+                return `
+                <div class="item-card" style="margin-bottom:8px;">
+                    <div><strong>${p.name}</strong> (${p.players.length})${rangeInfo}</div>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-primary btn-sm" onclick="loadPreset(${i})">Load</button>
+                        <button class="btn-danger btn-sm" onclick="deletePreset(${i})">X</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function saveHistory(win) {
+            const log = JSON.parse(localStorage.getItem('lineUpHistory')) || [];
+            log.unshift({
+                date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                players: state.players.length,
+                time: formatTime(state.finalTime),
+                win: win
+            });
+            if(log.length > 20) log.pop();
+            localStorage.setItem('lineUpHistory', JSON.stringify(log));
+        }
+
+        function renderHistoryList() {
+            const log = JSON.parse(localStorage.getItem('lineUpHistory')) || [];
+            const el = document.getElementById('historyList');
+            if(log.length === 0) { el.innerHTML = "<p>No games played yet.</p>"; return; }
+            el.innerHTML = log.map(g => `
+                <div class="item-card" style="margin-bottom:8px; ${g.win ? 'border-color:var(--success)' : ''}">
+                    <div><div style="font-size:0.8rem; opacity:0.7">${g.date}</div><strong>${g.players} Players</strong></div>
+                    <div style="text-align:right;"><div style="font-weight:bold;">${g.time}</div><div>${g.win ? '✅' : '❌'}</div></div>
+                </div>`).join('');
+        }
+
+        // --- MISC UTILS ---
+        function toggleGodMode() {
+            if(godMode) { godMode = false; render(); } else { 
+                if(prompt("Enter Admin Password:") === GOD_PASSWORD) { godMode = true; showToast("🔓 God Mode Active"); render(); } else { showToast("❌ Wrong Password"); } 
+            }
+        }
+
+        function startTimerTicker() {
+            if(timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const el = document.getElementById('timerDisplay');
+                if(el && state.startTime) {
+                    const diff = Math.floor((Date.now() - state.startTime) / 1000);
+                    el.innerText = `⏱️ ${formatTime(diff)}`;
+                }
+            }, 1000);
+        }
+
+        function openModal(id) { 
+            const m = document.getElementById(id); m.classList.add('active'); 
+            if(id==='presetsModal') renderPresetsList(); 
+            if(id==='historyModal') renderHistoryList(); 
+            if(id==='leaderboardModal') {
+                document.getElementById('mobileLeaderboardList').innerHTML = getLeaderboardHtml();
+            }
+            pulse(); 
+        }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); pulse(); }
+
+        // --- RENDER ENGINE ---
+        function setState(s) { state.step = s; saveState(); render(); }
+        
+        function render() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('p')) { renderPlayerView(params.get('p')); return; }
+            if (params.get('room')) { renderRoomView(params.get('room')); return; }
+
+            // Mode Selection
+            if (!viewMode) { renderModeSelection(); return; }
+
+            // Host Mode
+            if(state.step === 'SETUP') renderSetup();
+            else if(state.step === 'DISTRIBUTE') renderDistribute();
+            else if(state.step === 'PASS_PLAY') renderPassPlay();
+            else if(state.step === 'VERIFY') renderVerify();
+            else if(state.step === 'RESULTS') renderResults();
+        }
+
+        // --- COMPONENTS ---
+        function getLeaderboardHtml() {
+            const scores = getLeaderboard();
+            const entries = Object.entries(scores).sort((a,b) => b[1] - a[1]);
+            if (entries.length === 0) return `<div style="text-align:center; opacity:0.6">No scores yet</div>`;
+            return entries.map((e, i) => `
+                <div class="item-card" style="padding:10px 15px; margin-bottom:8px; border:none; background:rgba(255,255,255,0.5);">
+                    <div style="display:flex; align-items:center;">
+                        <span style="font-weight:900; width:25px; opacity:0.6;">${i+1}</span>
+                        <span style="font-weight:700;">${e[0]}</span>
+                    </div>
+                    <strong style="color:var(--primary-dark)">${e[1]} pts</strong>
+                </div>
+            `).join('');
+        }
+
+        function renderModeSelection() {
             app.innerHTML = `
                 <h1>Welcome</h1>
-                <p>Select your role</p>
+                <p>Choose your display mode</p>
                 <div class="row" style="margin-top:20px;">
-                    <button class="mode-select-btn col" onclick="setViewMode('mobile')">
-                        <div class="big-icon">📱</div>
-                        Host / Play
+                    <button class="mode-btn col" onclick="setViewMode('mobile')">
+                        <div class="mode-icon">📱</div>
+                        Mobile / Host
                     </button>
-                    <button class="mode-select-btn col" onclick="setViewMode('tv')">
-                        <div class="big-icon">📺</div>
+                    <button class="mode-btn col" onclick="setViewMode('tv')">
+                        <div class="mode-icon">📺</div>
                         TV Display
                     </button>
                 </div>
             `;
         }
 
-        function renderSetup(isTV) {
-            const pList = state.players.map((p,i) => `
-                <div class="item-card">
-                    <div style="display:flex; align-items:center;">
-                        <img src="${getAvatar(p.name)}" class="avatar">
-                        <strong>${p.name}</strong>
-                    </div>
-                    <button class="btn-danger btn-icon" style="width:32px; height:32px;" onclick="remPlayer(${i})">✕</button>
-                </div>`).join('') || '<div style="text-align:center; opacity:0.5; padding:20px;">No players yet</div>';
-
-            const chips = AUTO_NAMES.map(n => {
-                const has = state.players.some(p=>p.name.toLowerCase()===n.toLowerCase());
-                return `<div class="chip ${has?'disabled':''}" onclick="addPlayer('${n}')">${n}</div>`;
-            }).join('');
-
-            const form = `
+        function renderSetup() {
+            const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">↔️</button>`;
+            const leftContent = `
+                <h1>Line Up!</h1>
+                <p>The Ultimate Party Game</p>
                 <div class="row">
-                    <div class="col">
-                        <div class="input-group">
-                            <span class="label-text">Min Range</span>
-                            <input type="number" id="minIn" value="${state.settings.min}" onchange="state.settings.min=this.value">
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="input-group">
-                            <span class="label-text">Max Range</span>
-                            <input type="number" id="maxIn" value="${state.settings.max}" onchange="state.settings.max=this.value">
-                        </div>
-                    </div>
+                    <div class="col"><label class="label">Min</label><input type="number" id="minInput" value="${state.settings.min}"></div>
+                    <div class="col"><label class="label">Max</label><input type="number" id="maxInput" value="${state.settings.max}"></div>
                 </div>
-                <div class="input-group">
-                    <span class="label-text">Sorting Order</span>
-                    <select onchange="state.settings.order=this.value">
-                        <option value="asc" ${state.settings.order=='asc'?'selected':''}>Lowest to Highest (1 ➔ 100)</option>
-                        <option value="desc" ${state.settings.order=='desc'?'selected':''}>Highest to Lowest (100 ➔ 1)</option>
+                <div style="margin-top:15px;">
+                    <label class="label">Sort Order</label>
+                    <select id="orderInput">
+                        <option value="asc" ${state.settings.order === 'asc' ? 'selected' : ''}>Smallest → Biggest</option>
+                        <option value="desc" ${state.settings.order === 'desc' ? 'selected' : ''}>Biggest → Smallest</option>
                     </select>
                 </div>
-                
                 <div class="divider"></div>
-                
-                <div class="row">
-                    <input type="text" id="nameIn" placeholder="Enter player name" onkeydown="if(event.key==='Enter') addPlayer()">
-                    <button class="btn-primary" style="width:auto" onclick="addPlayer()">Add</button>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label class="label" style="margin:0;">Players (${state.players.length})</label>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-secondary btn-sm" onclick="openModal('presetsModal')">💾</button>
+                        <button class="btn-secondary btn-sm" onclick="openModal('leaderboardModal')">🏆</button>
+                        <button class="btn-secondary btn-sm" onclick="openModal('dataModal')">⚙️</button>
+                        <button class="btn-secondary btn-sm" onclick="savePreset()">+Save</button>
+                    </div>
                 </div>
-                <div class="chip-grid">${chips}</div>
+                <div class="row" style="margin-top:10px; margin-bottom:10px;">
+                    <input type="text" id="nameInput" placeholder="Name" onkeydown="if(event.key==='Enter') addPlayer()">
+                    <button class="btn-primary" style="width:auto;" onclick="addPlayer()">Add</button>
+                </div>
                 
-                <div class="row" style="margin-top:20px; gap:8px;">
-                    <button class="btn-secondary col" onclick="openModal('presetsModal')">💾 Groups</button>
-                    <button class="btn-secondary col" onclick="openModal('leaderboardModal')">🏆 Rank</button>
-                    <button class="btn-secondary col" onclick="openModal('dataModal')">⚙️ Data</button>
+                <div class="chip-container">
+                    ${AUTO_NAMES.map(n => {
+                        const isAdded = state.players.some(p => p.name.toLowerCase() === n.toLowerCase());
+                        return `<button class="chip-btn ${isAdded ? 'added' : ''}" onclick="addPlayer('${n}')">${n}</button>`;
+                    }).join('')}
+                </div>
+                
+                <div style="margin-top:auto;">
+                    <button class="btn-primary" onclick="startGame()" ${state.players.length < 2 ? 'disabled' : ''}>${state.players.length < 2 ? 'Add Players to Start' : 'Generate Links'}</button>
+                    ${viewMode === 'mobile' ? `
+                    <div style="text-align:center; margin: 12px 0; font-size: 0.8rem; font-weight:800; opacity:0.5; letter-spacing:1px;">— OR —</div>
+                    <button class="btn-secondary" onclick="startPassGame()" ${state.players.length < 2 ? 'disabled' : ''}>📱 Pass & Play</button>` : ''}
                 </div>
             `;
 
-            const actions = `
-                <button class="btn-primary" style="margin-top:20px;" onclick="startMain()" ${state.players.length<2?'disabled':''}>
-                    GENERATE & PLAY 🚀
-                </button>
-                ${!isTV ? `<div style="text-align:center; margin:10px; opacity:0.5; font-size:0.8rem;">OR</div>
-                <button class="btn-secondary" onclick="startPass()" ${state.players.length<2?'disabled':''}>📱 Pass & Play Mode</button>` : ''}
-            `;
-
-            if(isTV) {
-                return `<div class="tv-panel-left">
-                            <h1>Setup Game</h1>
-                            ${form}
-                            ${actions}
+            const rosterHtml = `
+                <div class="list-wrap">
+                    ${state.players.length === 0 ? '<div style="text-align:center; opacity:0.5; padding:20px;">Add players...</div>' : ''}
+                    ${state.players.map((p, i) => `
+                        <div class="item-card">
+                            <span style="font-weight:700;">${p.name}</span>
+                            <button class="btn-danger btn-icon" style="width:32px; height:32px; font-size:1rem;" onclick="removePlayer(${i})">✕</button>
                         </div>
-                        <div class="tv-panel-right">
-                            <h3>Roster (${state.players.length})</h3>
-                            <div class="glass-panel list-wrap">${pList}</div>
-                        </div>`;
-            }
-            return `<h1>Line Up!</h1><p>Setup Game</p>${form}<div class="divider"></div><h3>Roster (${state.players.length})</h3><div class="list-wrap">${pList}</div>${actions}`;
+                    `).join('')}
+                </div>
+            `;
+
+            app.innerHTML = `
+                ${switchBtn}
+                <div class="split-container">
+                    <div class="left-panel">${leftContent}</div>
+                    ${viewMode === 'tv' ? `
+                        <div class="right-panel">
+                            <div class="game-status-panel"><h3>Current Roster</h3>${rosterHtml}</div>
+                            <div class="leaderboard-panel"><h3>🏆 Total Scores</h3>${getLeaderboardHtml()}</div>
+                        </div>` 
+                    : `<div style="margin-top:10px">${rosterHtml}</div>`}
+                </div>
+            `;
+            if(viewMode === 'tv') document.body.classList.add('is-tv-mode');
         }
 
-        function renderDistribute(isTV) {
-            const time = `<div class="timer-float" id="timerDisplay">Waiting...</div>`;
-            const base = window.location.href.split('?')[0];
+        function renderDistribute() {
+            const baseUrl = window.location.href.split('?')[0];
+            const currentSeconds = state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0;
+            const encodeData = (obj) => btoa(JSON.stringify(obj));
+            const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">↔️</button>`;
             
-            const links = state.players.map(p => {
-                const d = btoa(JSON.stringify({n:p.name, v:p.number, min:state.settings.min, max:state.settings.max}));
-                const url = `${base}?p=${d}`;
-                return `
-                <div class="item-card">
-                    <div style="display:flex; align-items:center;">
-                        <img src="${getAvatar(p.name)}" class="avatar">
-                        <strong>${p.name}</strong>
-                    </div>
-                    <div class="row" style="gap:5px;">
-                        <button class="btn-secondary btn-icon" onclick="showQr('${url}','${p.name}')">🏁</button>
-                        <button class="btn-secondary btn-icon" onclick="share('${url}','${p.name}')">🔗</button>
-                    </div>
-                </div>`;
-            }).join('');
-
-            const controls = `
-                ${time}
-                <p>Send links to players so they get their numbers.</p>
-                <button class="btn-primary" onclick="setState('VERIFY')">Start Verification</button>
-                <div class="row" style="margin-top:10px;">
-                    <button class="btn-secondary col" onclick="openRoomQr()">🏠 Room QR</button>
-                    ${isTV ? `<button class="btn-secondary col" onclick="openGridQr()">📺 All QRs</button>`:''}
+            const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ ${formatTime(currentSeconds)}</div></div>`;
+            const controlsHtml = `
+                ${timerHtml}
+                <h2>🔗 Distribute</h2>
+                <div style="text-align:center; margin-top:20px;">
+                    <button class="btn-primary" onclick="setState('VERIFY')">Start Verification</button>
+                    <button class="btn-secondary" style="margin-top:10px;" onclick="setState('SETUP')">Back</button>
                 </div>
-                <button class="btn-danger btn-sm" style="margin-top:20px; background:transparent; border:none;" onclick="setState('SETUP')">Back to Setup</button>
+                <div class="row" style="margin-top:15px;">
+                    ${viewMode === 'mobile' ? `<button class="btn-secondary" onclick="openModal('leaderboardModal')">🏆 Leaderboard</button>` : ''}
+                    <button class="btn-secondary" style="border-color:var(--primary); color:var(--primary)" onclick="openRoomQr()">🏠 Room Mode</button>
+                </div>
+                ${viewMode === 'tv' ? `<button class="btn-secondary" style="margin-top:10px;" onclick="openQrGrid()">📺 Grid View (All QRs)</button>` : ''}
             `;
 
-            if(isTV) {
-                return `<div class="tv-panel-left">${controls}</div>
-                        <div class="tv-panel-right"><h3>Players</h3><div class="glass-panel list-wrap">${links}</div></div>`;
+            const listHtml = `
+                <div class="list-wrap">
+                    ${state.players.map((p, i) => {
+                        const payload = { n: p.name, v: p.number, min: state.settings.min, max: state.settings.max, o: state.settings.order };
+                        const link = `${baseUrl}?p=${encodeData(payload)}`;
+                        return `
+                        <div class="item-card" style="flex-direction:column; gap:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                                <span style="font-weight:800;">${p.name}</span>
+                                <span style="font-size:0.75rem; background:var(--primary); color:white; padding:4px 10px; border-radius:12px; font-weight:800;">HIDDEN</span>
+                            </div>
+                            <div class="row" style="width:100%; gap:8px;">
+                                <button class="btn-secondary btn-icon" onclick="showQr('${link}', '${p.name}')">🏁</button>
+                                <button class="btn-secondary btn-sm" style="flex:1" onclick="copyLink('${link}')">Copy</button>
+                                <button class="btn-secondary btn-icon" onclick="shareLink('${link}', '${p.name}')">📤</button>
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>`;
+
+            if (viewMode === 'tv') {
+                app.innerHTML = `${switchBtn}<div class="split-container">
+                    <div class="left-panel">${controlsHtml}</div>
+                    <div class="right-panel">
+                        <div class="game-status-panel"><h3>Links</h3>${listHtml}</div>
+                        <div class="leaderboard-panel"><h3>🏆 Total Scores</h3>${getLeaderboardHtml()}</div>
+                    </div>
+                </div>`;
+            } else {
+                app.innerHTML = `${switchBtn}${controlsHtml}${listHtml}`;
             }
-            return `<h2>🔗 Distribute</h2>${controls}<div class="divider"></div><div class="list-wrap">${links}</div>`;
+            startTimerTicker();
         }
 
         function renderPassPlay() {
             const p = state.players[state.passIndex];
-            if(!state.viewingNumber) {
-                return `<div style="text-align:center; margin-top:40px;">
-                            <div style="font-size:4rem; margin-bottom:20px;">🙈</div>
-                            <h2>Pass Device to</h2>
-                            <h1 style="font-size:3.5rem; color:var(--accent);">${p.name}</h1>
-                            <div class="divider"></div>
-                            <button class="btn-primary" onclick="state.viewingNumber=true;saveState();render()">I am ${p.name}</button>
-                        </div>`;
-            }
-            return `<div style="text-align:center;">
-                        <h2>Hi, ${p.name}</h2>
-                        <p>Tap & Hold to see your number</p>
-                        <div id="secretBox" class="secret-box">
-                            <div class="secret-overlay">HOLD TO REVEAL</div>
-                            <div class="secret-text" id="secretNum">${p.number}</div>
-                        </div>
-                        <p>Range: ${state.settings.min} - ${state.settings.max}</p>
-                        <button class="btn-primary" onclick="nextPass()">${state.passIndex<state.players.length-1?'Next Player':'Finish'}</button>
+            const orderText = state.settings.order === 'asc' ? 'Smallest ➔ Biggest' : 'Biggest ➔ Smallest';
+            const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">↔️</button>`;
+            
+            if (!state.viewingNumber) {
+                app.innerHTML = `
+                    ${switchBtn}
+                    <div style="text-align:center; margin-top:20px;">
+                        <h1 style="font-size:4rem; margin-bottom:20px;">📱</h1>
+                        <h2>Pass to<br><span style="color:var(--primary); font-size:2.5rem;">${p.name}</span></h2>
+                        <div class="divider"></div>
+                        <button class="btn-primary" onclick="state.viewingNumber=true; saveState(); render()">I am ${p.name}</button>
                     </div>`;
+            } else {
+                app.innerHTML = `
+                    ${switchBtn}
+                    <div style="text-align:center;"><h2>Hi, ${p.name}!</h2><p>Tap & hold to reveal.</p></div>
+                    <div class="secret-container" id="secretBox"><div class="secret-overlay">HOLD</div><div class="big-number secret-blur">${p.number}</div></div>
+                    <div style="background:var(--bg-item); padding:15px; border-radius:16px; text-align:left; font-size:0.95rem; margin-bottom:20px;">
+                        Range: <strong>${state.settings.min} - ${state.settings.max}</strong><br>Order: <strong>${orderText}</strong>
+                    </div>
+                    <button class="btn-primary" onclick="nextPassPlayer()">${state.passIndex < state.players.length - 1 ? 'Next Player' : 'Go to Line Up!'}</button>
+                `;
+                bindSecretBox();
+            }
         }
 
-        function renderVerify(isTV) {
-            // Important: Add Sortable after render
-            setTimeout(initSortable, 100);
+        function renderVerify() {
+            if (!state.startTime) state.startTime = Date.now();
+            const currentSeconds = Math.floor((Date.now() - state.startTime) / 1000);
+            const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">↔️</button>`;
             
-            const time = `<div class="timer-float" id="timerDisplay">0:00</div>`;
-            const list = state.players.map((p,i) => `
-                <div class="item-card" data-idx="${i}">
-                    <div style="display:flex; align-items:center;">
-                        <div class="grab-handle">☰</div>
-                        <div style="background:var(--text-main); color:var(--bg-deep); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; margin-right:10px; font-size:0.8rem;">${i+1}</div>
-                        <img src="${getAvatar(p.name)}" class="avatar">
-                        <strong>${p.name}</strong>
-                        ${godMode ? `<span style="color:var(--accent); margin-left:5px;">(${p.number})</span>`:''}
-                    </div>
-                </div>`).join('');
-
-            const actions = `
-                ${time}
-                <div class="row" style="margin: 10px 0;">
-                    <button class="btn-secondary" onclick="toggleGod()">${godMode?'🔓 Admin':'🔒 Admin'}</button>
+            const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ ${formatTime(currentSeconds)}</div></div>`;
+            const controlsHtml = `
+                ${timerHtml}
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2>🧐 Verify</h2>
+                    <button class="btn-secondary btn-icon" style="width:36px; height:36px; font-size:1rem;" onclick="toggleGodMode()">${godMode ? '🔓' : '🔒'}</button>
                 </div>
-                <button class="btn-primary" style="background:linear-gradient(135deg, var(--success), #059669);" onclick="checkOrder()">REVEAL RESULT</button>
+                ${viewMode === 'tv' ? 
+                  `<div style="margin-top:auto">
+                    <button class="btn-primary" style="background:var(--success); margin-bottom:10px" onclick="checkOrder()">Reveal Results</button>
+                    <button class="btn-secondary" onclick="setState('DISTRIBUTE')">Back</button>
+                   </div>` 
+                  : ''}
             `;
 
-            if(isTV) {
-                return `<div class="tv-panel-left"><h1>Verify Order</h1><p>Drag players to sort them.</p>${actions}</div>
-                        <div class="tv-panel-right"><h3>Current Line Up</h3><div class="glass-panel list-wrap" id="sortList">${list}</div></div>`;
+            const listHtml = `
+                <div class="list-wrap">
+                    ${state.players.map((p, i) => `
+                        <div class="item-card" style="transition: transform 0.3s ease;">
+                            <div style="display:flex; align-items:center;">
+                                <div class="rank-badge">${i + 1}</div>
+                                <div><span style="font-weight:700;">${p.name}</span>${godMode ? `<span style="margin-left:8px; color:var(--primary); font-weight:900;">(${p.number})</span>` : ''}</div>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn-secondary btn-icon" onclick="movePlayer(${i}, -1)" ${i === 0 ? 'disabled' : ''}>▲</button>
+                                <button class="btn-secondary btn-icon" onclick="movePlayer(${i}, 1)" ${i === state.players.length - 1 ? 'disabled' : ''}>▼</button>
+                            </div>
+                        </div>`).join('')}
+                </div>
+                ${viewMode === 'mobile' ? `
+                <button class="btn-primary" style="background:var(--success);" onclick="checkOrder()">Reveal Results</button>
+                <button class="btn-secondary" style="margin-top:10px;" onclick="setState('DISTRIBUTE')">Back</button>` : ''}
+            `;
+
+            if (viewMode === 'tv') {
+                app.innerHTML = `${switchBtn}<div class="split-container">
+                    <div class="left-panel">${controlsHtml}</div>
+                    <div class="right-panel">
+                        <div class="game-status-panel"><h3>Current Order</h3>${listHtml}</div>
+                        <div class="leaderboard-panel"><h3>🏆 Total Scores</h3>${getLeaderboardHtml()}</div>
+                    </div>
+                </div>`;
+            } else {
+                app.innerHTML = `${switchBtn}${controlsHtml}${listHtml}`;
             }
-            return `<h2>🧐 Verify</h2>${time}<div class="list-wrap" id="sortList">${list}</div><div class="divider"></div>${actions}`;
+            startTimerTicker();
         }
 
-        function renderResults(isTV) {
+        function renderResults() {
             clearInterval(timerInterval);
-            const sorted = [...state.players].sort((a,b) => state.settings.order=='asc' ? a.number-b.number : b.number-a.number);
-            let perfect = true;
+            const sorted = [...state.players].sort((a, b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
+            let allCorrect = true; 
+            const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">↔️</button>`;
             
-            // Calc MVP (Closest to ideal position)
-            let mvp = null, minDelta = Infinity;
-            state.players.forEach((p,i) => {
-                if(p.name !== sorted[i].name) perfect = false;
-                const ideal = (p.number - state.settings.min)/(state.settings.max-state.settings.min) * (state.players.length-1);
-                const delta = Math.abs(i - ideal);
-                if(delta < minDelta) { minDelta = delta; mvp = p.name; }
-            });
-
-            if(perfect && !state.finalTime) {
-                state.finalTime = Math.floor((Date.now()-state.startTime)/1000);
-                saveState();
-                confetti({particleCount:150, spread:100});
-                updateScores();
-            } else if(!state.finalTime) {
-                state.finalTime = Math.floor((Date.now()-state.startTime)/1000);
-                saveState();
-                updateScores();
+            // MVP Logic
+            let mvpName = ""; let bestDelta = Infinity;
+            const min = state.settings.min; const max = state.settings.max; const total = state.players.length;
+            if(total > 1) {
+                state.players.forEach((p, actualIndex) => {
+                    const idealPercent = (p.number - min) / (max - min); 
+                    const idealIndex = idealPercent * (total - 1);
+                    const delta = Math.abs(actualIndex - idealIndex);
+                    if(delta < bestDelta) { bestDelta = delta; mvpName = p.name; }
+                });
             }
 
-            const resList = state.players.map((p,i) => {
-                const ok = p.name === sorted[i].name;
-                const isMvp = p.name === mvp;
+            const listItems = state.players.map((p, i) => {
+                const isCorrect = p.name === sorted[i].name; 
+                if (!isCorrect) allCorrect = false;
+                const realRank = sorted.findIndex(x => x.name === p.name) + 1; 
+                const isMvp = p.name === mvpName;
                 return `
-                <div class="item-card" style="border-color:${ok? 'var(--success)':'var(--danger)'}; background:${ok?'rgba(16, 185, 129, 0.1)':'rgba(244, 63, 94, 0.1)'}">
-                    <div>
-                        <div style="display:flex; align-items:center;">
-                            <strong style="margin-right:10px;">${i+1}.</strong>
-                            <img src="${getAvatar(p.name)}" class="avatar">
-                            <strong>${p.name}</strong>
-                            ${isMvp ? '<span style="font-size:0.7rem; background:var(--gold); color:black; padding:2px 6px; border-radius:4px; margin-left:8px;">MVP</span>':''}
+                    <div class="item-card ${isCorrect ? 'correct' : 'wrong'} ${isMvp ? 'gold' : ''}">
+                        <div>
+                            <div style="display:flex; align-items:center;">
+                                <div class="rank-badge" style="background:${isCorrect ? 'var(--success)' : 'var(--danger)'}; color:white;">${i+1}</div>
+                                <strong>${p.name}</strong>${isMvp ? '<span style="margin-left:8px; font-size:0.8rem; background:var(--gold); color:white; padding:2px 6px; border-radius:4px;">⭐ MVP</span>' : ''}
+                            </div>
+                            <div style="font-size:0.85rem; margin-top:6px; margin-left:40px; opacity:0.8;">Number: <strong>${p.number}</strong>${!isCorrect ? `(Should be #${realRank})` : ''}</div>
                         </div>
-                        <div style="font-size:0.8rem; margin-left:45px; opacity:0.8;">Held: <strong>${p.number}</strong></div>
-                    </div>
-                    <div style="font-size:1.5rem;">${ok?'✅':'❌'}</div>
-                </div>`;
+                        <div style="font-size:1.5rem;">${isCorrect ? `✅<br><span style="font-size:0.6rem; font-weight:bold; color:var(--success)">+10pts</span>` : '❌'}</div>
+                    </div>`;
             }).join('');
 
-            const header = `
-                <div class="timer-float" style="color:var(--gold)">${formatTime(state.finalTime)}</div>
-                <h1>${perfect?'PERFECT! 🎉':'SO CLOSE... 😬'}</h1>
-                <div class="row" style="margin-top:20px;">
-                    <button class="btn-primary col" onclick="restart()">🔄 Replay</button>
-                    <button class="btn-secondary col" onclick="resetGame()">New Game</button>
+            let timeMsg = "";
+            if(allCorrect) {
+                const duration = Math.floor((Date.now() - state.startTime) / 1000);
+                if(!state.finalTime) { 
+                    state.finalTime = duration; saveState(); saveHistory(true); 
+                    updateScores(); // Add Points
+                    setTimeout(() => confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } }), 200); 
+                }
+                timeMsg = `<div class="timer-badge" style="background:var(--gold); color:white; animation: popIn 0.5s;">Time: ${formatTime(state.finalTime)}</div>`;
+            } else if (!state.finalTime) { 
+                state.finalTime = Math.floor((Date.now() - state.startTime) / 1000); 
+                saveHistory(false); 
+                updateScores(); // Add Points even if lost
+            }
+
+            const headerHtml = `<div style="text-align:center;">${timeMsg}</div><h1>${allCorrect ? '🎉 Perfect!' : '😬 Close!'}</h1>`;
+            const buttonsHtml = `
+                <button class="btn-primary" onclick="restartSamePlayers()">🔄 Play Again</button>
+                <button class="btn-secondary" style="margin-top:10px;" onclick="resetGameData()">New Game</button>
+            `;
+            const listHtml = `<div class="list-wrap">${listItems}</div>`;
+            const leaderboardHtml = `<div style="margin-top:20px; padding-top:20px; border-top:2px solid var(--border);">
+                <h3>🏆 Total Scores</h3>${getLeaderboardHtml()}</div>`;
+
+            if(viewMode === 'tv') {
+                app.innerHTML = `
+                    ${switchBtn}
+                    <div class="split-container">
+                        <div class="left-panel" style="justify-content:center;">${headerHtml}<div style="margin-top:30px">${buttonsHtml}</div></div>
+                        <div class="right-panel">
+                            <div class="game-status-panel"><h3>Results</h3>${listHtml}</div>
+                            <div class="leaderboard-panel"><h3>🏆 Total Scores</h3>${getLeaderboardHtml()}</div>
+                        </div>
+                    </div>`;
+            } else {
+                app.innerHTML = `${switchBtn}${headerHtml}${listHtml}${leaderboardHtml}${buttonsHtml}`;
+            }
+        }
+
+        // --- PLAYER VIEWS ---
+        function renderPlayerView(encodedData) {
+            let data = null;
+            try { data = JSON.parse(atob(encodedData)); } catch(e) {}
+            if (!data) return app.innerHTML = `<h2>Error</h2><p>Broken link.</p>`;
+            app.innerHTML = `
+                <div style="text-align:center;"><h2>Hi, ${data.n}!</h2><p>Tap & hold.</p></div>
+                <div class="secret-container" id="secretBox"><div class="secret-overlay">HOLD</div><div class="big-number secret-blur">${data.v}</div></div>
+                <div style="background:var(--bg-item); padding:20px; border-radius:16px; text-align:left; font-size:0.95rem;">Range: <strong>${data.min} - ${data.max}</strong></div>
+            `;
+            bindSecretBox();
+        }
+
+        function renderRoomView(encodedData) {
+            let data = null;
+            try { data = JSON.parse(atob(encodedData)); } catch(e) {}
+            if (!data) return app.innerHTML = `<h2>Error</h2><p>Invalid Room Data</p>`;
+            
+            app.innerHTML = `
+                <h2 style="margin-bottom:5px;">🏠 Pick Name</h2>
+                <p>Tap your name to reveal your number</p>
+                <div class="list-wrap">
+                    ${data.players.map(p => `
+                        <button class="btn-secondary" style="margin-bottom:10px; justify-content:space-between; padding:20px;" 
+                            onclick="claimPlayer('${p.n}', ${p.v}, ${data.min}, ${data.max}, '${data.o}')">
+                            <span style="font-weight:bold; font-size:1.1rem;">${p.n}</span>
+                            <span>👉</span>
+                        </button>
+                    `).join('')}
                 </div>
             `;
-
-            if(isTV) {
-                return `<div class="tv-panel-left" style="justify-content:center;">${header}</div>
-                        <div class="tv-panel-right"><h3>Results</h3><div class="glass-panel list-wrap">${resList}</div></div>`;
-            }
-            return `${header}<div class="divider"></div><div class="list-wrap">${resList}</div>`;
         }
 
-        // --- PLAYER & ROOM RENDERERS ---
-        function renderPlayer(encoded) {
-            try {
-                const d = JSON.parse(atob(encoded));
-                app.innerHTML = `
-                    <div style="text-align:center;">
-                        <img src="${getAvatar(d.n)}" style="width:60px; height:60px; border-radius:50%; margin-bottom:10px; border:2px solid var(--border);">
-                        <h2>${d.n}</h2>
-                        <div id="secretBox" class="secret-box">
-                            <div class="secret-overlay">HOLD TO REVEAL</div>
-                            <div class="secret-text" id="secretNum">${d.v}</div>
-                        </div>
-                        <p>Range: ${d.min} - ${d.max}</p>
-                    </div>`;
-                bindSecret();
-            } catch(e) { app.innerHTML = `<h2>Error</h2><p>Invalid Link</p>`; }
+        function claimPlayer(name, val, min, max, order) {
+            const payload = { n: name, v: val, min: min, max: max, o: order };
+            const encoded = btoa(JSON.stringify(payload));
+            window.location.search = `?p=${encoded}`;
         }
 
-        function renderRoom(encoded) {
-            try {
-                const d = JSON.parse(atob(encoded));
-                const list = d.players.map(p => {
-                    const payload = btoa(JSON.stringify({n:p.n, v:p.v, min:d.min, max:d.max}));
-                    return `<button class="btn-secondary" style="justify-content:space-between; margin-bottom:10px;" onclick="window.location.search='?p=${payload}'">
-                        <div style="display:flex; align-items:center;"><img src="${getAvatar(p.n)}" class="avatar"><b>${p.n}</b></div>👉
-                    </button>`;
-                }).join('');
-                app.innerHTML = `<h2>Select Name</h2><div class="list-wrap">${list}</div>`;
-            } catch(e) { app.innerHTML = `<h2>Error</h2>`; }
+        // --- INTERACTION ---
+        function movePlayer(index, dir) { 
+            const target = index + dir; 
+            if (target < 0 || target >= state.players.length) return; 
+            [state.players[index], state.players[target]] = [state.players[target], state.players[index]]; 
+            renderVerify(); saveState(); pulse(); 
         }
 
-        // --- ACTIONS ---
-        function addPlayer(n) {
-            const name = n || document.getElementById('nameIn').value.trim();
-            if(!name || state.players.some(p=>p.name.toLowerCase()===name.toLowerCase())) return showToast("Invalid/Duplicate");
-            state.players.push({name, number:0});
-            if(document.getElementById('nameIn')) document.getElementById('nameIn').value='';
-            setState('SETUP'); pulse();
-        }
-        function remPlayer(i) { state.players.splice(i,1); setState('SETUP'); pulse(); }
-        function startMain() { if(generateNumbers()) { state.startTime=Date.now(); state.finalTime=null; setState('DISTRIBUTE'); requestWakeLock(); } }
-        function startPass() { if(generateNumbers()) { state.passIndex=0; state.viewingNumber=false; state.startTime=null; setState('PASS_PLAY'); requestWakeLock(); } }
-        function nextPass() { 
-            if(state.passIndex < state.players.length-1) { state.passIndex++; state.viewingNumber=false; saveState(); render(); }
-            else { state.startTime=Date.now(); setState('VERIFY'); }
-        }
-        function checkOrder() { setState('RESULTS'); }
-        function restart() { state.startTime=null; state.finalTime=null; startMain(); }
-        function resetGame() { state = JSON.parse(JSON.stringify(DEFAULT_STATE)); saveState(); render(); }
-        function toggleGod() { 
-            if(godMode) godMode=false; 
-            else if(prompt("Pass:")===GOD_PASSWORD) { godMode=true; showToast("Admin On"); }
-            render();
-        }
-
-        // --- SORTABLE (DRAG FIX) ---
-        function initSortable() {
-            const el = document.getElementById('sortList');
-            if(!el) return;
-            new Sortable(el, {
-                animation: 200,
-                handle: '.grab-handle', // Must drag by handle
-                ghostClass: 'sortable-ghost',
-                dragClass: 'sortable-drag',
-                forceFallback: true, // FIX FOR TV/TOUCH
-                fallbackClass: 'sortable-drag',
-                onEnd: (evt) => {
-                    const item = state.players.splice(evt.oldIndex, 1)[0];
-                    state.players.splice(evt.newIndex, 0, item);
-                    saveState();
-                    renderVerify(viewMode === 'tv'); // Re-render to update index numbers
-                }
-            });
-        }
-
-        // --- SECRET BOX INTERACTION ---
-        function bindSecret() {
+        function bindSecretBox() {
             const box = document.getElementById('secretBox');
-            const num = document.getElementById('secretNum');
             if(!box) return;
-            const target = num.innerText;
-            let interval;
-            
-            const start = (e) => {
-                if(e.cancelable) e.preventDefault();
-                box.classList.add('revealed'); pulse();
-                let i=0; clearInterval(interval);
-                interval = setInterval(() => {
-                    num.innerText = Math.floor(Math.random()*100);
-                    if(++i > 8) { clearInterval(interval); num.innerText = target; }
-                }, 40);
-            };
-            const stop = (e) => { box.classList.remove('revealed'); clearInterval(interval); num.innerText=target; };
-            
-            ['mousedown','touchstart'].forEach(e=>box.addEventListener(e,start,{passive:false}));
-            ['mouseup','mouseleave','touchend'].forEach(e=>box.addEventListener(e,stop));
+            const reveal = (e) => { if(e.cancelable) e.preventDefault(); box.classList.add('revealed'); pulse(5); };
+            const hide = (e) => { if(e.cancelable) e.preventDefault(); box.classList.remove('revealed'); };
+            ['touchstart','mousedown'].forEach(e => box.addEventListener(e, reveal, {passive:false}));
+            ['touchend','touchcancel','mouseup','mouseleave'].forEach(e => box.addEventListener(e, hide));
         }
 
-        // --- TIMERS & BG ---
-        function startTimerTicker() {
-            if(timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                const el = document.getElementById('timerDisplay');
-                if(el && state.startTime && !state.finalTime) {
-                    const diff = (Date.now() - state.startTime)/1000;
-                    el.innerText = formatTime(Math.floor(diff));
-                    // Red Overlay Logic
-                    const intensity = Math.min(diff / 300, 0.8); // Max red at 5 mins
-                    document.getElementById('redOverlay').style.opacity = intensity;
-                }
-            }, 1000);
-        }
-
-        // --- MODALS & QR ---
-        function openModal(id) {
-            document.getElementById(id).classList.add('active');
-            if(id==='leaderboardModal') {
-                const s = JSON.parse(localStorage.getItem('lineUpLeaderboard')||'{}');
-                const h = Object.entries(s).sort((a,b)=>b[1]-a[1]).map((e,i)=>`
-                    <div class="item-card"><div style="display:flex;align-items:center;"><b>${i+1}.</b><span style="margin-left:10px">${e[0]}</span></div><b>${e[1]} pts</b></div>
-                `).join('');
-                document.getElementById('mobileLeaderboardList').innerHTML = h || '<p>No scores yet</p>';
-            }
-            if(id==='presetsModal') {
-                const p = JSON.parse(localStorage.getItem('lineUpPresets')||'[]');
-                document.getElementById('presetsList').innerHTML = p.map((g,i)=>`
-                    <div class="item-card"><span>${g.name} (${g.players.length})</span><div class="row" style="gap:5px"><button class="btn-primary btn-sm" onclick="loadPreset(${i})">Load</button><button class="btn-danger btn-sm" onclick="delPreset(${i})">X</button></div></div>
-                `).join('') || '<p>No presets</p>';
-            }
-        }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-        function showQr(url,n) {
-            openModal('qrModal'); document.getElementById('qrName').innerText=n;
-            const c=document.getElementById('qrDisplay'); c.innerHTML='';
-            new QRCode(c,{text:url,width:200,height:200});
-        }
-        function openGridQr() {
+        function copyLink(url) { navigator.clipboard.writeText(url); showToast("Link copied!"); pulse(); }
+        async function shareLink(url, name) { pulse(); if (navigator.share) { try { await navigator.share({ title: 'Line Up!', text: `Number for ${name}`, url: url }); } catch (err) {} } else { copyLink(url); } }
+        function showQr(url, name) { pulse(); openModal('qrModal'); document.getElementById('qrName').textContent = name; const c = document.getElementById('qrDisplay'); c.innerHTML = ''; new QRCode(c, { text: url, width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L }); }
+        
+        function openQrGrid() {
             openModal('qrGridModal');
-            const c=document.getElementById('qrGridTarget'); c.innerHTML='';
-            const base = window.location.href.split('?')[0];
+            const target = document.getElementById('qrGridTarget');
+            target.innerHTML = '';
+            const baseUrl = window.location.href.split('?')[0];
+            const encodeData = (obj) => btoa(JSON.stringify(obj));
             state.players.forEach(p => {
-                const d = btoa(JSON.stringify({n:p.name, v:p.number, min:state.settings.min, max:state.settings.max}));
-                const dEl = document.createElement('div'); dEl.className='qr-card';
-                dEl.innerHTML = `<b>${p.name}</b><div id="qg-${p.name}"></div>`;
-                c.appendChild(dEl);
-                new QRCode(document.getElementById(`qg-${p.name}`), {text:`${base}?p=${d}`, width:120, height:120});
+                const payload = { n: p.name, v: p.number, min: state.settings.min, max: state.settings.max, o: state.settings.order };
+                const link = `${baseUrl}?p=${encodeData(payload)}`;
+                const card = document.createElement('div');
+                card.className = 'qr-card';
+                card.innerHTML = `<div style="font-weight:800; margin-bottom:10px;">${p.name}</div><div id="qr-${p.name}"></div>`;
+                target.appendChild(card);
+                new QRCode(document.getElementById(`qr-${p.name}`), { text: link, width: 128, height: 128 });
             });
         }
+
         function openRoomQr() {
             openModal('roomQrModal');
-            const c=document.getElementById('roomQrDisplay'); c.innerHTML='';
-            const d = {players:state.players.map(p=>({n:p.name,v:p.number})), min:state.settings.min, max:state.settings.max};
-            new QRCode(c,{text:`${window.location.href.split('?')[0]}?room=${btoa(JSON.stringify(d))}`, width:220, height:220});
+            const c = document.getElementById('roomQrDisplay');
+            c.innerHTML = '';
+            
+            // Construct Room Payload (just names/numbers to keep URL short)
+            const roomData = {
+                players: state.players.map(p => ({n: p.name, v: p.number})),
+                min: state.settings.min, 
+                max: state.settings.max,
+                o: state.settings.order
+            };
+            const baseUrl = window.location.href.split('?')[0];
+            const url = `${baseUrl}?room=${btoa(JSON.stringify(roomData))}`;
+            
+            new QRCode(c, { text: url, width: 250, height: 250, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L });
         }
-        async function share(url,n) { if(navigator.share) try{await navigator.share({title:'LineUp',text:n,url:url})}catch(e){} else {navigator.clipboard.writeText(url);showToast('Copied');} }
+        
+        function checkOrder() { setState('RESULTS'); pulse(50); }
 
-        // --- DATA ---
-        function updateScores() {
-            const s = JSON.parse(localStorage.getItem('lineUpLeaderboard')||'{}');
-            const sorted = [...state.players].sort((a,b)=>state.settings.order=='asc'?a.number-b.number:b.number-a.number);
-            let chg=false;
-            state.players.forEach((p,i)=>{ if(p.name===sorted[i].name){s[p.name]=(s[p.name]||0)+10;chg=true;}else{s[p.name]=s[p.name]||0;} });
-            if(chg) localStorage.setItem('lineUpLeaderboard',JSON.stringify(s));
-        }
-        function resetScores() { localStorage.removeItem('lineUpLeaderboard'); showToast('Reset'); closeModal('dataModal'); }
-        function savePreset() {
-            if(!state.players.length) return;
-            const n=prompt('Group Name:'); if(!n) return;
-            const p = JSON.parse(localStorage.getItem('lineUpPresets')||'[]');
-            p.push({name:n, players:state.players, min:state.settings.min, max:state.settings.max});
-            localStorage.setItem('lineUpPresets',JSON.stringify(p)); showToast('Saved');
-        }
-        function loadPreset(i) {
-            const p = JSON.parse(localStorage.getItem('lineUpPresets')||'[]')[i];
-            if(p){ state.players=p.players; state.settings.min=p.min; state.settings.max=p.max; saveState(); closeModal('presetsModal'); render(); }
-        }
-        function delPreset(i) {
-            const p = JSON.parse(localStorage.getItem('lineUpPresets')||'[]'); p.splice(i,1);
-            localStorage.setItem('lineUpPresets',JSON.stringify(p)); openModal('presetsModal');
-        }
-        function exportData() {
-            const d = JSON.stringify(localStorage);
-            const b = new Blob([d],{type:'application/json'});
-            const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download='lineup.json'; a.click();
-        }
-        function importData(e) {
-            const r = new FileReader(); r.onload=ev=>{ 
-                try{ const d=JSON.parse(ev.target.result); Object.keys(d).forEach(k=>localStorage.setItem(k,d[k])); location.reload(); }catch(x){} 
-            }; r.readAsText(e.target.files[0]);
-        }
-        function wipeData() { if(confirm('Factory Reset?')) { localStorage.clear(); location.reload(); } }
-
-        // --- BOOT ---
-        initSnow();
-        loadState();
+        // Start
+        initSnow(); loadState(); 
+        if(state.step !== 'SETUP' && !viewMode) { viewMode = 'mobile'; }
+        if(viewMode === 'tv') document.body.classList.add('is-tv-mode');
         render();
+
     </script>
 </body>
 </html>
+
