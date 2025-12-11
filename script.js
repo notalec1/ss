@@ -2,26 +2,25 @@
 const GOD_PASSWORD = "line1up";
 const AUTO_NAMES = ["Alec", "Alain", "Nada", "Hoda", "Fadi", "Noa", "Gio", "Neo", "Nounou", "Assaad", "Chris", "Eliott"];
 
-// YOUR CUSTOM PLAYLIST
 const MUSIC_TRACKS = [
-    { file: "Metallica_ Nothing Else Matters (Official Music Video)(MP3_160K).mp3", title: "Nothing Else Matters", artist: "Metallica" },
-    { file: "Smells like teen spirit - Nirvana.mp3", title: "Smells Like Teen Spirit", artist: "Nirvana" },
-    { file: "rem-losing-my-religion.mp3", title: "Losing My Religion", artist: "R.E.M." },
-    { file: "No One Like You ~ Scorpions.mp3", title: "No One Like You", artist: "Scorpions" },
-    { file: "Supertramp - Breakfast In America.mp3", title: "Breakfast In America", artist: "Supertramp" },
-    { file: "Abba - Chiquitita (Official Music Video).mp3", title: "Chiquitita", artist: "ABBA" },
-    { file: "Guns N Roses - Sweet Child o Mine.mp3", title: "Sweet Child 'O Mine", artist: "Guns 'N' Roses" },
-    { file: "Scorpion_-_Always_Somewhere_(mp3.pm).mp3", title: "Always Somewhere", artist: "Scorpions" },
-    { file: "01071744.mp3", title: "Dream On", artist: "Aerosmith" },
-    { file: "y2mate.com - Led Zeppelin Stairway To Heaven Official Audio.mp3", title: "Stairway to Heaven", artist: "Led Zeppelin" },
-    { file: "ACDC - Thunderstruck.mp3", title: "Thunderstruck", artist: "AC/DC" },
-    { file: "ACDC - Highway to Hell.mp3", title: "Highway to Hell", artist: "AC/DC" },
-    { file: "Sailor.mp3", title: "Sailor", artist: "Chris De Burgh" },
-    { file: "11 Money For Nothing.mp3", title: "Money For Nothing", artist: "Dire Straits" },
-    { file: "01 Sultans Of Swings.mp3", title: "Sultans of Swing", artist: "Dire Straits" },
-    { file: "Ethereal Connection - Tame Impala.mp3", title: "Ethereal Connection", artist: "Tame Impala" },
-    { file: "End Of Summer - Tame Impala.mp3", title: "End of Summer", artist: "Tame Impala" },
-    { file: "Dracula - Tame Impala.mp3", title: "Dracula", artist: "Tame Impala" }
+    { file: "nothingelsematters.mp3", title: "Nothing Else Matters", artist: "Metallica" },
+    { file: "smellsliketeenspirit.mp3", title: "Smells Like Teen Spirit", artist: "Nirvana" },
+    { file: "losingmyreligion.mp3", title: "Losing My Religion", artist: "R.E.M." },
+    { file: "noonelikeyou.mp3", title: "No One Like You", artist: "Scorpions" },
+    { file: "breakfastinamerica.mp3", title: "Breakfast In America", artist: "Supertramp" },
+    { file: "chiquitita.mp3", title: "Chiquitita", artist: "ABBA" },
+    { file: "sweetchildomine.mp3", title: "Sweet Child 'O Mine", artist: "Guns 'N' Roses" },
+    { file: "alwayssomewhere.mp3", title: "Always Somewhere", artist: "Scorpions" },
+    { file: "dreamon.mp3", title: "Dream On", artist: "Aerosmith" },
+    { file: "stairwaytoheaven.mp3", title: "Stairway to Heaven", artist: "Led Zeppelin" },
+    { file: "thunderstruck.mp3", title: "Thunderstruck", artist: "AC/DC" },
+    { file: "highwaytohell.mp3", title: "Highway to Hell", artist: "AC/DC" },
+    { file: "sailor.mp3", title: "Sailor", artist: "Chris De Burgh" },
+    { file: "moneyfornothing.mp3", title: "Money For Nothing", artist: "Dire Straits" },
+    { file: "sultansofswing.mp3", title: "Sultans of Swing", artist: "Dire Straits" },
+    { file: "etherealconnection.mp3", title: "Ethereal Connection", artist: "Tame Impala" },
+    { file: "endofsummer.mp3", title: "End of Summer", artist: "Tame Impala" },
+    { file: "dracula.mp3", title: "Dracula", artist: "Tame Impala" }
 ];
 
 const DEFAULT_STATE = { 
