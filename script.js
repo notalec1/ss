@@ -108,20 +108,44 @@ function playMusic(filename) {
     const trackInfo = MUSIC_TRACKS.find(t => t.file === filename);
     const displayName = trackInfo ? trackInfo.title : filename;
 
+    // 1. Prevent restarting if already playing this song
     if (currentTrackFile === filename && !audio.paused) {
-        return; // Already playing
+        return; 
     }
     
+    // 2. Set the source
     audio.src = `music/${filename}`;
     audio.volume = 0.5;
-    audio.play().then(() => {
-        currentTrackFile = filename;
-        showToast("Playing: " + displayName);
-        openMusicModal(); // Re-render to update icons
-    }).catch(e => {
-        console.error(e);
-        showToast("Error: Check filename");
-    });
+    
+    // 3. Play with "False Alarm" check
+    const playPromise = audio.play();
+
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            // SUCCESS: Normal load
+            currentTrackFile = filename;
+            showToast("Playing: " + displayName);
+            openMusicModal(); 
+        }).catch(error => {
+            console.log("Playback Status:", error);
+
+            // FALSE ALARM CHECK: 
+            // If the audio is actually playing (not paused), ignore the error!
+            if (!audio.paused) {
+                currentTrackFile = filename;
+                openMusicModal();
+                return; 
+            }
+
+            // IGNORE INTERRUPTIONS:
+            // If the user clicked fast (AbortError), don't show an error.
+            if (error.name === 'AbortError') return;
+
+            // REAL ERROR:
+            // Only show this if it really failed
+            showToast("Error: File not found");
+        });
+    }
 }
 
 function stopMusic() {
