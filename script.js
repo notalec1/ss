@@ -32,26 +32,22 @@ const app = document.getElementById('app');
 
 // --- UTILS ---
 function pulse(ms = 10) { if (navigator.vibrate) navigator.vibrate(ms); }
-// --- UTILS ---
-let wakeLock = null; // Store the lock
+let wakeLock = null; 
 
 async function requestWakeLock() { 
     if ('wakeLock' in navigator) { 
         try { 
             wakeLock = await navigator.wakeLock.request('screen'); 
-            // console.log("Wake Lock Active");
-        } catch (err) {
-            console.log("Wake Lock Error", err);
-        } 
+        } catch (err) { console.log("Wake Lock Error", err); } 
     } 
 }
 
-// Handle visibility change to re-acquire lock
 document.addEventListener('visibilitychange', async () => {
     if (wakeLock !== null && document.visibilityState === 'visible') {
         await requestWakeLock();
     }
 });
+
 function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
@@ -109,13 +105,28 @@ function applyTheme() {
     root.setProperty('--bg-speed', theme.speed + 's');
     root.setProperty('--font-type', theme.font);
 
-    // Sync Inputs (ADDED controlInput here)
-    const ids = ['blurInput','scaleInput','snowInput','sfxInput','colorInput','fontInput','speedInput','controlInput'];
-    ids.forEach(id => {
+    // FIX: Correctly map HTML IDs to Theme Properties (Fixed plural 'controls')
+    const mappings = {
+        'blurInput': 'blur',
+        'scaleInput': 'scale',
+        'snowInput': 'snow',
+        'sfxInput': 'sfx',
+        'colorInput': 'color',
+        'fontInput': 'font',
+        'speedInput': 'speed',
+        'controlInput': 'controls' // This was the bug (it was looking for 'control')
+    };
+
+    Object.keys(mappings).forEach(id => {
         const el = document.getElementById(id);
         if(!el) return;
-        if(el.type === 'checkbox') el.checked = theme[id.replace('Input','')];
-        else el.value = theme[id.replace('Input','')];
+        const key = mappings[id];
+        
+        // Safety check for undefined values
+        if (theme[key] === undefined) return;
+
+        if(el.type === 'checkbox') el.checked = theme[key];
+        else el.value = theme[key];
     });
     
     const canvas = document.getElementById('snowCanvas');
@@ -266,14 +277,13 @@ function addPlayer(optionalName) {
     
     // INSTEAD of setState('SETUP'), just update the list part:
     saveState();
-    updatePlayerListUI(); // New helper function
+    updatePlayerListUI(); // Helper function to update UI without focus loss
     pulse();
     
     // Keep focus naturally
     if(!optionalName && input) input.focus();
 }
 
-// Add this helper function
 function updatePlayerListUI() {
     // If we are fully re-rendering, fallback to render()
     const listWrap = document.querySelector('.left-panel .list-wrap') || document.querySelector('.list-wrap');
@@ -309,13 +319,11 @@ function generateNumbers() {
     const min = parseInt(minEl ? minEl.value : state.settings.min);
     const max = parseInt(maxEl ? maxEl.value : state.settings.max);
     
-    // --- FIX START ---
     const range = max - min + 1;
     if (range < state.players.length) {
         showToast(`Range too small! Need ${state.players.length} numbers.`);
         return false;
     }
-    // --- FIX END ---
 
     if (min >= max) { showToast("Min must be < Max!"); return false; }
     state.settings.min = min; state.settings.max = max;
