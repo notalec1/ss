@@ -2,7 +2,7 @@
 const GOD_PASSWORD = "line1up";
 const AUTO_NAMES = ["Alec", "Alain", "Nada", "Hoda", "Fadi", "Noa", "Gio", "Neo", "Nounou", "Assaad", "Chris", "Eliott"];
 
-// NEW: SFX Configuration
+// SFX Configuration
 const SFX_FILES = {
     add: "sfx/getgems.wav",
     popup: "sfx/popup.wav",
@@ -10,27 +10,6 @@ const SFX_FILES = {
     lose: "sfx/streaklost.wav",
     start: "sfx/startupshine.wav"
 };
-
-const MUSIC_TRACKS = [
-    { file: "nothingelsematters.mp3", title: "Nothing Else Matters", artist: "Metallica" },
-    { file: "smellsliketeenspirit.mp3", title: "Smells Like Teen Spirit", artist: "Nirvana" },
-    { file: "losingmyreligion.mp3", title: "Losing My Religion", artist: "R.E.M." },
-    { file: "noonelikeyou.mp3", title: "No One Like You", artist: "Scorpions" },
-    { file: "breakfastinamerica.mp3", title: "Breakfast In America", artist: "Supertramp" },
-    { file: "chiquitita.mp3", title: "Chiquitita", artist: "ABBA" },
-    { file: "sweetchildomine.mp3", title: "Sweet Child 'O Mine", artist: "Guns 'N' Roses" },
-    { file: "alwayssomewhere.mp3", title: "Always Somewhere", artist: "Scorpions" },
-    { file: "dreamon.mp3", title: "Dream On", artist: "Aerosmith" },
-    { file: "stairwaytoheaven.mp3", title: "Stairway to Heaven", artist: "Led Zeppelin" },
-    { file: "thunderstruck.mp3", title: "Thunderstruck", artist: "AC/DC" },
-    { file: "highwaytohell.mp3", title: "Highway to Hell", artist: "AC/DC" },
-    { file: "sailor.mp3", title: "Sailor", artist: "Chris De Burgh" },
-    { file: "moneyfornothing.mp3", title: "Money For Nothing", artist: "Dire Straits" },
-    { file: "sultansofswing.mp3", title: "Sultans of Swing", artist: "Dire Straits" },
-    { file: "etherealconnection.mp3", title: "Ethereal Connection", artist: "Tame Impala" },
-    { file: "endofsummer.mp3", title: "End of Summer", artist: "Tame Impala" },
-    { file: "dracula.mp3", title: "Dracula", artist: "Tame Impala" }
-];
 
 const DEFAULT_STATE = { 
     step: 'SETUP', 
@@ -74,12 +53,12 @@ function resetViewMode() {
     render();
 }
 
-// --- THEME MANAGER & SFX ---
+// --- THEME MANAGER & SFX (V2) ---
 const DEFAULT_THEME = { 
     blur: 15, 
     scale: 1.0, 
     snow: true,
-    sfx: true, // NEW: SFX Toggle
+    sfx: true,
     color: '#6366f1',
     font: "'Nunito', sans-serif",
     speed: 6
@@ -102,7 +81,6 @@ Object.keys(SFX_FILES).forEach(key => {
 
 function playSfx(key) {
     if (!theme.sfx || !audioCache[key]) return;
-    // Clone node to allow overlapping sounds (fast typing)
     const sound = audioCache[key].cloneNode();
     sound.volume = 0.6;
     sound.play().catch(e => console.log("Audio autoplay prevented"));
@@ -146,74 +124,6 @@ function updateTheme(key, val) {
     theme[key] = val;
     localStorage.setItem('lineUpTheme', JSON.stringify(theme));
     applyTheme();
-}
-
-// --- MUSIC SYSTEM ---
-let currentTrackFile = null;
-
-function getMusicBtn() {
-    return `<button class="btn-secondary btn-icon" 
-        style="position:absolute; top:15px; right:15px; z-index:50; width:44px; height:44px; border-radius:50%; box-shadow:0 4px 12px rgba(0,0,0,0.15);" 
-        onclick="openMusicModal()" title="Music Player">🎵</button>`;
-}
-
-function openMusicModal() {
-    playSfx('popup'); // SFX Trigger
-    const list = document.getElementById('musicList');
-    
-    if(MUSIC_TRACKS.length === 0) {
-        list.innerHTML = `<p style="opacity:0.6; font-size:0.9rem;">No music found.<br>Update MUSIC_TRACKS in script.js</p>`;
-    } else {
-        list.innerHTML = MUSIC_TRACKS.map(track => {
-            const isPlaying = currentTrackFile === track.file;
-            return `
-            <div class="item-card" style="margin-bottom:8px; cursor:pointer; ${isPlaying ? 'border-color:var(--primary); background:rgba(99, 102, 241, 0.1);' : ''}" onclick="playMusic('${track.file}')">
-                <div style="display:flex; align-items:center; width:100%;">
-                    <div style="font-size:1.5rem; margin-right:15px; width:30px; text-align:center;">
-                        ${isPlaying ? '▶️' : '🎵'}
-                    </div>
-                    <div style="display:flex; flex-direction:column; align-items:flex-start;">
-                        <span style="font-weight:900; font-size:1.1rem; color:var(--text-main);">${track.title}</span>
-                        <span style="font-size:0.85rem; opacity:0.7; font-weight:600;">${track.artist}</span>
-                    </div>
-                </div>
-            </div>`;
-        }).join('');
-    }
-    
-    openModal('musicModal');
-}
-
-function playMusic(filename) {
-    const audio = document.getElementById('bgAudio');
-    const trackInfo = MUSIC_TRACKS.find(t => t.file === filename);
-    const displayName = trackInfo ? trackInfo.title : filename;
-
-    if (currentTrackFile === filename && !audio.paused) return;
-    
-    audio.src = `music/${filename}`;
-    audio.volume = 0.5;
-    
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-        playPromise.then(() => {
-            currentTrackFile = filename;
-            showToast("Playing: " + displayName);
-            openMusicModal(); 
-        }).catch(error => {
-            if (!audio.paused) { currentTrackFile = filename; openMusicModal(); return; }
-            if (error.name === 'AbortError') return;
-            showToast("Error: File not found");
-        });
-    }
-}
-
-function stopMusic() {
-    const audio = document.getElementById('bgAudio');
-    audio.pause();
-    audio.currentTime = 0;
-    currentTrackFile = null;
-    openMusicModal();
 }
 
 // --- SNOW FX ---
@@ -341,7 +251,7 @@ function addPlayer(optionalName) {
     const exists = state.players.some(p => p.name.toLowerCase() === name.toLowerCase());
     if(exists) return showToast("Already added!");
     
-    playSfx('add'); // SFX Trigger
+    playSfx('add'); 
     state.players.push({ name, number: 0 });
     if(input) input.value = '';
     setState('SETUP');
@@ -505,14 +415,13 @@ function startTimerTicker() {
 }
 
 function openModal(id) { 
-    playSfx('popup'); // SFX Trigger
+    playSfx('popup'); 
     const m = document.getElementById(id); m.classList.add('active'); 
     if(id==='presetsModal') renderPresetsList(); 
     if(id==='historyModal') renderHistoryList(); 
     if(id==='leaderboardModal') {
         document.getElementById('mobileLeaderboardList').innerHTML = getLeaderboardHtml();
     }
-    if(id==='musicModal') openMusicModal();
     if(id==='themeModal') applyTheme();
     pulse(); 
 }
@@ -555,7 +464,6 @@ function getLeaderboardHtml() {
 
 function renderModeSelection() {
     app.innerHTML = `
-        ${getMusicBtn()}
         <h1>Welcome</h1>
         <p>Choose your display mode</p>
         <div class="row" style="margin-top:20px;">
@@ -595,7 +503,6 @@ function renderSetup() {
             <button class="btn-secondary btn-sm" onclick="openModal('leaderboardModal')">🏆</button>
             <button class="btn-secondary btn-sm" onclick="openModal('historyModal')">📜</button>
             
-            <!-- NEW: Theme Button -->
             <button class="btn-secondary btn-sm" onclick="openModal('themeModal'); applyTheme();">🎨</button>
             
             <button class="btn-secondary btn-sm" onclick="openModal('dataModal')">⚙️</button>
@@ -636,7 +543,6 @@ function renderSetup() {
 
     app.innerHTML = `
         ${switchBtn}
-        ${getMusicBtn()}
         <div class="split-container">
             <div class="left-panel">${leftContent}</div>
             ${viewMode === 'tv' ? `
@@ -692,7 +598,7 @@ function renderDistribute() {
         </div>`;
 
     if (viewMode === 'tv') {
-        app.innerHTML = `${switchBtn}${getMusicBtn()}<div class="split-container">
+        app.innerHTML = `${switchBtn}<div class="split-container">
             <div class="left-panel">${controlsHtml}</div>
             <div class="right-panel">
                 <div class="game-status-panel"><h3>Links</h3>${listHtml}</div>
@@ -700,7 +606,7 @@ function renderDistribute() {
             </div>
         </div>`;
     } else {
-        app.innerHTML = `${switchBtn}${getMusicBtn()}${controlsHtml}${listHtml}`;
+        app.innerHTML = `${switchBtn}${controlsHtml}${listHtml}`;
     }
     startTimerTicker();
 }
@@ -713,7 +619,6 @@ function renderPassPlay() {
     if (!state.viewingNumber) {
         app.innerHTML = `
             ${switchBtn}
-            ${getMusicBtn()}
             <div style="text-align:center; margin-top:20px;">
                 <h1 style="font-size:4rem; margin-bottom:20px;">📱</h1>
                 <h2>Pass to<br><span style="color:var(--primary); font-size:2.5rem;">${p.name}</span></h2>
@@ -723,7 +628,6 @@ function renderPassPlay() {
     } else {
         app.innerHTML = `
             ${switchBtn}
-            ${getMusicBtn()}
             <div style="text-align:center;"><h2>Hi, ${p.name}!</h2><p>Tap & hold to reveal.</p></div>
             <div class="secret-container" id="secretBox"><div class="secret-overlay">HOLD</div><div class="big-number secret-blur">${p.number}</div></div>
             <div style="background:var(--bg-item); padding:15px; border-radius:16px; text-align:left; font-size:0.95rem; margin-bottom:20px;">
@@ -775,7 +679,7 @@ function renderVerify() {
     `;
 
     if (viewMode === 'tv') {
-        app.innerHTML = `${switchBtn}${getMusicBtn()}<div class="split-container">
+        app.innerHTML = `${switchBtn}<div class="split-container">
             <div class="left-panel">${controlsHtml}</div>
             <div class="right-panel">
                 <div class="game-status-panel"><h3>Current Order</h3>${listHtml}</div>
@@ -783,7 +687,7 @@ function renderVerify() {
             </div>
         </div>`;
     } else {
-        app.innerHTML = `${switchBtn}${getMusicBtn()}${controlsHtml}${listHtml}`;
+        app.innerHTML = `${switchBtn}${controlsHtml}${listHtml}`;
     }
     startTimerTicker();
 }
@@ -829,7 +733,7 @@ function renderResults() {
         if(!state.finalTime) { 
             state.finalTime = duration; saveState(); saveHistory(true); 
             updateScores(); 
-            playSfx('win'); // SFX Trigger
+            playSfx('win'); 
             setTimeout(() => confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } }), 200); 
         }
         timeMsg = `<div class="timer-badge" style="background:var(--gold); color:white; animation: popIn 0.5s;">Time: ${formatTime(state.finalTime)}</div>`;
@@ -837,7 +741,7 @@ function renderResults() {
         state.finalTime = Math.floor((Date.now() - state.startTime) / 1000); 
         saveHistory(false); 
         updateScores(); 
-        playSfx('lose'); // SFX Trigger
+        playSfx('lose'); 
     }
 
     const headerHtml = `<div style="text-align:center;">${timeMsg}</div><h1>${allCorrect ? '🎉 Perfect!' : '😬 Close!'}</h1>`;
@@ -852,7 +756,6 @@ function renderResults() {
     if(viewMode === 'tv') {
         app.innerHTML = `
             ${switchBtn}
-            ${getMusicBtn()}
             <div class="split-container">
                 <div class="left-panel" style="justify-content:center;">${headerHtml}<div style="margin-top:30px">${buttonsHtml}</div></div>
                 <div class="right-panel">
@@ -861,7 +764,7 @@ function renderResults() {
                 </div>
             </div>`;
     } else {
-        app.innerHTML = `${switchBtn}${getMusicBtn()}${headerHtml}${listHtml}${leaderboardHtml}${buttonsHtml}`;
+        app.innerHTML = `${switchBtn}${headerHtml}${listHtml}${leaderboardHtml}${buttonsHtml}`;
     }
 }
 
@@ -871,7 +774,6 @@ function renderPlayerView(encodedData) {
     try { data = JSON.parse(atob(encodedData)); } catch(e) {}
     if (!data) return app.innerHTML = `<h2>Error</h2><p>Broken link.</p>`;
     app.innerHTML = `
-        ${getMusicBtn()}
         <div style="text-align:center;"><h2>Hi, ${data.n}!</h2><p>Tap & hold.</p></div>
         <div class="secret-container" id="secretBox"><div class="secret-overlay">HOLD</div><div class="big-number secret-blur">${data.v}</div></div>
         <div style="background:var(--bg-item); padding:20px; border-radius:16px; text-align:left; font-size:0.95rem;">Range: <strong>${data.min} - ${data.max}</strong></div>
@@ -891,7 +793,6 @@ function renderRoomView(encodedData) {
             const playerInfo = data.players.find(p => p.n === claimedName);
             if (playerInfo) {
                 app.innerHTML = `
-                    ${getMusicBtn()}
                     <div style="text-align:center; margin-top:30px;">
                         <h1 style="font-size:3rem;">🔒</h1>
                         <h2>Welcome back,<br>${claimedName}</h2>
@@ -913,7 +814,6 @@ function renderRoomView(encodedData) {
     }
 
     app.innerHTML = `
-        ${getMusicBtn()}
         <h2 style="margin-bottom:5px;">🏠 Pick Name</h2>
         <p>Tap your name to reveal your number</p>
         <div class="list-wrap">
@@ -950,7 +850,7 @@ function bindSecretBox() {
     if(!box) return;
     const reveal = (e) => { 
         if(e.cancelable) e.preventDefault(); 
-        if(!box.classList.contains('revealed')) playSfx('popup'); // SFX Trigger
+        if(!box.classList.contains('revealed')) playSfx('popup'); 
         box.classList.add('revealed'); pulse(5); 
     };
     const hide = (e) => { if(e.cancelable) e.preventDefault(); box.classList.remove('revealed'); };
@@ -999,7 +899,7 @@ function checkOrder() { setState('RESULTS'); pulse(50); }
 
 // Start
 initSnow(); loadState(); 
-playSfx('start'); // SFX Trigger (Launch)
+playSfx('start'); 
 if(state.step !== 'SETUP' && !viewMode) { viewMode = 'mobile'; }
 if(viewMode === 'tv') document.body.classList.add('is-tv-mode');
 render();
