@@ -90,21 +90,41 @@
         </div>
     </div>
 
-    <!-- NEW: Theme/Customization Modal -->
+<!-- NEW: Expanded Theme/Customization Modal -->
     <div class="modal-overlay" id="themeModal" onclick="closeModal('themeModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h2>🎨 Appearance</h2>
+            <h2>🎨 Control Center</h2>
             
             <div style="text-align:left; margin-bottom:20px;">
-                <label class="label">Glass Blur Effect</label>
+                <!-- 1. Color -->
+                <label class="label">Theme Color</label>
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <input type="color" id="colorInput" value="#6366f1" onchange="updateTheme('color', this.value)" style="height:45px; width:100%; padding:0; border:none; border-radius:12px; cursor:pointer;">
+                    <button class="btn-secondary btn-sm" onclick="updateTheme('color', '#6366f1')">Reset</button>
+                </div>
+
+                <!-- 2. Font -->
+                <label class="label">Font Style</label>
+                <select id="fontInput" onchange="updateTheme('font', this.value)" style="margin-bottom:15px;">
+                    <option value="'Nunito', sans-serif">Modern (Default)</option>
+                    <option value="'Courier New', monospace">Retro (Pixel)</option>
+                    <option value="'Times New Roman', serif">Classic (Serif)</option>
+                    <option value="system-ui, sans-serif">Clean (System)</option>
+                </select>
+
+                <!-- 3. Existing Sliders -->
+                <div class="divider"></div>
+                
+                <label class="label">Glass Blur</label>
                 <input type="range" id="blurInput" min="0" max="40" step="1" oninput="updateTheme('blur', this.value)">
                 
-                <label class="label" style="margin-top:15px;">Text Size</label>
-                <div style="display:flex; justify-content:space-between; opacity:0.6; font-size:0.8rem;">
-                    <span>Small</span><span>Big</span>
-                </div>
+                <label class="label">Text Size</label>
                 <input type="range" id="scaleInput" min="0.8" max="1.3" step="0.05" oninput="updateTheme('scale', this.value)">
                 
+                <label class="label">Background Speed</label>
+                <input type="range" id="speedInput" min="2" max="30" step="1" style="direction: rtl;" oninput="updateTheme('speed', this.value)">
+                <small style="opacity:0.6; display:block; text-align:right;">Fast &larr; &rarr; Slow</small>
+
                 <div class="divider"></div>
                 
                 <div style="display:flex; justify-content:space-between; align-items:center;">
