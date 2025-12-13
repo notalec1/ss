@@ -58,21 +58,23 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="presetsModal" onclick="closeModal('presetsModal')">
+  <div class="modal-overlay" id="presetsModal" onclick="closeModal('presetsModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h2>💾 Saved Groups</h2>
-            <div id="presetsList" style="margin:20px 0; text-align:left;"></div>
+            <!-- ADDED: max-height and overflow-y -->
+            <div id="presetsList" style="margin:20px 0; text-align:left; max-height: 50vh; overflow-y: auto;"></div>
             <button class="btn-secondary" onclick="closeModal('presetsModal')">Close</button>
         </div>
     </div>
-
-    <div class="modal-overlay" id="historyModal" onclick="closeModal('historyModal')">
+    
+<div class="modal-overlay" id="historyModal" onclick="closeModal('historyModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h2>📜 Game History</h2>
-            <div id="historyList" style="margin:20px 0; text-align:left;"></div>
+            <!-- ADDED: max-height and overflow-y to enable scrolling -->
+            <div id="historyList" style="margin:20px 0; text-align:left; max-height: 50vh; overflow-y: auto;"></div>
             <button class="btn-secondary" onclick="closeModal('historyModal')">Close</button>
         </div>
-    </div>
+</div>
 
     <div class="modal-overlay" id="dataModal" onclick="closeModal('dataModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
