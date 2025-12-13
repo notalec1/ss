@@ -2,6 +2,15 @@
 const GOD_PASSWORD = "line1up";
 const AUTO_NAMES = ["Alec", "Alain", "Nada", "Hoda", "Fadi", "Noa", "Gio", "Neo", "Nounou", "Assaad", "Chris", "Eliott"];
 
+// NEW: SFX Configuration
+const SFX_FILES = {
+    add: "sfx/getgems.wav",
+    popup: "sfx/popup.wav",
+    win: "sfx/unlimitedplay_spark.wav",
+    lose: "sfx/streaklost.wav",
+    start: "sfx/startupshine.wav"
+};
+
 const MUSIC_TRACKS = [
     { file: "nothingelsematters.mp3", title: "Nothing Else Matters", artist: "Metallica" },
     { file: "smellsliketeenspirit.mp3", title: "Smells Like Teen Spirit", artist: "Nirvana" },
@@ -65,11 +74,12 @@ function resetViewMode() {
     render();
 }
 
-// --- THEME MANAGER (V2 - Full Control) ---
+// --- THEME MANAGER & SFX ---
 const DEFAULT_THEME = { 
     blur: 15, 
     scale: 1.0, 
     snow: true,
+    sfx: true, // NEW: SFX Toggle
     color: '#6366f1',
     font: "'Nunito', sans-serif",
     speed: 6
@@ -79,12 +89,27 @@ let theme = DEFAULT_THEME;
 
 try {
     const savedTheme = localStorage.getItem('lineUpTheme');
-    // Merge saved theme with default to ensure new keys (color, font, etc) exist
     if (savedTheme) theme = { ...DEFAULT_THEME, ...JSON.parse(savedTheme) }; 
 } catch (e) { console.error("Theme Load Error", e); }
 
+// Preload SFX
+const audioCache = {};
+Object.keys(SFX_FILES).forEach(key => {
+    const a = new Audio(SFX_FILES[key]);
+    a.preload = 'auto';
+    audioCache[key] = a;
+});
+
+function playSfx(key) {
+    if (!theme.sfx || !audioCache[key]) return;
+    // Clone node to allow overlapping sounds (fast typing)
+    const sound = audioCache[key].cloneNode();
+    sound.volume = 0.6;
+    sound.play().catch(e => console.log("Audio autoplay prevented"));
+}
+
 function applyTheme() {
-    // 1. UPDATE CSS VARIABLES (The Source of Truth)
+    // 1. CSS Variables
     const root = document.documentElement.style;
     root.setProperty('--glass-blur', theme.blur + 'px');
     root.setProperty('--font-scale', theme.scale);
@@ -92,10 +117,11 @@ function applyTheme() {
     root.setProperty('--bg-speed', theme.speed + 's');
     root.setProperty('--font-type', theme.font);
 
-    // 2. Sync Input UI (if modal is open)
+    // 2. Input Sync
     const blurIn = document.getElementById('blurInput');
     const scaleIn = document.getElementById('scaleInput');
     const snowIn = document.getElementById('snowInput');
+    const sfxIn = document.getElementById('sfxInput');
     const colorIn = document.getElementById('colorInput');
     const fontIn = document.getElementById('fontInput');
     const speedIn = document.getElementById('speedInput');
@@ -103,6 +129,7 @@ function applyTheme() {
     if(blurIn) blurIn.value = theme.blur;
     if(scaleIn) scaleIn.value = theme.scale;
     if(snowIn) snowIn.checked = theme.snow;
+    if(sfxIn) sfxIn.checked = theme.sfx;
     if(colorIn) colorIn.value = theme.color;
     if(fontIn) fontIn.value = theme.font;
     if(speedIn) speedIn.value = theme.speed;
@@ -113,7 +140,6 @@ function applyTheme() {
 }
 
 function updateTheme(key, val) {
-    // Type conversion
     if(key === 'blur' || key === 'speed') val = parseInt(val);
     if(key === 'scale') val = parseFloat(val);
     
@@ -132,6 +158,7 @@ function getMusicBtn() {
 }
 
 function openMusicModal() {
+    playSfx('popup'); // SFX Trigger
     const list = document.getElementById('musicList');
     
     if(MUSIC_TRACKS.length === 0) {
@@ -313,6 +340,8 @@ function addPlayer(optionalName) {
     if (!name) return;
     const exists = state.players.some(p => p.name.toLowerCase() === name.toLowerCase());
     if(exists) return showToast("Already added!");
+    
+    playSfx('add'); // SFX Trigger
     state.players.push({ name, number: 0 });
     if(input) input.value = '';
     setState('SETUP');
@@ -476,6 +505,7 @@ function startTimerTicker() {
 }
 
 function openModal(id) { 
+    playSfx('popup'); // SFX Trigger
     const m = document.getElementById(id); m.classList.add('active'); 
     if(id==='presetsModal') renderPresetsList(); 
     if(id==='historyModal') renderHistoryList(); 
@@ -483,7 +513,6 @@ function openModal(id) {
         document.getElementById('mobileLeaderboardList').innerHTML = getLeaderboardHtml();
     }
     if(id==='musicModal') openMusicModal();
-    // Re-apply theme to ensure modal inputs are synced
     if(id==='themeModal') applyTheme();
     pulse(); 
 }
@@ -505,7 +534,6 @@ function render() {
     else if(state.step === 'VERIFY') renderVerify();
     else if(state.step === 'RESULTS') renderResults();
     
-    // Ensure theme is re-applied on every render (catches dynamic elements)
     applyTheme();
 }
 
@@ -800,14 +828,16 @@ function renderResults() {
         const duration = Math.floor((Date.now() - state.startTime) / 1000);
         if(!state.finalTime) { 
             state.finalTime = duration; saveState(); saveHistory(true); 
-            updateScores(); // Add Points
+            updateScores(); 
+            playSfx('win'); // SFX Trigger
             setTimeout(() => confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } }), 200); 
         }
         timeMsg = `<div class="timer-badge" style="background:var(--gold); color:white; animation: popIn 0.5s;">Time: ${formatTime(state.finalTime)}</div>`;
     } else if (!state.finalTime) { 
         state.finalTime = Math.floor((Date.now() - state.startTime) / 1000); 
         saveHistory(false); 
-        updateScores(); // Add Points even if lost
+        updateScores(); 
+        playSfx('lose'); // SFX Trigger
     }
 
     const headerHtml = `<div style="text-align:center;">${timeMsg}</div><h1>${allCorrect ? '🎉 Perfect!' : '😬 Close!'}</h1>`;
@@ -918,7 +948,11 @@ function movePlayer(index, dir) {
 function bindSecretBox() {
     const box = document.getElementById('secretBox');
     if(!box) return;
-    const reveal = (e) => { if(e.cancelable) e.preventDefault(); box.classList.add('revealed'); pulse(5); };
+    const reveal = (e) => { 
+        if(e.cancelable) e.preventDefault(); 
+        if(!box.classList.contains('revealed')) playSfx('popup'); // SFX Trigger
+        box.classList.add('revealed'); pulse(5); 
+    };
     const hide = (e) => { if(e.cancelable) e.preventDefault(); box.classList.remove('revealed'); };
     ['touchstart','mousedown'].forEach(e => box.addEventListener(e, reveal, {passive:false}));
     ['touchend','touchcancel','mouseup','mouseleave'].forEach(e => box.addEventListener(e, hide));
@@ -965,6 +999,7 @@ function checkOrder() { setState('RESULTS'); pulse(50); }
 
 // Start
 initSnow(); loadState(); 
+playSfx('start'); // SFX Trigger (Launch)
 if(state.step !== 'SETUP' && !viewMode) { viewMode = 'mobile'; }
 if(viewMode === 'tv') document.body.classList.add('is-tv-mode');
 render();
