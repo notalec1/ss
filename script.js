@@ -18,11 +18,13 @@ const DEFAULT_STATE = {
     startTime: null, 
     finalTime: null, 
     passIndex: 0, 
-    viewingNumber: false 
+    viewingNumber: false,
+    revealedCount: 0 // NEW: Tracks how many cards are flipped
 };
 
 let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 let timerInterval = null;
+let revealInterval = null; // NEW: Timer for auto-reveal
 let godMode = false;
 let viewMode = sessionStorage.getItem('lineUpViewMode') || null; 
 const app = document.getElementById('app');
@@ -53,25 +55,17 @@ function resetViewMode() {
     render();
 }
 
-// --- THEME MANAGER & SFX (V2) ---
+// --- THEME MANAGER & SFX ---
 const DEFAULT_THEME = { 
-    blur: 15, 
-    scale: 1.0, 
-    snow: true,
-    sfx: true,
-    color: '#6366f1',
-    font: "'Nunito', sans-serif",
-    speed: 6
+    blur: 15, scale: 1.0, snow: true, sfx: true,
+    color: '#6366f1', font: "'Nunito', sans-serif", speed: 6
 };
-
 let theme = DEFAULT_THEME;
-
 try {
     const savedTheme = localStorage.getItem('lineUpTheme');
     if (savedTheme) theme = { ...DEFAULT_THEME, ...JSON.parse(savedTheme) }; 
 } catch (e) { console.error("Theme Load Error", e); }
 
-// Preload SFX
 const audioCache = {};
 Object.keys(SFX_FILES).forEach(key => {
     const a = new Audio(SFX_FILES[key]);
@@ -87,7 +81,6 @@ function playSfx(key) {
 }
 
 function applyTheme() {
-    // 1. CSS Variables
     const root = document.documentElement.style;
     root.setProperty('--glass-blur', theme.blur + 'px');
     root.setProperty('--font-scale', theme.scale);
@@ -95,24 +88,15 @@ function applyTheme() {
     root.setProperty('--bg-speed', theme.speed + 's');
     root.setProperty('--font-type', theme.font);
 
-    // 2. Input Sync
-    const blurIn = document.getElementById('blurInput');
-    const scaleIn = document.getElementById('scaleInput');
-    const snowIn = document.getElementById('snowInput');
-    const sfxIn = document.getElementById('sfxInput');
-    const colorIn = document.getElementById('colorInput');
-    const fontIn = document.getElementById('fontInput');
-    const speedIn = document.getElementById('speedInput');
-
-    if(blurIn) blurIn.value = theme.blur;
-    if(scaleIn) scaleIn.value = theme.scale;
-    if(snowIn) snowIn.checked = theme.snow;
-    if(sfxIn) sfxIn.checked = theme.sfx;
-    if(colorIn) colorIn.value = theme.color;
-    if(fontIn) fontIn.value = theme.font;
-    if(speedIn) speedIn.value = theme.speed;
+    // Sync Inputs
+    const ids = ['blurInput','scaleInput','snowInput','sfxInput','colorInput','fontInput','speedInput'];
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if(!el) return;
+        if(el.type === 'checkbox') el.checked = theme[id.replace('Input','')];
+        else el.value = theme[id.replace('Input','')];
+    });
     
-    // 3. Handle Snow
     const canvas = document.getElementById('snowCanvas');
     if(canvas) canvas.style.display = theme.snow ? 'block' : 'none';
 }
@@ -120,7 +104,6 @@ function applyTheme() {
 function updateTheme(key, val) {
     if(key === 'blur' || key === 'speed') val = parseInt(val);
     if(key === 'scale') val = parseFloat(val);
-    
     theme[key] = val;
     localStorage.setItem('lineUpTheme', JSON.stringify(theme));
     applyTheme();
@@ -167,7 +150,9 @@ function loadState() {
         const saved = localStorage.getItem('lineUpState');
         if (saved) {
             state = JSON.parse(saved);
-            if ((state.step === 'DISTRIBUTE' || state.step === 'VERIFY') && state.startTime) startTimerTicker();
+            if (state.step === 'DISTRIBUTE') { state.startTime = null; state.finalTime = null; }
+            if (state.revealedCount === undefined) state.revealedCount = 0; // Backwards compatibility
+            if ((state.step === 'VERIFY') && state.startTime) startTimerTicker();
         }
     } catch (e) { state = JSON.parse(JSON.stringify(DEFAULT_STATE)); }
 }
@@ -283,13 +268,12 @@ function generateNumbers() {
 
 function startGame() {
     if (generateNumbers()) {
-        state.startTime = null; // CHANGED: Don't start timer yet
+        state.startTime = null; 
         state.finalTime = null;
         setState('DISTRIBUTE'); pulse(); requestWakeLock();
     }
 }
 
-// NEW: Helper to start timer explicitly
 function startVerification() {
     state.startTime = Date.now();
     setState('VERIFY');
@@ -307,7 +291,7 @@ function nextPassPlayer() {
     if (state.passIndex < state.players.length - 1) {
         state.passIndex++; state.viewingNumber = false; saveState(); render();
     } else {
-        state.startTime = Date.now(); setState('VERIFY');
+        startVerification(); 
     }
     pulse();
 }
@@ -699,12 +683,40 @@ function renderVerify() {
     startTimerTicker();
 }
 
+function startAutoReveal() {
+    if (revealInterval) return; // Already running
+    revealInterval = setInterval(() => {
+        if (state.revealedCount >= state.players.length) {
+            clearInterval(revealInterval);
+            revealInterval = null;
+            render(); // Render final state to show buttons
+            
+            // Final Audio Check
+            const sorted = [...state.players].sort((a, b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
+            const allCorrect = state.players.every((p, i) => p.name === sorted[i].name);
+            playSfx(allCorrect ? 'win' : 'lose');
+            if(allCorrect) setTimeout(() => confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } }), 200);
+            return;
+        }
+        
+        state.revealedCount++;
+        saveState();
+        playSfx('popup'); 
+        
+        // Auto-Scroll Logic for TV
+        const cardId = 'res-card-' + (state.revealedCount - 1);
+        const card = document.getElementById(cardId);
+        if(card) card.scrollIntoView({behavior: "smooth", block: "center"});
+        
+        render();
+    }, 1500); // 1.5 seconds per reveal
+}
+
 function renderResults() {
     clearInterval(timerInterval);
     const sorted = [...state.players].sort((a, b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
-    let allCorrect = true; 
-    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">↔️</button>`;
     
+    // MVP Logic
     let mvpName = ""; let bestDelta = Infinity;
     const min = state.settings.min; const max = state.settings.max; const total = state.players.length;
     if(total > 1) {
@@ -718,11 +730,25 @@ function renderResults() {
 
     const listItems = state.players.map((p, i) => {
         const isCorrect = p.name === sorted[i].name; 
-        if (!isCorrect) allCorrect = false;
         const realRank = sorted.findIndex(x => x.name === p.name) + 1; 
         const isMvp = p.name === mvpName;
+        const isRevealed = i < state.revealedCount;
+        
+        // Pending Card
+        if (!isRevealed) {
+            return `
+            <div class="item-card pending" id="res-card-${i}">
+                <div style="display:flex; align-items:center;">
+                    <div class="rank-badge" style="background:var(--text-sub); opacity:0.5;">${i+1}</div>
+                    <span style="font-weight:700; opacity:0.5;">Hidden</span>
+                </div>
+                <div style="opacity:0.5;">⏳</div>
+            </div>`;
+        }
+
+        // Revealed Card
         return `
-            <div class="item-card ${isCorrect ? 'correct' : 'wrong'} ${isMvp ? 'gold' : ''}">
+            <div class="item-card just-revealed ${isCorrect ? 'correct' : 'wrong'} ${isMvp ? 'gold' : ''}" id="res-card-${i}">
                 <div>
                     <div style="display:flex; align-items:center;">
                         <div class="rank-badge" style="background:${isCorrect ? 'var(--success)' : 'var(--danger)'}; color:white;">${i+1}</div>
@@ -734,31 +760,33 @@ function renderResults() {
             </div>`;
     }).join('');
 
-    let timeMsg = "";
-    if(allCorrect) {
-        const duration = Math.floor((Date.now() - state.startTime) / 1000);
-        if(!state.finalTime) { 
-            state.finalTime = duration; saveState(); saveHistory(true); 
-            updateScores(); 
-            playSfx('win'); 
-            setTimeout(() => confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } }), 200); 
-        }
-        timeMsg = `<div class="timer-badge" style="background:var(--gold); color:white; animation: popIn 0.5s;">Time: ${formatTime(state.finalTime)}</div>`;
-    } else if (!state.finalTime) { 
+    // Pre-calculate final logic for history/score (runs once when entering results)
+    if (!state.finalTime) {
         state.finalTime = Math.floor((Date.now() - state.startTime) / 1000); 
-        saveHistory(false); 
-        updateScores(); 
-        playSfx('lose'); 
+        const allCorrect = state.players.every((p, i) => p.name === sorted[i].name);
+        saveHistory(allCorrect); 
+        if(allCorrect) updateScores();
+        else updateScores(); // Update scores anyway (participation/MVP logic if needed)
     }
 
-    const headerHtml = `<div style="text-align:center;">${timeMsg}</div><h1>${allCorrect ? '🎉 Perfect!' : '😬 Close!'}</h1>`;
-    const buttonsHtml = `
+    const allRevealed = state.revealedCount >= state.players.length;
+    const timeMsg = `<div class="timer-badge" style="background:var(--gold); color:white;">Time: ${formatTime(state.finalTime)}</div>`;
+    const headerHtml = `<div style="text-align:center;">${timeMsg}</div><h1>${allRevealed ? 'Results' : 'Revealing...'}</h1>`;
+    
+    // Buttons show based on state
+    const buttonsHtml = allRevealed ? `
         <button class="btn-primary" onclick="restartSamePlayers()">🔄 Play Again</button>
         <button class="btn-secondary" style="margin-top:10px;" onclick="resetGameData()">New Game</button>
+    ` : `
+        <button class="btn-primary" onclick="startAutoReveal()" ${revealInterval ? 'disabled' : ''}>${revealInterval ? '▶️ Revealing...' : '▶️ Start Reveal'}</button>
+        <button class="btn-secondary" style="margin-top:10px; opacity:0.5" onclick="state.revealedCount=999; render()">Skip Animation</button>
     `;
+
     const listHtml = `<div class="list-wrap">${listItems}</div>`;
     const leaderboardHtml = `<div style="margin-top:20px; padding-top:20px; border-top:2px solid var(--border);">
         <h3>🏆 Total Scores</h3>${getLeaderboardHtml()}</div>`;
+
+    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">↔️</button>`;
 
     if(viewMode === 'tv') {
         app.innerHTML = `
@@ -902,7 +930,11 @@ function openRoomQr() {
     new QRCode(c, { text: url, width: 250, height: 250, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L });
 }
 
-function checkOrder() { setState('RESULTS'); pulse(50); }
+function checkOrder() { 
+    state.revealedCount = 0; // RESET for dramatic reveal
+    setState('RESULTS'); 
+    pulse(50); 
+}
 
 // Start
 initSnow(); loadState(); 
