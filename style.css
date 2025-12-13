@@ -17,11 +17,11 @@
     --text-main: #1e293b;
     --text-sub: #64748b;
     
-    /* Global Glass Backgrounds */
-    --bg-card: rgba(255, 255, 255, 0.85); 
-    --bg-item: rgba(255, 255, 255, 0.3);  
+    /* Backgrounds */
+    --bg-card: rgba(255, 255, 255, 0.9);
+    --bg-item: rgba(255, 255, 255, 0.6); /* Restored to original opacity */
     
-    --border: rgba(255, 255, 255, 0.5);
+    --border: rgba(255, 255, 255, 0.6);
     --shadow: 0 10px 32px 0 rgba(31, 38, 135, 0.3);
     --radius: 32px;
 }
@@ -30,7 +30,7 @@
     :root {
         --text-main: #f8fafc;
         --text-sub: #94a3b8;
-        --bg-card: rgba(30, 41, 59, 0.8);
+        --bg-card: rgba(30, 41, 59, 0.85);
         --bg-item: rgba(15, 23, 42, 0.4);
         --border: rgba(255, 255, 255, 0.1);
         --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
@@ -95,7 +95,6 @@ body.is-tv-mode .app-card {
 /* 4. HEADINGS */
 h1 { margin: 0 0 10px 0; color: var(--primary) !important; font-weight: 900; text-align: center; font-size: 2.2rem; }
 h2 { margin: 0 0 15px 0; font-size: 1.6rem; text-align: center; font-weight: 800; }
-
 h3 { margin: 0 0 10px 0; font-size: 1.2rem; font-weight: 800; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
 p { margin: 0 0 25px 0; color: var(--text-sub); text-align: center; line-height: 1.6; }
 
@@ -107,33 +106,35 @@ body.is-tv-mode .split-container { flex-direction: row; align-items: stretch; }
 .left-panel { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-right: 20px; }
 .right-panel { flex: 1.5; display: flex; flex-direction: column; gap: 15px; height: 100%; }
 
-/* PANELS (No Blur Here, No Padding) */
+/* PANELS - No Padding on parent to allow sticky header to hit edges */
 .game-status-panel, .leaderboard-panel {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.05);
     border-radius: 20px;
-    padding: 0; /* Important: No padding so header hits edges */
+    padding: 0; 
     overflow-y: auto;
     border: 1px solid var(--border);
     display: flex; flex-direction: column;
 }
 
 .game-status-panel { flex: 1.5; }
-.leaderboard-panel { flex: 1; border: 2.5px solid var(--gold); background: rgba(245, 158, 11, 0.05); }
+.leaderboard-panel { flex: 1; border: 2.5px solid var(--gold); background: rgba(245, 158, 11, 0.1); }
 
-/* STICKY HEADER LOGIC (Blur Here) */
+/* STICKY HEADER - Blur Only */
 .game-status-panel h3, 
 .leaderboard-panel h3 {
     position: sticky;
     top: 0;
     z-index: 50;
     margin: 0;
-    padding: 20px;
+    padding: 20px 20px 10px 20px; /* Top/Side padding */
     
-    /* THE BLUR EFFECT */
+    /* BLUR ONLY - No Background Color */
     backdrop-filter: blur(var(--glass-blur)) !important;
     -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
-    background: rgba(255, 255, 255, 0.25); /* Semi-transparent */
-    border-bottom: 1px solid var(--border);
+    background: transparent; 
+    
+    /* Subtle border to separate header from content */
+    border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
 .label { display: block; font-size: 0.8rem; font-weight: 800; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
@@ -176,32 +177,26 @@ button:active { transform: scale(0.8); }
 .chip-btn:hover { background: var(--bg-card); color: var(--primary); transform: translateY(-2px); border-color: var(--primary); }
 .chip-btn.added { opacity: 0.3; cursor: default; transform: none; text-decoration: line-through; }
 
-/* FIX: Add padding here since container has none */
+/* LIST PADDING FIXES (Since panels have 0 padding) */
 .list-wrap { 
     display: flex; flex-direction: column; gap: 12px; 
-    padding: 20px; /* NEW PADDING */
-    margin: 0; /* Remove margin */
-    overflow-y: visible; /* Scroll happens on parent */
+    padding: 10px 20px 20px 20px; 
+    margin: 0; 
+    overflow-y: visible; 
 }
 body.is-tv-mode .list-wrap { max-height: none; flex: 1; margin: 0; }
 
-/* FIX: Padding for leaderboard items */
-.leaderboard-panel .item-card {
-    margin: 0 20px 8px 20px; /* Sides 20px, Bottom 8px */
-}
-/* First item needs margin top */
-.leaderboard-panel .item-card:first-of-type {
-    margin-top: 20px;
-}
+/* LEADERBOARD PADDING FIXES */
+.leaderboard-panel .item-card { margin: 0 20px 8px 20px; }
+.leaderboard-panel .item-card:first-of-type { margin-top: 10px; }
 
+/* RESTORED ITEM CARD (Not Glassy) */
 .item-card { 
-    background: rgba(255, 255, 255, 0.2) !important; 
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
+    background: var(--bg-item);
     padding: 14px 18px; border-radius: 16px; 
     border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; 
 }
-.item-card.correct { background: rgba(16, 185, 129, 0.15) !important; border-color: var(--success); }
+.item-card.correct { background: rgba(16, 185, 129, 0.3) !important; border-color: var(--success); }
 .item-card.wrong { background: rgba(239, 68, 68, 0.15) !important; border-color: var(--danger); }
 .item-card.gold { background: rgba(245, 158, 11, 0.15) !important; border-color: var(--gold); }
 
