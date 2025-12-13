@@ -23,6 +23,10 @@
     --border: rgba(255, 255, 255, 0.6);    /* Subtle white border for glass effect */
     --shadow: 0 10px 32px 0 rgba(31, 38, 135, 0.3); /* Deep shadow for depth */
     --radius: 32px;                        /* Rounded corner curvature */
+
+   /* NEW: Customization Variables (Default values) */
+    --glass-blur: 15px; 
+    --font-scale: 1;
 }
 
 /* =========================================
