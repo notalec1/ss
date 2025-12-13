@@ -264,3 +264,37 @@ body.is-tv-mode .timer-badge { font-size: 3.5rem; padding: 10px 30px; }
     50% { transform: scale(1.05); }
     100% { transform: scale(1); opacity: 1; }
 }
+
+/* --- MOVE CONTROLS --- */
+
+/* The card currently selected to move */
+.item-card.is-moving {
+    border: 2px dashed var(--primary) !important;
+    background: rgba(99, 102, 241, 0.1) !important;
+    transform: scale(0.98);
+}
+
+/* The button to trigger move */
+.btn-move-select {
+    background: var(--bg-item); 
+    border: 1px solid var(--border);
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    font-size: 1.2rem;
+}
+
+/* The target button (appears on other cards) */
+.btn-place-here {
+    background: var(--success) !important;
+    color: white;
+    width: 100%;
+    font-size: 0.9rem;
+    padding: 8px;
+    border-radius: 8px;
+    animation: popIn 0.2s;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
