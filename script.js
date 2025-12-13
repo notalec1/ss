@@ -65,7 +65,7 @@ function resetViewMode() {
     render();
 }
 
-// --- THEME MANAGER (UPDATED v2) ---
+// --- THEME MANAGER (V2 - Full Control) ---
 const DEFAULT_THEME = { 
     blur: 15, 
     scale: 1.0, 
@@ -77,54 +77,37 @@ const DEFAULT_THEME = {
 
 let theme = DEFAULT_THEME;
 
-// Load safely
 try {
     const savedTheme = localStorage.getItem('lineUpTheme');
-    if (savedTheme) theme = { ...DEFAULT_THEME, ...JSON.parse(savedTheme) }; // Merge to ensure new keys exist
+    // Merge saved theme with default to ensure new keys (color, font, etc) exist
+    if (savedTheme) theme = { ...DEFAULT_THEME, ...JSON.parse(savedTheme) }; 
 } catch (e) { console.error("Theme Load Error", e); }
 
 function applyTheme() {
-    // 1. CSS Variables (The Basics)
+    // 1. UPDATE CSS VARIABLES (The Source of Truth)
     const root = document.documentElement.style;
     root.setProperty('--glass-blur', theme.blur + 'px');
     root.setProperty('--font-scale', theme.scale);
     root.setProperty('--primary', theme.color);
-    // Hack to make hover state slightly darker without complex math
-    root.setProperty('--primary-dark', theme.color); 
+    root.setProperty('--bg-speed', theme.speed + 's');
+    root.setProperty('--font-type', theme.font);
 
-    // 2. Direct Styles (Force Override)
-    document.documentElement.style.fontSize = `calc(16px * ${theme.scale})`;
-    document.body.style.fontFamily = theme.font;
-    document.body.style.animationDuration = theme.speed + 's';
-
-    // 3. Glass Blur Force
-    const applyBlur = (el) => {
-        if(el) {
-            el.style.backdropFilter = `blur(${theme.blur}px)`;
-            el.style.webkitBackdropFilter = `blur(${theme.blur}px)`;
-        }
-    };
-    applyBlur(document.querySelector('.app-card'));
-    document.querySelectorAll('.modal-overlay').forEach(applyBlur);
-
-    // 4. Sync Inputs (So they match loaded state)
-    const ids = {
-        'blurInput': theme.blur,
-        'scaleInput': theme.scale,
-        'colorInput': theme.color,
-        'fontInput': theme.font,
-        'speedInput': theme.speed
-    };
-    
-    for(const [id, val] of Object.entries(ids)) {
-        const el = document.getElementById(id);
-        if(el) el.value = val;
-    }
-
+    // 2. Sync Input UI (if modal is open)
+    const blurIn = document.getElementById('blurInput');
+    const scaleIn = document.getElementById('scaleInput');
     const snowIn = document.getElementById('snowInput');
+    const colorIn = document.getElementById('colorInput');
+    const fontIn = document.getElementById('fontInput');
+    const speedIn = document.getElementById('speedInput');
+
+    if(blurIn) blurIn.value = theme.blur;
+    if(scaleIn) scaleIn.value = theme.scale;
     if(snowIn) snowIn.checked = theme.snow;
+    if(colorIn) colorIn.value = theme.color;
+    if(fontIn) fontIn.value = theme.font;
+    if(speedIn) speedIn.value = theme.speed;
     
-    // 5. Handle Snow
+    // 3. Handle Snow
     const canvas = document.getElementById('snowCanvas');
     if(canvas) canvas.style.display = theme.snow ? 'block' : 'none';
 }
@@ -500,7 +483,7 @@ function openModal(id) {
         document.getElementById('mobileLeaderboardList').innerHTML = getLeaderboardHtml();
     }
     if(id==='musicModal') openMusicModal();
-    // Theme inputs are handled by applyTheme called in renderSetup, but we can double check
+    // Re-apply theme to ensure modal inputs are synced
     if(id==='themeModal') applyTheme();
     pulse(); 
 }
@@ -872,30 +855,21 @@ function renderRoomView(encodedData) {
     if (!data) return app.innerHTML = `<h2>Error</h2><p>Invalid Room Data</p>`;
     
     // ANTI-CHEAT CHECK
-    // If this room has an ID, check if the user already claimed a name
     if (data.id) {
         const claimedName = localStorage.getItem('lineUpClaim_' + data.id);
-        
-        // If they already picked a name, and it exists in this game...
         if (claimedName) {
             const playerInfo = data.players.find(p => p.n === claimedName);
-            
             if (playerInfo) {
-                // ... BLOCK them from seeing the list!
-                // Instead, show a "Welcome Back" screen for their specific player.
                 app.innerHTML = `
                     ${getMusicBtn()}
                     <div style="text-align:center; margin-top:30px;">
                         <h1 style="font-size:3rem;">🔒</h1>
                         <h2>Welcome back,<br>${claimedName}</h2>
                         <p>You have already selected your name.</p>
-                        
                         <div class="divider"></div>
-                        
                         <button class="btn-primary" onclick="claimPlayer('${playerInfo.n}', ${playerInfo.v}, ${data.min}, ${data.max}, '${data.o}', ${data.id})">
                             View My Number
                         </button>
-                        
                         <div style="margin-top:20px;">
                             <button class="btn-secondary btn-sm" onclick="if(confirm('Are you sure you want to switch names? This should only be done if you clicked by mistake.')) { localStorage.removeItem('lineUpClaim_' + ${data.id}); render(); }">
                                 Not ${claimedName}? Reset
@@ -903,12 +877,11 @@ function renderRoomView(encodedData) {
                         </div>
                     </div>
                 `;
-                return; // Stop here, do not render the list
+                return;
             }
         }
     }
 
-    // Standard List View (Only seen if not locked yet)
     app.innerHTML = `
         ${getMusicBtn()}
         <h2 style="margin-bottom:5px;">🏠 Pick Name</h2>
@@ -925,16 +898,10 @@ function renderRoomView(encodedData) {
     `;
 }
 
-// Updated to accept roomId
 function claimPlayer(name, val, min, max, order, roomId) {
-    // ANTI-CHEAT: Save this choice to the phone's storage
-    if (roomId) {
-        localStorage.setItem('lineUpClaim_' + roomId, name);
-    }
-
+    if (roomId) localStorage.setItem('lineUpClaim_' + roomId, name);
     const payload = { n: name, v: val, min: min, max: max, o: order };
     const encoded = btoa(JSON.stringify(payload));
-    
     const newUrl = `${window.location.pathname}?p=${encoded}`;
     window.history.pushState({path: newUrl}, '', newUrl);
     render();
@@ -982,10 +949,8 @@ function openRoomQr() {
     openModal('roomQrModal');
     const c = document.getElementById('roomQrDisplay');
     c.innerHTML = '';
-    
-    // NEW: Added 'id' (timestamp) to make this session unique
     const roomData = {
-        id: Date.now(), 
+        id: Date.now(),
         players: state.players.map(p => ({n: p.name, v: p.number})),
         min: state.settings.min, 
         max: state.settings.max,
@@ -993,7 +958,6 @@ function openRoomQr() {
     };
     const baseUrl = window.location.href.split('?')[0];
     const url = `${baseUrl}?room=${btoa(JSON.stringify(roomData))}`;
-    
     new QRCode(c, { text: url, width: 250, height: 250, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L });
 }
 
