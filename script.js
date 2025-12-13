@@ -32,7 +32,26 @@ const app = document.getElementById('app');
 
 // --- UTILS ---
 function pulse(ms = 10) { if (navigator.vibrate) navigator.vibrate(ms); }
-async function requestWakeLock() { if ('wakeLock' in navigator) { try { await navigator.wakeLock.request('screen'); } catch (err) {} } }
+// --- UTILS ---
+let wakeLock = null; // Store the lock
+
+async function requestWakeLock() { 
+    if ('wakeLock' in navigator) { 
+        try { 
+            wakeLock = await navigator.wakeLock.request('screen'); 
+            // console.log("Wake Lock Active");
+        } catch (err) {
+            console.log("Wake Lock Error", err);
+        } 
+    } 
+}
+
+// Handle visibility change to re-acquire lock
+document.addEventListener('visibilitychange', async () => {
+    if (wakeLock !== null && document.visibilityState === 'visible') {
+        await requestWakeLock();
+    }
+});
 function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
@@ -236,24 +255,67 @@ function addPlayer(optionalName) {
     const input = document.getElementById('nameInput');
     const name = optionalName || input.value.trim();
     if (!name) return;
+    
     const exists = state.players.some(p => p.name.toLowerCase() === name.toLowerCase());
     if(exists) return showToast("Already added!");
     
     playSfx('add'); 
     state.players.push({ name, number: 0 });
-    if(input) input.value = '';
-    setState('SETUP');
-    if(!optionalName) setTimeout(() => { const el = document.getElementById('nameInput'); if(el) el.focus(); }, 50);
+    
+    if(input) input.value = ''; // Clear input but KEEP focus
+    
+    // INSTEAD of setState('SETUP'), just update the list part:
+    saveState();
+    updatePlayerListUI(); // New helper function
     pulse();
+    
+    // Keep focus naturally
+    if(!optionalName && input) input.focus();
 }
 
-function removePlayer(i) { state.players.splice(i, 1); setState('SETUP'); pulse(); }
+// Add this helper function
+function updatePlayerListUI() {
+    // If we are fully re-rendering, fallback to render()
+    const listWrap = document.querySelector('.left-panel .list-wrap') || document.querySelector('.list-wrap');
+    if (!listWrap) { render(); return; }
+
+    // Just rebuild the list HTML
+    listWrap.innerHTML = state.players.length === 0 
+        ? '<div style="text-align:center; opacity:0.5; padding:20px;">Add players...</div>' 
+        : state.players.map((p, i) => `
+            <div class="item-card">
+                <span style="font-weight:700;">${p.name}</span>
+                <button class="btn-danger btn-icon" style="width:32px; height:32px; font-size:1rem;" onclick="removePlayer(${i})">✕</button>
+            </div>
+        `).join('');
+        
+    // Update the count label if it exists
+    const label = document.querySelector('.label');
+    if(label && label.innerText.startsWith('Players')) {
+        label.innerText = `Players (${state.players.length})`;
+    }
+}
+
+function removePlayer(i) { 
+    state.players.splice(i, 1); 
+    saveState(); 
+    updatePlayerListUI(); 
+    pulse(); 
+}
 
 function generateNumbers() {
     const minEl = document.getElementById('minInput');
     const maxEl = document.getElementById('maxInput');
     const min = parseInt(minEl ? minEl.value : state.settings.min);
     const max = parseInt(maxEl ? maxEl.value : state.settings.max);
+    
+    // --- FIX START ---
+    const range = max - min + 1;
+    if (range < state.players.length) {
+        showToast(`Range too small! Need ${state.players.length} numbers.`);
+        return false;
+    }
+    // --- FIX END ---
 
     if (min >= max) { showToast("Min must be < Max!"); return false; }
     state.settings.min = min; state.settings.max = max;
