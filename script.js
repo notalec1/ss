@@ -65,54 +65,73 @@ function resetViewMode() {
     render();
 }
 
-// --- THEME MANAGER (UPDATED) ---
-const DEFAULT_THEME = { blur: 15, scale: 1.0, snow: true };
+// --- THEME MANAGER (UPDATED v2) ---
+const DEFAULT_THEME = { 
+    blur: 15, 
+    scale: 1.0, 
+    snow: true,
+    color: '#6366f1',
+    font: "'Nunito', sans-serif",
+    speed: 6
+};
+
 let theme = DEFAULT_THEME;
 
 // Load safely
 try {
     const savedTheme = localStorage.getItem('lineUpTheme');
-    if (savedTheme) theme = JSON.parse(savedTheme);
+    if (savedTheme) theme = { ...DEFAULT_THEME, ...JSON.parse(savedTheme) }; // Merge to ensure new keys exist
 } catch (e) { console.error("Theme Load Error", e); }
 
 function applyTheme() {
-    // 1. Force update CSS variables
-    document.documentElement.style.setProperty('--glass-blur', theme.blur + 'px');
-    document.documentElement.style.setProperty('--font-scale', theme.scale);
-    
-    // 2. FORCE DIRECT STYLES (Fixes the "sliders do nothing" issue)
-    // Font Scaling
-    document.documentElement.style.fontSize = `calc(16px * ${theme.scale})`;
-    
-    // Glass Blur - Apply to main card
-    const card = document.querySelector('.app-card');
-    if(card) {
-        card.style.backdropFilter = `blur(${theme.blur}px)`;
-        card.style.webkitBackdropFilter = `blur(${theme.blur}px)`;
-    }
-    
-    // Glass Blur - Apply to modals
-    document.querySelectorAll('.modal-overlay').forEach(m => {
-        m.style.backdropFilter = `blur(${theme.blur}px)`;
-        m.style.webkitBackdropFilter = `blur(${theme.blur}px)`;
-    });
+    // 1. CSS Variables (The Basics)
+    const root = document.documentElement.style;
+    root.setProperty('--glass-blur', theme.blur + 'px');
+    root.setProperty('--font-scale', theme.scale);
+    root.setProperty('--primary', theme.color);
+    // Hack to make hover state slightly darker without complex math
+    root.setProperty('--primary-dark', theme.color); 
 
-    // 3. Update Input Positions (Sync UI)
-    const blurIn = document.getElementById('blurInput');
-    const scaleIn = document.getElementById('scaleInput');
+    // 2. Direct Styles (Force Override)
+    document.documentElement.style.fontSize = `calc(16px * ${theme.scale})`;
+    document.body.style.fontFamily = theme.font;
+    document.body.style.animationDuration = theme.speed + 's';
+
+    // 3. Glass Blur Force
+    const applyBlur = (el) => {
+        if(el) {
+            el.style.backdropFilter = `blur(${theme.blur}px)`;
+            el.style.webkitBackdropFilter = `blur(${theme.blur}px)`;
+        }
+    };
+    applyBlur(document.querySelector('.app-card'));
+    document.querySelectorAll('.modal-overlay').forEach(applyBlur);
+
+    // 4. Sync Inputs (So they match loaded state)
+    const ids = {
+        'blurInput': theme.blur,
+        'scaleInput': theme.scale,
+        'colorInput': theme.color,
+        'fontInput': theme.font,
+        'speedInput': theme.speed
+    };
+    
+    for(const [id, val] of Object.entries(ids)) {
+        const el = document.getElementById(id);
+        if(el) el.value = val;
+    }
+
     const snowIn = document.getElementById('snowInput');
-    if(blurIn) blurIn.value = theme.blur;
-    if(scaleIn) scaleIn.value = theme.scale;
     if(snowIn) snowIn.checked = theme.snow;
     
-    // 4. Handle Snow
+    // 5. Handle Snow
     const canvas = document.getElementById('snowCanvas');
     if(canvas) canvas.style.display = theme.snow ? 'block' : 'none';
 }
 
 function updateTheme(key, val) {
-    // Convert slider strings to proper types
-    if(key === 'blur') val = parseInt(val);
+    // Type conversion
+    if(key === 'blur' || key === 'speed') val = parseInt(val);
     if(key === 'scale') val = parseFloat(val);
     
     theme[key] = val;
