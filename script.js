@@ -183,9 +183,9 @@ function updateScores() {
 }
 
 function resetScores() {
-    if(confirm("Reset all player scores to 0?")) {
+    if(confirm("Do you absolutely want to reset all player scores to 0?")) {
         localStorage.removeItem('lineUpLeaderboard');
-        showToast("Scores Reset");
+        showToast("Scores Successfully Reset!");
         render();
     }
 }
@@ -216,9 +216,9 @@ function importData(event) {
             if (data.history) localStorage.setItem('lineUpHistory', data.history);
             if (data.state) localStorage.setItem('lineUpState', data.state);
             if (data.leaderboard) localStorage.setItem('lineUpLeaderboard', data.leaderboard);
-            showToast("Data Restored!");
+            showToast("Data Successfully Restored!");
             loadState(); render(); closeModal('dataModal');
-        } catch(err) { showToast("Invalid File"); }
+        } catch(err) { showToast("Invalid File. Make sure it's a JSON file."); }
     };
     reader.readAsText(file);
 }
@@ -227,7 +227,7 @@ function wipeData() {
     if(confirm("Are you sure? This deletes ALL history, groups, and settings.")) {
         localStorage.clear(); 
         state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-        render(); closeModal('dataModal'); showToast("Factory Reset Complete");
+        render(); closeModal('dataModal'); showToast("Factory Reset Complete.");
     }
 }
 
@@ -237,7 +237,7 @@ function addPlayer(optionalName) {
     const name = optionalName || input.value.trim();
     if (!name) return;
     const exists = state.players.some(p => p.name.toLowerCase() === name.toLowerCase());
-    if(exists) return showToast("Already added!");
+    if(exists) return showToast("Player is already participating!");
     
     playSfx('add'); 
     state.players.push({ name, number: 0 });
@@ -283,7 +283,7 @@ function startVerification() {
 }
 
 function startPassGame() {
-    if (state.players.length < 2) return showToast("Need 2+ players!");
+    if (state.players.length < 2) return showToast("Need 2+ players to start!");
     if (generateNumbers()) {
         state.passIndex = 0; state.viewingNumber = false; state.startTime = null;
         setState('PASS_PLAY'); pulse(); requestWakeLock();
@@ -305,7 +305,7 @@ function resetGameData() { state = JSON.parse(JSON.stringify(DEFAULT_STATE)); sa
 // --- PRESETS & HISTORY ---
 function savePreset() {
     if(state.players.length === 0) return showToast("No players");
-    const name = prompt("Name this group:");
+    const name = prompt("What do you want to name this group?");
     if(name) {
         const presets = JSON.parse(localStorage.getItem('lineUpPresets')) || [];
         presets.push({ 
@@ -328,7 +328,7 @@ function loadPreset(index) {
         saveState();
         closeModal('presetsModal');
         render();
-        showToast("Loaded!");
+        showToast("Preset loaded!");
     }
 }
 
@@ -342,7 +342,7 @@ function deletePreset(index) {
 function renderPresetsList() {
     const presets = JSON.parse(localStorage.getItem('lineUpPresets')) || [];
     const el = document.getElementById('presetsList');
-    if(presets.length === 0) { el.innerHTML = "<p>No saved groups.</p>"; return; }
+    if(presets.length === 0) { el.innerHTML = "<p>No saved groups. Click '+Save' to start.</p>"; return; }
     el.innerHTML = presets.map((p, i) => {
         const rangeInfo = (p.min !== undefined) ? `<br><small style="opacity:0.6">Range: ${p.min}-${p.max}</small>` : '';
         return `
@@ -374,7 +374,7 @@ function renderHistoryList() {
     const el = document.getElementById('historyList');
     if(log.length === 0) { el.innerHTML = "<p>No games played yet.</p>"; return; }
     el.innerHTML = log.map((g, index) => {
-        const names = g.roster ? g.roster.join(', ') : 'No roster data';
+        const names = g.roster ? g.roster.join(', ') : 'No roster data (can be due to corruption).';
         return `
         <div class="item-card" 
              style="margin-bottom:8px; display:block; cursor:pointer; ${g.win ? 'border-color:var(--success)' : ''}" 
@@ -393,7 +393,7 @@ function renderHistoryList() {
 // --- MISC UTILS ---
 function toggleGodMode() {
     if(godMode) { godMode = false; render(); } else { 
-        if(prompt("Enter Admin Password:") === GOD_PASSWORD) { godMode = true; showToast("🔓 God Mode Active"); render(); } else { showToast("❌ Wrong Password"); } 
+        if(prompt("Enter Admin Password:") === GOD_PASSWORD) { godMode = true; showToast("🔓 God Mode Active"); render(); } else { showToast("❌ Wrong Password!"); } 
     }
 }
 
@@ -444,11 +444,11 @@ function render() {
 function getLeaderboardHtml() {
     const scores = getLeaderboard();
     const entries = Object.entries(scores).sort((a,b) => b[1] - a[1]);
-    if (entries.length === 0) return `<div style="text-align:center; opacity:0.6">No scores yet</div>`;
+    if (entries.length === 0) return `<div style="text-align:center; opacity:0.6">No scores yet. Win a game to get started!</div>`;
     return entries.map((e, i) => `
         <div class="item-card" style="padding:10px 15px; margin-bottom:8px; border:none; background:rgba(255,255,255,0.5);">
             <div style="display:flex; align-items:center;">
-                <span style="font-weight:900; width:25px; opacity:0.6;">${i+1}</span>
+                <span style="font-weight:900; min-width:30px; margin-right:8px; display:inline-block; opacity:0.6;">${i+1}</span>
                 <span style="font-weight:700;">${e[0]}</span>
             </div>
             <strong style="color:var(--primary-dark)">${e[1]} pts</strong>
@@ -463,27 +463,27 @@ function renderModeSelection() {
         <div class="row" style="margin-top:20px;">
             <button class="mode-btn col" onclick="setViewMode('mobile')">
                 <div class="mode-icon">📱</div>
-                Mobile / Host
+                Small
             </button>
             <button class="mode-btn col" onclick="setViewMode('tv')">
                 <div class="mode-icon">📺</div>
-                TV Display
+                Big / TV
             </button>
         </div>
     `;
 }
 
 function renderSetup() {
-    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">↔️</button>`;
+    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">👁️</button>`;
     const leftContent = `
         <h1>Line Up!</h1>
-        <p>The Ultimate Party Game</p>
+        <p>The Ultimate Chaos Number Game</p>
         <div class="row">
-            <div class="col"><label class="label">Min</label><input type="number" id="minInput" value="${state.settings.min}"></div>
-            <div class="col"><label class="label">Max</label><input type="number" id="maxInput" value="${state.settings.max}"></div>
+            <div class="col"><label class="label">- MIN</label><input type="number" id="minInput" value="${state.settings.min}"></div>
+            <div class="col"><label class="label">+ MAX</label><input type="number" id="maxInput" value="${state.settings.max}"></div>
         </div>
         <div style="margin-top:15px;">
-            <label class="label">Sort Order</label>
+            <label class="label">↕️SORT</label>
             <select id="orderInput">
                 <option value="asc" ${state.settings.order === 'asc' ? 'selected' : ''}>Smallest → Biggest</option>
                 <option value="desc" ${state.settings.order === 'desc' ? 'selected' : ''}>Biggest → Smallest</option>
@@ -496,11 +496,9 @@ function renderSetup() {
             <button class="btn-secondary btn-sm" onclick="openModal('presetsModal')">💾</button>
             <button class="btn-secondary btn-sm" onclick="openModal('leaderboardModal')">🏆</button>
             <button class="btn-secondary btn-sm" onclick="openModal('historyModal')">📜</button>
-            
             <button class="btn-secondary btn-sm" onclick="openModal('themeModal'); applyTheme();">🎨</button>
-            
             <button class="btn-secondary btn-sm" onclick="openModal('dataModal')">⚙️</button>
-            <button class="btn-secondary btn-sm" onclick="savePreset()">+Save</button>
+            <button class="btn-secondary btn-sm" onclick="savePreset()">Save Group</button>
         </div>
     </div>
         <div class="row" style="margin-top:10px; margin-bottom:10px;">
@@ -516,7 +514,7 @@ function renderSetup() {
         </div>
         
         <div style="margin-top:auto;">
-            <button class="btn-primary" onclick="startGame()" ${state.players.length < 2 ? 'disabled' : ''}>${state.players.length < 2 ? 'Add Players to Start' : 'Generate Links'}</button>
+            <button class="btn-primary" onclick="startGame()" ${state.players.length < 2 ? 'disabled' : ''}>${state.players.length < 2 ? '2+ Players to Start' : 'Go!'}</button>
             ${viewMode === 'mobile' ? `
             <div style="text-align:center; margin: 12px 0; font-size: 0.8rem; font-weight:800; opacity:0.5; letter-spacing:1px;">— OR —</div>
             <button class="btn-secondary" onclick="startPassGame()" ${state.players.length < 2 ? 'disabled' : ''}>📱 Pass & Play</button>` : ''}
@@ -553,7 +551,7 @@ function renderDistribute() {
     const baseUrl = window.location.href.split('?')[0];
     const currentSeconds = state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0;
     const encodeData = (obj) => btoa(JSON.stringify(obj));
-    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">↔️</button>`;
+    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">👁️</button>`;
     
     const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ ${formatTime(currentSeconds)}</div></div>`;
     const controlsHtml = `
@@ -567,7 +565,7 @@ function renderDistribute() {
             ${viewMode === 'mobile' ? `<button class="btn-secondary" onclick="openModal('leaderboardModal')">🏆 Leaderboard</button>` : ''}
             <button class="btn-secondary" style="border-color:var(--primary); color:var(--primary)" onclick="openRoomQr()">🏠 Room Mode</button>
         </div>
-        ${viewMode === 'tv' ? `<button class="btn-secondary" style="margin-top:10px;" onclick="openQrGrid()">📺 Grid View (All QRs)</button>` : ''}
+        ${viewMode === 'tv' ? `<button class="btn-secondary" style="margin-top:10px;" onclick="openQrGrid()">📺 Grid View</button>` : ''}
     `;
 
     const listHtml = `
@@ -606,7 +604,7 @@ function renderDistribute() {
 function renderPassPlay() {
     const p = state.players[state.passIndex];
     const orderText = state.settings.order === 'asc' ? 'Smallest ➔ Biggest' : 'Biggest ➔ Smallest';
-    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">↔️</button>`;
+    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">👁️</button>`;
     
     if (!state.viewingNumber) {
         app.innerHTML = `
@@ -625,7 +623,7 @@ function renderPassPlay() {
             <div style="background:var(--bg-item); padding:15px; border-radius:16px; text-align:left; font-size:0.95rem; margin-bottom:20px;">
                 Range: <strong>${state.settings.min} - ${state.settings.max}</strong><br>Order: <strong>${orderText}</strong>
             </div>
-            <button class="btn-primary" onclick="nextPassPlayer()">${state.passIndex < state.players.length - 1 ? 'Next Player' : 'Go to Line Up!'}</button>
+            <button class="btn-primary" onclick="nextPassPlayer()">${state.passIndex < state.players.length - 1 ? 'Next Player' : 'Finished: Go to Line Up!'}</button>
         `;
         bindSecretBox();
     }
@@ -634,7 +632,7 @@ function renderPassPlay() {
 function renderVerify() {
     if (!state.startTime) state.startTime = Date.now();
     const currentSeconds = Math.floor((Date.now() - state.startTime) / 1000);
-    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">↔️</button>`;
+    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">👁️</button>`;
     
     const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ ${formatTime(currentSeconds)}</div></div>`;
     const controlsHtml = `
@@ -645,7 +643,7 @@ function renderVerify() {
         </div>
         ${viewMode === 'tv' ? 
           `<div style="margin-top:auto">
-            <button class="btn-primary" style="background:var(--success); margin-bottom:10px" onclick="checkOrder()">Reveal Results</button>
+            <button class="btn-primary" style="background:var(--success); margin-bottom:10px" onclick="checkOrder()">Reveal Results!</button>
             <button class="btn-secondary" onclick="setState('DISTRIBUTE')">Back</button>
            </div>` 
           : ''}
@@ -786,7 +784,7 @@ function startAutoReveal() {
             // Final check
             const allCorrect = state.players.every((p, i) => p.name === sorted[i].name);
             playSfx(allCorrect ? 'win' : 'lose');
-            if(allCorrect) setTimeout(() => confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } }), 200);
+            if(allCorrect) setTimeout(() => confetti({ particleCount: 650, spread: 180, origin: { y: 0.6 } }), 200);
             return;
         }
         
@@ -806,7 +804,7 @@ function startAutoReveal() {
             if(newCard) newCard.scrollIntoView({behavior: "smooth", block: "center"});
         }
 
-    }, 1000); // 1.0s Speed
+    }, 1500); // 1.0s Speed --> 1.5s
 }
 
 function renderResults() {
@@ -841,7 +839,7 @@ function renderResults() {
     const listHtml = `<div class="list-wrap">${listItems}</div>`;
     // LEADERBOARD HTML REMOVED HERE
 
-    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">↔️</button>`;
+    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">👁️</button>`;
 
     if(viewMode === 'tv') {
         app.innerHTML = `
@@ -919,7 +917,7 @@ function renderPlayerView(encodedData) {
 function renderRoomView(encodedData) {
     let data = null;
     try { data = JSON.parse(atob(encodedData)); } catch(e) {}
-    if (!data) return app.innerHTML = `<h2>Error</h2><p>Invalid Room Data</p>`;
+    if (!data) return app.innerHTML = `<h2>Error.</h2><p>Invalid Room Data???</p>`;
     
     // ANTI-CHEAT CHECK
     if (data.id) {
@@ -930,15 +928,15 @@ function renderRoomView(encodedData) {
                 app.innerHTML = `
                     <div style="text-align:center; margin-top:30px;">
                         <h1 style="font-size:3rem;">🔒</h1>
-                        <h2>Welcome back,<br>${claimedName}</h2>
+                        <h2>Hi,<br>${claimedName}</h2>
                         <p>You have already selected your name.</p>
                         <div class="divider"></div>
                         <button class="btn-primary" onclick="claimPlayer('${playerInfo.n}', ${playerInfo.v}, ${data.min}, ${data.max}, '${data.o}', ${data.id})">
                             View My Number
                         </button>
                         <div style="margin-top:20px;">
-                            <button class="btn-secondary btn-sm" onclick="if(confirm('Are you sure you want to switch names? This should only be done if you clicked by mistake.')) { localStorage.removeItem('lineUpClaim_' + ${data.id}); render(); }">
-                                Not ${claimedName}? Reset
+                            <button class="btn-secondary btn-sm" onclick="if(confirm('Are you sure you want to switch names? This should only be done if you clicked by mistake. Cheating would just ruin the fun and game.')) { localStorage.removeItem('lineUpClaim_' + ${data.id}); render(); }">
+                                Not ${claimedName}?
                             </button>
                         </div>
                     </div>
@@ -950,7 +948,7 @@ function renderRoomView(encodedData) {
 
     app.innerHTML = `
         <h2 style="margin-bottom:5px;">🏠 Pick Name</h2>
-        <p>Tap your name to reveal your number</p>
+        <p>Tap YOUR name to reveal your number.</p>
         <div class="list-wrap">
             ${data.players.map(p => `
                 <button class="btn-secondary" style="margin-bottom:10px; justify-content:space-between; padding:20px;" 
