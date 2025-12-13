@@ -16,9 +16,12 @@
     --gold: #f59e0b;
     --text-main: #1e293b;
     --text-sub: #64748b;
-    --bg-card: rgba(255, 255, 255, 0.9);
-    --bg-item: rgba(255, 255, 255, 0.6);
-    --border: rgba(255, 255, 255, 0.6);
+    
+    /* Global Glass Backgrounds */
+    --bg-card: rgba(255, 255, 255, 0.85); /* Slightly more transparent */
+    --bg-item: rgba(255, 255, 255, 0.3);  /* Very transparent for blur to work */
+    
+    --border: rgba(255, 255, 255, 0.5);
     --shadow: 0 10px 32px 0 rgba(31, 38, 135, 0.3);
     --radius: 32px;
 }
@@ -27,7 +30,7 @@
     :root {
         --text-main: #f8fafc;
         --text-sub: #94a3b8;
-        --bg-card: rgba(30, 41, 59, 0.85);
+        --bg-card: rgba(30, 41, 59, 0.8);
         --bg-item: rgba(15, 23, 42, 0.4);
         --border: rgba(255, 255, 255, 0.1);
         --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
@@ -40,46 +43,28 @@
 * { 
     box-sizing: border-box; 
     -webkit-tap-highlight-color: transparent; 
-    
-    /* FIREFOX & IE: Hide Scrollbar */
     scrollbar-width: none; 
     -ms-overflow-style: none;
 }
-
-/* CHROME/SAFARI/WEBKIT: Hide Scrollbar */
-::-webkit-scrollbar {
-    width: 0px;
-    background: transparent;
-    display: none;
-}
+::-webkit-scrollbar { width: 0px; background: transparent; display: none; }
 
 html {
-    /* FORCE TEXT SCALE */
     font-size: calc(16px * var(--font-scale)) !important;
     transition: font-size 0.2s ease;
 }
 
 body {
-    /* FORCE FONT FAMILY */
     font-family: var(--font-type) !important;
-    
     margin: 0; padding: 20px; min-height: 100vh;
     display: flex; justify-content: center; align-items: center;
     color: var(--text-main);
-    
     background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #4338ca);
     background-size: 400% 400%;
-    
-    /* FORCE ANIMATION SPEED */
     animation: gradientBG var(--bg-speed) ease infinite !important;
-    
     overflow-x: hidden;
 }
 
-/* Ensure Buttons/Inputs inherit the custom font */
-button, input, select, textarea {
-    font-family: var(--font-type) !important;
-}
+button, input, select, textarea { font-family: var(--font-type) !important; }
 
 @keyframes gradientBG {
     0% { background-position: 0% 50%; }
@@ -95,10 +80,8 @@ button, input, select, textarea {
 /* 3. APP CARD & GLASS */
 .app-card {
     background: var(--bg-card);
-    /* FORCE BLUR */
     backdrop-filter: blur(var(--glass-blur)) !important;
     -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
-    
     border: 1px solid var(--border); width: 100%; max-width: 500px;
     padding: 2.5rem 2rem; border-radius: var(--radius); box-shadow: var(--shadow);
     position: relative; z-index: 2; transition: all 0.67s ease;
@@ -109,9 +92,10 @@ body.is-tv-mode .app-card {
     display: flex; flex-direction: column; padding: 2.3rem;
 }
 
-/* 4. HEADINGS (Force Primary Color) */
+/* 4. HEADINGS */
 h1 { margin: 0 0 10px 0; color: var(--primary) !important; font-weight: 900; text-align: center; font-size: 2.2rem; }
 h2 { margin: 0 0 15px 0; font-size: 1.6rem; text-align: center; font-weight: 800; }
+
 h3 { margin: 0 0 10px 0; font-size: 1.2rem; font-weight: 800; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
 p { margin: 0 0 25px 0; color: var(--text-sub); text-align: center; line-height: 1.6; }
 
@@ -122,8 +106,36 @@ p { margin: 0 0 25px 0; color: var(--text-sub); text-align: center; line-height:
 body.is-tv-mode .split-container { flex-direction: row; align-items: stretch; }
 .left-panel { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-right: 20px; }
 .right-panel { flex: 1.5; display: flex; flex-direction: column; gap: 15px; height: 100%; }
-.game-status-panel { flex: 1.5; background: rgba(0,0,0,0.05); border-radius: 20px; padding: 20px; overflow-y: auto; border: 1px solid var(--border); display: flex; flex-direction: column; }
-.leaderboard-panel { flex: 1; background: rgba(245, 158, 11, 0.1); border-radius: 20px; padding: 20px; overflow-y: auto; border: 2.5px solid var(--gold); }
+
+/* PANELS with Sticky Headers */
+.game-status-panel, .leaderboard-panel {
+    background: rgba(255, 255, 255, 0.15); /* More glass-like */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 0 20px 20px 20px; /* Remove top padding for sticky header */
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    display: flex; flex-direction: column;
+}
+
+.game-status-panel { flex: 1.5; }
+.leaderboard-panel { flex: 1; border: 2.5px solid var(--gold); background: rgba(245, 158, 11, 0.05); }
+
+/* STICKY HEADER LOGIC */
+.game-status-panel h3, 
+.leaderboard-panel h3 {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    margin-top: 0;
+    /* Create a gradient fade background behind the header so items scroll under it nicely */
+    background: linear-gradient(180deg, var(--bg-card) 0%, rgba(255,255,255,0) 100%);
+    backdrop-filter: blur(5px);
+}
+
 .label { display: block; font-size: 0.8rem; font-weight: 800; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
 
 /* 6. INPUTS & BUTTONS */
@@ -134,7 +146,6 @@ input, select {
 }
 input:focus, select:focus { outline: none; background: var(--bg-card); border-color: var(--primary); transform: translateY(-2px); }
 
-/* Range Slider Accent Color */
 input[type=range] {
     width: 100%; margin: 10px 0; cursor: pointer; height: 6px;
     background: rgba(0,0,0,0.1); border-radius: 5px; padding: 0; border: none;
@@ -148,11 +159,9 @@ button {
 }
 button:active { transform: scale(0.8); }
 
-/* Force Primary Background */
 .btn-primary { background: var(--primary) !important; color: white; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
 .btn-primary:hover { filter: brightness(0.9); transform: translateY(-5px); }
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
 .btn-secondary { background: var(--bg-item); color: var(--text-main); border: 1px solid var(--border); }
 .btn-secondary:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
 .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
@@ -169,10 +178,19 @@ button:active { transform: scale(0.8); }
 
 .list-wrap { display: flex; flex-direction: column; gap: 12px; margin: 25px 0; max-height: 400px; overflow-y: auto; padding-right: 4px; }
 body.is-tv-mode .list-wrap { max-height: 100%; flex: 1; margin: 10px 0; }
-.item-card { background: var(--bg-item); padding: 14px 18px; border-radius: 16px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.item-card.correct { background: rgba(16, 185, 129, 0.3); border-color: var(--success); }
-.item-card.wrong { background: rgba(239, 68, 68, 0.15); border-color: var(--danger); }
-.item-card.gold { background: rgba(245, 158, 11, 0.15); border-color: var(--gold); }
+
+/* NEW ITEM CARD: Glassy & Blurry */
+.item-card { 
+    background: rgba(255, 255, 255, 0.2) !important; /* See-through */
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    padding: 14px 18px; border-radius: 16px; 
+    border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; 
+}
+.item-card.correct { background: rgba(16, 185, 129, 0.15) !important; border-color: var(--success); }
+.item-card.wrong { background: rgba(239, 68, 68, 0.15) !important; border-color: var(--danger); }
+.item-card.gold { background: rgba(245, 158, 11, 0.15) !important; border-color: var(--gold); }
+
 .rank-badge { background: var(--text-main); color: var(--bg-card); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; margin-right: 12px; }
 
 .qr-grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; padding: 10px; overflow-y: auto; max-height: 75vh; }
