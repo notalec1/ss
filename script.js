@@ -26,6 +26,7 @@ let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 let timerInterval = null;
 let revealInterval = null; 
 let godMode = false;
+let movingPlayerIndex = null; // NEW: Track who is being moved
 let viewMode = sessionStorage.getItem('lineUpViewMode') || null; 
 const app = document.getElementById('app');
 
@@ -58,7 +59,8 @@ function resetViewMode() {
 // --- THEME MANAGER & SFX ---
 const DEFAULT_THEME = { 
     blur: 15, scale: 1.0, snow: true, sfx: true,
-    color: '#6366f1', font: "'Nunito', sans-serif", speed: 6
+    color: '#6366f1', font: "'Nunito', sans-serif", speed: 6,
+    controls: 'jump' // NEW: 'jump' or 'arrows'
 };
 let theme = DEFAULT_THEME;
 try {
@@ -89,7 +91,7 @@ function applyTheme() {
     root.setProperty('--font-type', theme.font);
 
     // Sync Inputs
-    const ids = ['blurInput','scaleInput','snowInput','sfxInput','colorInput','fontInput','speedInput'];
+    const ids = ['blurInput','scaleInput','snowInput','sfxInput','colorInput','fontInput','speedInput', 'controlInput'];
     ids.forEach(id => {
         const el = document.getElementById(id);
         if(!el) return;
@@ -107,6 +109,7 @@ function updateTheme(key, val) {
     theme[key] = val;
     localStorage.setItem('lineUpTheme', JSON.stringify(theme));
     applyTheme();
+    render(); // Re-render to update controls instantly
 }
 
 // --- SNOW FX ---
@@ -652,17 +655,51 @@ function renderVerify() {
 
     const listHtml = `
         <div class="list-wrap">
-            ${state.players.map((p, i) => `
-                <div class="item-card" style="transition: transform 0.3s ease;">
-                    <div style="display:flex; align-items:center;">
-                        <div class="rank-badge">${i + 1}</div>
-                        <div><span style="font-weight:700;">${p.name}</span>${godMode ? `<span style="margin-left:8px; color:var(--primary); font-weight:900;">(${p.number})</span>` : ''}</div>
-                    </div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="btn-secondary btn-icon" onclick="movePlayer(${i}, -1)" ${i === 0 ? 'disabled' : ''}>▲</button>
-                        <button class="btn-secondary btn-icon" onclick="movePlayer(${i}, 1)" ${i === state.players.length - 1 ? 'disabled' : ''}>▼</button>
-                    </div>
-                </div>`).join('')}
+            ${state.players.map((p, i) => {
+                // MOVE LOGIC DISPLAY
+                if (theme.controls === 'arrows') {
+                    // LEGACY ARROWS
+                    return `
+                    <div class="item-card" style="transition: transform 0.3s ease;">
+                        <div style="display:flex; align-items:center;">
+                            <div class="rank-badge">${i + 1}</div>
+                            <div><span style="font-weight:700;">${p.name}</span>${godMode ? `<span style="margin-left:8px; color:var(--primary); font-weight:900;">(${p.number})</span>` : ''}</div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-secondary btn-icon" onclick="movePlayer(${i}, -1)" ${i === 0 ? 'disabled' : ''}>▲</button>
+                            <button class="btn-secondary btn-icon" onclick="movePlayer(${i}, 1)" ${i === state.players.length - 1 ? 'disabled' : ''}>▼</button>
+                        </div>
+                    </div>`;
+                } else {
+                    // MODERN TWO-TAP JUMP
+                    const isSelected = movingPlayerIndex === i;
+                    const isTargetMode = movingPlayerIndex !== null;
+                    
+                    if (isTargetMode && !isSelected) {
+                        // TARGET STATE
+                        return `
+                        <div class="item-card" style="padding:10px;">
+                            <button class="btn-place-here" onclick="finishMove(${i})">
+                                👇 Place Here (#${i+1})
+                            </button>
+                        </div>`;
+                    }
+                    
+                    // NORMAL STATE
+                    return `
+                    <div class="item-card ${isSelected ? 'is-moving' : ''}" style="transition: transform 0.2s ease;">
+                        <div style="display:flex; align-items:center;">
+                            <div class="rank-badge">${i + 1}</div>
+                            <div><span style="font-weight:700;">${p.name}</span>${godMode ? `<span style="margin-left:8px; color:var(--primary); font-weight:900;">(${p.number})</span>` : ''}</div>
+                        </div>
+                        <div>
+                            <button class="btn-move-select" style="${isSelected ? 'background:var(--danger); color:white; border-color:var(--danger);' : ''}" onclick="startMove(${i})">
+                                ${isSelected ? '✕' : '↕️'}
+                            </button>
+                        </div>
+                    </div>`;
+                }
+            }).join('')}
         </div>
         ${viewMode === 'mobile' ? `
         <button class="btn-primary" style="background:var(--success);" onclick="checkOrder()">Reveal Results</button>
@@ -683,54 +720,30 @@ function renderVerify() {
     startTimerTicker();
 }
 
-// NEW: Centralized MVP Logic
-function getMvpName(players, sorted) {
-    if(players.length < 2) return "";
-
-    // 1. Identify Correct Players
-    const correctPlayers = players.filter((p, i) => p.name === sorted[i].name);
-
-    // 2. Logic A: Perfect/Correct Players (Who had the tightest squeeze?)
-    if (correctPlayers.length > 0) {
-        let bestName = "";
-        let minDiff = Infinity;
-
-        players.forEach((p, i) => {
-            if (p.name !== sorted[i].name) return; // Skip incorrect players
-
-            // Get absolute difference to neighbors in the SORTED list
-            // (i.e. how close was the next correct number?)
-            let gapPrev = Infinity;
-            let gapNext = Infinity;
-
-            if (i > 0) gapPrev = Math.abs(p.number - sorted[i-1].number);
-            if (i < sorted.length - 1) gapNext = Math.abs(p.number - sorted[i+1].number);
-
-            const difficulty = Math.min(gapPrev, gapNext);
-
-            if (difficulty < minDiff) {
-                minDiff = difficulty;
-                bestName = p.name;
-            }
-        });
-        return bestName;
+// NEW: MOVE LOGIC FUNCTIONS
+function startMove(index) {
+    if (movingPlayerIndex === index) {
+        movingPlayerIndex = null; // Cancel
+    } else {
+        movingPlayerIndex = index; // Select
     }
-
-    // 3. Logic B: Everyone Wrong (Who was closest to their rank?)
-    let bestName = "";
-    let minRankDiff = Infinity;
-    players.forEach((p, i) => {
-        const sortedIndex = sorted.findIndex(s => s.name === p.name);
-        const diff = Math.abs(i - sortedIndex);
-        if (diff < minRankDiff) { 
-            minRankDiff = diff; 
-            bestName = p.name; 
-        }
-    });
-    return bestName;
+    render();
 }
 
-// Helper to generate card HTML
+function finishMove(targetIndex) {
+    if (movingPlayerIndex === null) return;
+    
+    // Splice logic: Remove from old, insert at new
+    const player = state.players.splice(movingPlayerIndex, 1)[0];
+    state.players.splice(targetIndex, 0, player);
+    
+    movingPlayerIndex = null;
+    saveState();
+    render();
+    playSfx('add'); // Satisfying click sound
+}
+
+// NEW: Helper to generate card HTML (used by render and auto-reveal)
 function getResultCardHtml(p, i, sorted, mvpName, isRevealed) {
     if (!isRevealed) {
         return `
@@ -763,6 +776,7 @@ function getResultCardHtml(p, i, sorted, mvpName, isRevealed) {
 function startAutoReveal() {
     if (revealInterval) return;
     
+    // NEW MVP LOGIC: RANK-BASED
     const sorted = [...state.players].sort((a, b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
     const mvpName = getMvpName(state.players, sorted);
 
@@ -770,8 +784,9 @@ function startAutoReveal() {
         if (state.revealedCount >= state.players.length) {
             clearInterval(revealInterval);
             revealInterval = null;
-            render(); 
+            render(); // Final render to show buttons
             
+            // Final check
             const allCorrect = state.players.every((p, i) => p.name === sorted[i].name);
             playSfx(allCorrect ? 'win' : 'lose');
             if(allCorrect) setTimeout(() => confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } }), 200);
@@ -782,6 +797,7 @@ function startAutoReveal() {
         saveState();
         playSfx('popup'); 
         
+        // --- SURGICAL DOM UPDATE (NO VOMIT) ---
         const cardIndex = state.revealedCount - 1;
         const player = state.players[cardIndex];
         const newHtml = getResultCardHtml(player, cardIndex, sorted, mvpName, true);
@@ -793,7 +809,7 @@ function startAutoReveal() {
             if(newCard) newCard.scrollIntoView({behavior: "smooth", block: "center"});
         }
 
-    }, 1000); 
+    }, 1000); // 1.0s Speed
 }
 
 function renderResults() {
@@ -844,6 +860,52 @@ function renderResults() {
     } else {
         app.innerHTML = `${switchBtn}${headerHtml}${listHtml}${leaderboardHtml}${buttonsHtml}`;
     }
+}
+
+// NEW: Centralized MVP Logic
+function getMvpName(players, sorted) {
+    if(players.length < 2) return "";
+
+    // 1. Identify Correct Players
+    const correctPlayers = players.filter((p, i) => p.name === sorted[i].name);
+
+    // 2. Logic A: Perfect/Correct Players (Who had the tightest squeeze?)
+    if (correctPlayers.length > 0) {
+        let bestName = "";
+        let minDiff = Infinity;
+
+        players.forEach((p, i) => {
+            if (p.name !== sorted[i].name) return; // Skip incorrect players
+
+            // Get absolute difference to neighbors in the SORTED list
+            let gapPrev = Infinity;
+            let gapNext = Infinity;
+
+            if (i > 0) gapPrev = Math.abs(p.number - sorted[i-1].number);
+            if (i < sorted.length - 1) gapNext = Math.abs(p.number - sorted[i+1].number);
+
+            const difficulty = Math.min(gapPrev, gapNext);
+
+            if (difficulty < minDiff) {
+                minDiff = difficulty;
+                bestName = p.name;
+            }
+        });
+        return bestName;
+    }
+
+    // 3. Logic B: Everyone Wrong (Who was closest to their rank?)
+    let bestName = "";
+    let minRankDiff = Infinity;
+    players.forEach((p, i) => {
+        const sortedIndex = sorted.findIndex(s => s.name === p.name);
+        const diff = Math.abs(i - sortedIndex);
+        if (diff < minRankDiff) { 
+            minRankDiff = diff; 
+            bestName = p.name; 
+        }
+    });
+    return bestName;
 }
 
 // --- PLAYER VIEWS ---
