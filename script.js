@@ -65,6 +65,37 @@ function resetViewMode() {
     render();
 }
 
+// --- THEME MANAGER ---
+const DEFAULT_THEME = { blur: 15, scale: 1.0, snow: true };
+let theme = JSON.parse(localStorage.getItem('lineUpTheme')) || DEFAULT_THEME;
+
+function applyTheme() {
+    // Apply CSS Variables
+    document.documentElement.style.setProperty('--glass-blur', theme.blur + 'px');
+    document.documentElement.style.setProperty('--font-scale', theme.scale);
+    
+    // Handle Inputs if modal is open
+    const blurIn = document.getElementById('blurInput');
+    const scaleIn = document.getElementById('scaleInput');
+    const snowIn = document.getElementById('snowInput');
+    if(blurIn) blurIn.value = theme.blur;
+    if(scaleIn) scaleIn.value = theme.scale;
+    if(snowIn) snowIn.checked = theme.snow;
+    
+    // Handle Snow
+    const canvas = document.getElementById('snowCanvas');
+    if(canvas) canvas.style.display = theme.snow ? 'block' : 'none';
+}
+
+function updateTheme(key, val) {
+    theme[key] = val;
+    localStorage.setItem('lineUpTheme', JSON.stringify(theme));
+    applyTheme();
+}
+
+// Call this immediately on load
+applyTheme();
+
 // --- MUSIC SYSTEM ---
 let currentTrackFile = null;
 
@@ -498,16 +529,20 @@ function renderSetup() {
             </select>
         </div>
         <div class="divider"></div>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <label class="label" style="margin:0;">Players (${state.players.length})</label>
-            <div style="display:flex; gap:5px;">
-                <button class="btn-secondary btn-sm" onclick="openModal('presetsModal')">💾</button>
-                <button class="btn-secondary btn-sm" onclick="openModal('leaderboardModal')">🏆</button>
-                <button class="btn-secondary btn-sm" onclick="openModal('historyModal')">📜</button>
-                <button class="btn-secondary btn-sm" onclick="openModal('dataModal')">⚙️</button>
-                <button class="btn-secondary btn-sm" onclick="savePreset()">+Save</button>
-            </div>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <label class="label" style="margin:0;">Players (${state.players.length})</label>
+        <div style="display:flex; gap:5px;">
+            <button class="btn-secondary btn-sm" onclick="openModal('presetsModal')">💾</button>
+            <button class="btn-secondary btn-sm" onclick="openModal('leaderboardModal')">🏆</button>
+            <button class="btn-secondary btn-sm" onclick="openModal('historyModal')">📜</button>
+            
+            <!-- NEW: Theme Button -->
+            <button class="btn-secondary btn-sm" onclick="openModal('themeModal'); applyTheme();">🎨</button>
+            
+            <button class="btn-secondary btn-sm" onclick="openModal('dataModal')">⚙️</button>
+            <button class="btn-secondary btn-sm" onclick="savePreset()">+Save</button>
         </div>
+    </div>
         <div class="row" style="margin-top:10px; margin-bottom:10px;">
             <input type="text" id="nameInput" placeholder="Name" onkeydown="if(event.key==='Enter') addPlayer()">
             <button class="btn-primary" style="width:auto;" onclick="addPlayer()">Add</button>
