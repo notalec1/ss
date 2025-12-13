@@ -283,9 +283,16 @@ function generateNumbers() {
 
 function startGame() {
     if (generateNumbers()) {
-        state.startTime = Date.now(); state.finalTime = null;
+        state.startTime = null; // CHANGED: Don't start timer yet
+        state.finalTime = null;
         setState('DISTRIBUTE'); pulse(); requestWakeLock();
     }
+}
+
+// NEW: Helper to start timer explicitly
+function startVerification() {
+    state.startTime = Date.now();
+    setState('VERIFY');
 }
 
 function startPassGame() {
@@ -567,7 +574,7 @@ function renderDistribute() {
         ${timerHtml}
         <h2>🔗 Distribute</h2>
         <div style="text-align:center; margin-top:20px;">
-            <button class="btn-primary" onclick="setState('VERIFY')">Start Verification</button>
+            <button class="btn-primary" onclick="startVerification()">Start Verification</button>
             <button class="btn-secondary" style="margin-top:10px;" onclick="setState('SETUP')">Back</button>
         </div>
         <div class="row" style="margin-top:15px;">
