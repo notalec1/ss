@@ -34,8 +34,24 @@
     }
 }
 
-/* 2. GLOBAL RESET & BODY */
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* =========================================
+   2. GLOBAL RESET & SCROLLBAR HIDING
+   ========================================= */
+* { 
+    box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent; 
+    
+    /* FIREFOX & IE: Hide Scrollbar */
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
+}
+
+/* CHROME/SAFARI/WEBKIT: Hide Scrollbar */
+::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+    display: none;
+}
 
 html {
     /* FORCE TEXT SCALE */
