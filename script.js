@@ -716,16 +716,18 @@ function getResultCardHtml(p, i, sorted, mvpName, isRevealed) {
 function startAutoReveal() {
     if (revealInterval) return;
     
-    // Calculate logic once
+    // NEW MVP LOGIC: RANK-BASED
     const sorted = [...state.players].sort((a, b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
-    let mvpName = ""; let bestDelta = Infinity;
-    const min = state.settings.min; const max = state.settings.max; const total = state.players.length;
-    if(total > 1) {
+    let mvpName = ""; let bestDiff = Infinity;
+    
+    if(state.players.length > 1) {
         state.players.forEach((p, actualIndex) => {
-            const idealPercent = (p.number - min) / (max - min); 
-            const idealIndex = idealPercent * (total - 1);
-            const delta = Math.abs(actualIndex - idealIndex);
-            if(delta < bestDelta) { bestDelta = delta; mvpName = p.name; }
+            const correctIndex = sorted.findIndex(s => s.name === p.name);
+            const diff = Math.abs(actualIndex - correctIndex);
+            if(diff < bestDiff) {
+                bestDiff = diff;
+                mvpName = p.name;
+            }
         });
     }
 
@@ -765,15 +767,16 @@ function renderResults() {
     clearInterval(timerInterval);
     const sorted = [...state.players].sort((a, b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
     
-    // MVP Logic
-    let mvpName = ""; let bestDelta = Infinity;
-    const min = state.settings.min; const max = state.settings.max; const total = state.players.length;
-    if(total > 1) {
+    // NEW MVP LOGIC (RANK BASED)
+    let mvpName = ""; let bestDiff = Infinity;
+    if(state.players.length > 1) {
         state.players.forEach((p, actualIndex) => {
-            const idealPercent = (p.number - min) / (max - min); 
-            const idealIndex = idealPercent * (total - 1);
-            const delta = Math.abs(actualIndex - idealIndex);
-            if(delta < bestDelta) { bestDelta = delta; mvpName = p.name; }
+            const correctIndex = sorted.findIndex(s => s.name === p.name);
+            const diff = Math.abs(actualIndex - correctIndex);
+            if(diff < bestDiff) {
+                bestDiff = diff;
+                mvpName = p.name;
+            }
         });
     }
 
