@@ -17,11 +17,11 @@
     --text-main: #1e293b;
     --text-sub: #64748b;
     
-    /* Backgrounds */
-    --bg-card: rgba(255, 255, 255, 0.9);
-    --bg-item: rgba(255, 255, 255, 0.6); /* Restored to original opacity */
+    /* Global Backgrounds */
+    --bg-card: rgba(255, 255, 255, 0.85); 
+    --bg-item: rgba(255, 255, 255, 0.6); /* Solid/Opaque for performance */
     
-    --border: rgba(255, 255, 255, 0.6);
+    --border: rgba(255, 255, 255, 0.5);
     --shadow: 0 10px 32px 0 rgba(31, 38, 135, 0.3);
     --radius: 32px;
 }
@@ -30,7 +30,7 @@
     :root {
         --text-main: #f8fafc;
         --text-sub: #94a3b8;
-        --bg-card: rgba(30, 41, 59, 0.85);
+        --bg-card: rgba(30, 41, 59, 0.8);
         --bg-item: rgba(15, 23, 42, 0.4);
         --border: rgba(255, 255, 255, 0.1);
         --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
@@ -58,9 +58,13 @@ body {
     margin: 0; padding: 20px; min-height: 100vh;
     display: flex; justify-content: center; align-items: center;
     color: var(--text-main);
+    
     background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #4338ca);
     background-size: 400% 400%;
+    
     animation: gradientBG var(--bg-speed) ease infinite !important;
+    will-change: background-position; /* PERFORMANCE FIX */
+    
     overflow-x: hidden;
 }
 
@@ -85,6 +89,9 @@ button, input, select, textarea { font-family: var(--font-type) !important; }
     border: 1px solid var(--border); width: 100%; max-width: 500px;
     padding: 2.5rem 2rem; border-radius: var(--radius); box-shadow: var(--shadow);
     position: relative; z-index: 2; transition: all 0.67s ease;
+    
+    /* PERFORMANCE FIX: Isolate this layer */
+    transform: translateZ(0); 
 }
 
 body.is-tv-mode .app-card {
@@ -119,7 +126,7 @@ body.is-tv-mode .split-container { flex-direction: row; align-items: stretch; }
 .game-status-panel { flex: 1.5; }
 .leaderboard-panel { flex: 1; border: 2.5px solid var(--gold); background: rgba(245, 158, 11, 0.1); }
 
-/* STICKY HEADER - Blur Only */
+/* STICKY HEADER - OPTIMIZED BLUR */
 .game-status-panel h3, 
 .leaderboard-panel h3 {
     position: sticky;
@@ -128,13 +135,17 @@ body.is-tv-mode .split-container { flex-direction: row; align-items: stretch; }
     margin: 0;
     padding: 20px 20px 10px 20px; /* Top/Side padding */
     
-    /* BLUR ONLY - No Background Color */
+    /* THE BLUR EFFECT */
     backdrop-filter: blur(var(--glass-blur)) !important;
     -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
-    background: transparent; 
+    background: transparent; /* No background color, just blur */
     
-    /* Subtle border to separate header from content */
     border-bottom: 1px solid rgba(0,0,0,0.05);
+
+    /* PERFORMANCE FIXES: Force Hardware Acceleration */
+    transform: translateZ(0); 
+    -webkit-transform: translateZ(0);
+    will-change: transform, backdrop-filter;
 }
 
 .label { display: block; font-size: 0.8rem; font-weight: 800; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
@@ -190,7 +201,7 @@ body.is-tv-mode .list-wrap { max-height: none; flex: 1; margin: 0; }
 .leaderboard-panel .item-card { margin: 0 20px 8px 20px; }
 .leaderboard-panel .item-card:first-of-type { margin-top: 10px; }
 
-/* RESTORED ITEM CARD (Not Glassy) */
+/* STANDARD ITEM CARD (Not Glassy) */
 .item-card { 
     background: var(--bg-item);
     padding: 14px 18px; border-radius: 16px; 
