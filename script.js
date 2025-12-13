@@ -852,6 +852,44 @@ function renderRoomView(encodedData) {
     try { data = JSON.parse(atob(encodedData)); } catch(e) {}
     if (!data) return app.innerHTML = `<h2>Error</h2><p>Invalid Room Data</p>`;
     
+    // ANTI-CHEAT CHECK
+    // If this room has an ID, check if the user already claimed a name
+    if (data.id) {
+        const claimedName = localStorage.getItem('lineUpClaim_' + data.id);
+        
+        // If they already picked a name, and it exists in this game...
+        if (claimedName) {
+            const playerInfo = data.players.find(p => p.n === claimedName);
+            
+            if (playerInfo) {
+                // ... BLOCK them from seeing the list!
+                // Instead, show a "Welcome Back" screen for their specific player.
+                app.innerHTML = `
+                    ${getMusicBtn()}
+                    <div style="text-align:center; margin-top:30px;">
+                        <h1 style="font-size:3rem;">🔒</h1>
+                        <h2>Welcome back,<br>${claimedName}</h2>
+                        <p>You have already selected your name.</p>
+                        
+                        <div class="divider"></div>
+                        
+                        <button class="btn-primary" onclick="claimPlayer('${playerInfo.n}', ${playerInfo.v}, ${data.min}, ${data.max}, '${data.o}', ${data.id})">
+                            View My Number
+                        </button>
+                        
+                        <div style="margin-top:20px;">
+                            <button class="btn-secondary btn-sm" onclick="if(confirm('Are you sure you want to switch names? This should only be done if you clicked by mistake.')) { localStorage.removeItem('lineUpClaim_' + ${data.id}); render(); }">
+                                Not ${claimedName}? Reset
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return; // Stop here, do not render the list
+            }
+        }
+    }
+
+    // Standard List View (Only seen if not locked yet)
     app.innerHTML = `
         ${getMusicBtn()}
         <h2 style="margin-bottom:5px;">🏠 Pick Name</h2>
@@ -859,7 +897,7 @@ function renderRoomView(encodedData) {
         <div class="list-wrap">
             ${data.players.map(p => `
                 <button class="btn-secondary" style="margin-bottom:10px; justify-content:space-between; padding:20px;" 
-                    onclick="claimPlayer('${p.n}', ${p.v}, ${data.min}, ${data.max}, '${data.o}')">
+                    onclick="claimPlayer('${p.n}', ${p.v}, ${data.min}, ${data.max}, '${data.o}', ${data.id || 0})">
                     <span style="font-weight:bold; font-size:1.1rem;">${p.n}</span>
                     <span>👉</span>
                 </button>
@@ -868,9 +906,16 @@ function renderRoomView(encodedData) {
     `;
 }
 
-function claimPlayer(name, val, min, max, order) {
+// Updated to accept roomId
+function claimPlayer(name, val, min, max, order, roomId) {
+    // ANTI-CHEAT: Save this choice to the phone's storage
+    if (roomId) {
+        localStorage.setItem('lineUpClaim_' + roomId, name);
+    }
+
     const payload = { n: name, v: val, min: min, max: max, o: order };
     const encoded = btoa(JSON.stringify(payload));
+    
     const newUrl = `${window.location.pathname}?p=${encoded}`;
     window.history.pushState({path: newUrl}, '', newUrl);
     render();
@@ -918,7 +963,10 @@ function openRoomQr() {
     openModal('roomQrModal');
     const c = document.getElementById('roomQrDisplay');
     c.innerHTML = '';
+    
+    // NEW: Added 'id' (timestamp) to make this session unique
     const roomData = {
+        id: Date.now(), 
         players: state.players.map(p => ({n: p.name, v: p.number})),
         min: state.settings.min, 
         max: state.settings.max,
@@ -926,6 +974,7 @@ function openRoomQr() {
     };
     const baseUrl = window.location.href.split('?')[0];
     const url = `${baseUrl}?room=${btoa(JSON.stringify(roomData))}`;
+    
     new QRCode(c, { text: url, width: 250, height: 250, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L });
 }
 
