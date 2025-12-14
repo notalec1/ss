@@ -104,9 +104,20 @@ p { margin: 0 0 25px 0; color: var(--text-sub); text-align: center; line-height:
 .row { display: flex; gap: 12px; }
 .col { flex: 1; }
 .split-container { display: flex; flex-direction: column; gap: 16px; height: 100%; }
-body.is-tv-mode .split-container { flex-direction: row; align-items: stretch; }
-.left-panel { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-right: 20px; }
-.right-panel { flex: 1.5; display: flex; flex-direction: column; gap: 15px; height: 100%; }
+body.is-tv-mode .split-container { flex-direction: row; align-items: stretch; overflow: hidden; }
+
+/* UPDATED: LEFT PANEL FIX */
+.left-panel { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    /* Removed 'justify-content: center' to stop overflow pushing items out */
+    padding-right: 20px; 
+    overflow-y: auto; /* Allow scrolling if content is too tall */
+    min-height: 0;    /* Important for flexbox scrolling */
+}
+
+.right-panel { flex: 1.5; display: flex; flex-direction: column; gap: 15px; height: 100%; min-height: 0; }
 
 .game-status-panel, .leaderboard-panel {
     background: rgba(0, 0, 0, 0.05);
@@ -117,9 +128,7 @@ body.is-tv-mode .split-container { flex-direction: row; align-items: stretch; }
     display: flex; flex-direction: column;
 }
 
-/* MODIFIED: game-status-panel now takes full flex height */
 .game-status-panel { flex: 1; }
-/* REMOVED: .leaderboard-panel styles are technically unused now in main view, but kept for modal safety */
 .leaderboard-panel { flex: 1; border: 2.5px solid var(--gold); background: rgba(245, 158, 11, 0.1); }
 
 .game-status-panel h3, 
