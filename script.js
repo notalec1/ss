@@ -615,7 +615,7 @@ function renderSetup() {
         
         <div style="margin-top:auto;">
             <button class="btn-primary" onclick="openGameSettings()" ${state.players.length < 2 ? 'disabled' : ''}>
-                ${state.players.length < 2 ? '2+ Players to Start' : 'Go!'}
+                ${state.players.length < 2 ? '2+ Players to Start' : 'Configure Game'}
             </button>
             ${viewMode === 'mobile' ? `
             <div style="text-align:center; margin: 12px 0; font-size: 0.8rem; font-weight:800; opacity:0.5; letter-spacing:1px;">— OR —</div>
