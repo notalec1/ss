@@ -8,13 +8,15 @@ const SFX_FILES = {
     popup: "sfx/popup.wav",
     win: "sfx/unlimitedplay_spark.wav",
     lose: "sfx/streaklost.wav",
-    start: "sfx/startupshine.wav"
+    start: "sfx/startupshine.wav",
+    tick: "sfx/tick.wav" // Optional: You might want a tick sound later
 };
 
 const DEFAULT_STATE = { 
     step: 'SETUP', 
     players: [], 
-    settings: { min: 1, max: 100, order: 'asc' }, 
+    // ADDED: timerMode ('up' or 'down') and duration (seconds)
+    settings: { min: 1, max: 100, order: 'asc', timerMode: 'up', duration: 120 }, 
     startTime: null, 
     finalTime: null, 
     passIndex: 0, 
@@ -40,7 +42,9 @@ function showToast(msg) {
 }
 function formatTime(s) { 
     if(s === null) return "0:00";
-    return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`; 
+    const m = Math.floor(s / 60);
+    const sec = (s % 60).toString().padStart(2, '0');
+    return `${m}:${sec}`; 
 }
 function setViewMode(mode) {
     viewMode = mode;
@@ -90,7 +94,6 @@ function applyTheme() {
     root.setProperty('--bg-speed', theme.speed + 's');
     root.setProperty('--font-type', theme.font);
 
-    // Sync Inputs (ADDED controlInput here)
     const ids = ['blurInput','scaleInput','snowInput','sfxInput','colorInput','fontInput','speedInput','controlInput'];
     ids.forEach(id => {
         const el = document.getElementById(id);
@@ -153,6 +156,9 @@ function loadState() {
         const saved = localStorage.getItem('lineUpState');
         if (saved) {
             state = JSON.parse(saved);
+            // Default timer settings if loading old save
+            if (!state.settings.timerMode) { state.settings.timerMode = 'up'; state.settings.duration = 120; }
+            
             if (state.step === 'DISTRIBUTE') { state.startTime = null; state.finalTime = null; }
             if (state.revealedCount === undefined) state.revealedCount = 0; 
             if ((state.step === 'VERIFY') && state.startTime) startTimerTicker();
@@ -249,16 +255,66 @@ function addPlayer(optionalName) {
 
 function removePlayer(i) { state.players.splice(i, 1); setState('SETUP'); pulse(); }
 
+// --- SETTINGS MODAL LOGIC ---
+function openGameSettings() {
+    if(state.players.length < 2) return showToast("Add 2+ players first!");
+    
+    // Pre-fill values
+    document.getElementById('settingMin').value = state.settings.min;
+    document.getElementById('settingMax').value = state.settings.max;
+    document.getElementById('settingOrder').value = state.settings.order;
+    document.getElementById('settingDuration').value = state.settings.duration || 120;
+    
+    // Set Timer Toggle
+    toggleTimerMode(state.settings.timerMode || 'up');
+    
+    openModal('gameSettingsModal');
+}
+
+function toggleTimerMode(mode) {
+    state.settings.timerMode = mode;
+    const upBtn = document.getElementById('btnTimerUp');
+    const downBtn = document.getElementById('btnTimerDown');
+    const inputDiv = document.getElementById('timerDurationInput');
+
+    if(mode === 'up') {
+        upBtn.style.border = '2px solid var(--primary)';
+        upBtn.style.opacity = '1';
+        downBtn.style.border = '1px solid var(--border)';
+        downBtn.style.opacity = '0.5';
+        inputDiv.style.display = 'none';
+    } else {
+        downBtn.style.border = '2px solid var(--primary)';
+        downBtn.style.opacity = '1';
+        upBtn.style.border = '1px solid var(--border)';
+        upBtn.style.opacity = '0.5';
+        inputDiv.style.display = 'block';
+    }
+}
+
+function adjustTime(amount) {
+    const el = document.getElementById('settingDuration');
+    let val = parseInt(el.value) + amount;
+    if(val < 10) val = 10; // Minimum 10 seconds
+    el.value = val;
+}
+
 function generateNumbers() {
-    const minEl = document.getElementById('minInput');
-    const maxEl = document.getElementById('maxInput');
-    const min = parseInt(minEl ? minEl.value : state.settings.min);
-    const max = parseInt(maxEl ? maxEl.value : state.settings.max);
+    // READ FROM MODAL INPUTS NOW
+    const minEl = document.getElementById('settingMin');
+    const maxEl = document.getElementById('settingMax');
+    const orderEl = document.getElementById('settingOrder');
+    const durationEl = document.getElementById('settingDuration');
+
+    const min = parseInt(minEl.value);
+    const max = parseInt(maxEl.value);
 
     if (min >= max) { showToast("Min must be < Max!"); return false; }
-    state.settings.min = min; state.settings.max = max;
-    const orderEl = document.getElementById('orderInput');
-    if(orderEl) state.settings.order = orderEl.value;
+    
+    state.settings.min = min; 
+    state.settings.max = max;
+    state.settings.order = orderEl.value;
+    state.settings.duration = parseInt(durationEl.value);
 
     const used = new Set();
     state.players.forEach(p => {
@@ -271,6 +327,7 @@ function generateNumbers() {
 
 function startGame() {
     if (generateNumbers()) {
+        closeModal('gameSettingsModal'); // Close settings
         state.startTime = null; 
         state.finalTime = null;
         setState('DISTRIBUTE'); pulse(); requestWakeLock();
@@ -284,6 +341,7 @@ function startVerification() {
 
 function startPassGame() {
     if (state.players.length < 2) return showToast("Need 2+ players to start!");
+    // Pass Game skips the modal for now, uses default or last saved settings
     if (generateNumbers()) {
         state.passIndex = 0; state.viewingNumber = false; state.startTime = null;
         setState('PASS_PLAY'); pulse(); requestWakeLock();
@@ -397,13 +455,29 @@ function toggleGodMode() {
     }
 }
 
+// UPDATED: Timer Logic for Countdown
 function startTimerTicker() {
     if(timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
         const el = document.getElementById('timerDisplay');
         if(el && state.startTime) {
-            const diff = Math.floor((Date.now() - state.startTime) / 1000);
-            el.innerText = `⏱️ ${formatTime(diff)}`;
+            let diff = Math.floor((Date.now() - state.startTime) / 1000);
+            
+            // Countdown Logic
+            if(state.settings.timerMode === 'down') {
+                const remaining = state.settings.duration - diff;
+                if(remaining <= 0) {
+                    diff = 0;
+                    el.style.backgroundColor = 'var(--danger)';
+                    el.innerText = `⏱️ 0:00 (TIME UP!)`;
+                    // Optional: You could trigger automatic reveal here if you wanted
+                    return; 
+                }
+                el.innerText = `⏱️ ${formatTime(remaining)}`;
+            } else {
+                // Standard Stopwatch
+                el.innerText = `⏱️ ${formatTime(diff)}`;
+            }
         }
     }, 1000);
 }
@@ -478,29 +552,21 @@ function renderSetup() {
     const leftContent = `
         <h1>Line Up!</h1>
         <p>The Ultimate Chaos Number Game</p>
-        <div class="row">
-            <div class="col"><label class="label">- MIN</label><input type="number" id="minInput" value="${state.settings.min}"></div>
-            <div class="col"><label class="label">+ MAX</label><input type="number" id="maxInput" value="${state.settings.max}"></div>
-        </div>
-        <div style="margin-top:15px;">
-            <label class="label">↕️SORT</label>
-            <select id="orderInput">
-                <option value="asc" ${state.settings.order === 'asc' ? 'selected' : ''}>Smallest → Biggest</option>
-                <option value="desc" ${state.settings.order === 'desc' ? 'selected' : ''}>Biggest → Smallest</option>
-            </select>
-        </div>
+        
+        <!-- REMOVED MIN/MAX/SORT FROM HERE - MOVED TO MODAL -->
+        
         <div class="divider"></div>
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <label class="label" style="margin:0;">Players (${state.players.length})</label>
-        <div style="display:flex; gap:5px;">
-            <button class="btn-secondary btn-sm" onclick="openModal('presetsModal')">💾</button>
-            <button class="btn-secondary btn-sm" onclick="openModal('leaderboardModal')">🏆</button>
-            <button class="btn-secondary btn-sm" onclick="openModal('historyModal')">📜</button>
-            <button class="btn-secondary btn-sm" onclick="openModal('themeModal'); applyTheme();">🎨</button>
-            <button class="btn-secondary btn-sm" onclick="openModal('dataModal')">⚙️</button>
-            <button class="btn-secondary btn-sm" onclick="savePreset()">Save Group</button>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label class="label" style="margin:0;">Players (${state.players.length})</label>
+            <div style="display:flex; gap:5px;">
+                <button class="btn-secondary btn-sm" onclick="openModal('presetsModal')">💾</button>
+                <button class="btn-secondary btn-sm" onclick="openModal('leaderboardModal')">🏆</button>
+                <button class="btn-secondary btn-sm" onclick="openModal('historyModal')">📜</button>
+                <button class="btn-secondary btn-sm" onclick="openModal('themeModal'); applyTheme();">🎨</button>
+                <button class="btn-secondary btn-sm" onclick="openModal('dataModal')">⚙️</button>
+                <button class="btn-secondary btn-sm" onclick="savePreset()">Save Group</button>
+            </div>
         </div>
-    </div>
         <div class="row" style="margin-top:10px; margin-bottom:10px;">
             <input type="text" id="nameInput" placeholder="Name" onkeydown="if(event.key==='Enter') addPlayer()">
             <button class="btn-primary" style="width:auto;" onclick="addPlayer()">Add</button>
@@ -514,7 +580,10 @@ function renderSetup() {
         </div>
         
         <div style="margin-top:auto;">
-            <button class="btn-primary" onclick="startGame()" ${state.players.length < 2 ? 'disabled' : ''}>${state.players.length < 2 ? '2+ Players to Start' : 'Go!'}</button>
+            <!-- UPDATED: Button now opens Settings Modal -->
+            <button class="btn-primary" onclick="openGameSettings()" ${state.players.length < 2 ? 'disabled' : ''}>
+                ${state.players.length < 2 ? '2+ Players to Start' : 'Go!'}
+            </button>
             ${viewMode === 'mobile' ? `
             <div style="text-align:center; margin: 12px 0; font-size: 0.8rem; font-weight:800; opacity:0.5; letter-spacing:1px;">— OR —</div>
             <button class="btn-secondary" onclick="startPassGame()" ${state.players.length < 2 ? 'disabled' : ''}>📱 Pass & Play</button>` : ''}
@@ -549,11 +618,13 @@ function renderSetup() {
 
 function renderDistribute() {
     const baseUrl = window.location.href.split('?')[0];
+    // Timer display is updated dynamically via startTimerTicker now
     const currentSeconds = state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0;
     const encodeData = (obj) => btoa(JSON.stringify(obj));
     const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">👁️</button>`;
     
-    const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ ${formatTime(currentSeconds)}</div></div>`;
+    // Initial static render of timer (ticker will take over)
+    const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ Loading...</div></div>`;
     const controlsHtml = `
         ${timerHtml}
         <h2>🔗 Distribute</h2>
@@ -631,10 +702,9 @@ function renderPassPlay() {
 
 function renderVerify() {
     if (!state.startTime) state.startTime = Date.now();
-    const currentSeconds = Math.floor((Date.now() - state.startTime) / 1000);
     const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">👁️</button>`;
     
-    const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ ${formatTime(currentSeconds)}</div></div>`;
+    const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ Loading...</div></div>`;
     const controlsHtml = `
         ${timerHtml}
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -826,7 +896,12 @@ function renderResults() {
     }
 
     const allRevealed = state.revealedCount >= state.players.length;
-    const timeMsg = `<div class="timer-badge" style="background:var(--gold); color:white;">Time: ${formatTime(state.finalTime)}</div>`;
+    // Updated Time Badge logic
+    let timeText = formatTime(state.finalTime);
+    if(state.settings.timerMode === 'down' && state.finalTime > state.settings.duration) {
+         timeText = "TIME UP!";
+    }
+    const timeMsg = `<div class="timer-badge" style="background:var(--gold); color:white;">Time: ${timeText}</div>`;
     const headerHtml = `<div style="text-align:center;">${timeMsg}</div><h1>${allRevealed ? 'Results' : 'Revealing...'}</h1>`;
     
     const buttonsHtml = allRevealed ? `
