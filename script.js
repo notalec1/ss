@@ -297,6 +297,12 @@ function adjustTime(amount) {
     el.value = val;
 }
 
+// NEW: Helper for Preset Buttons
+function setDuration(val) {
+    document.getElementById('settingDuration').value = val;
+    pulse();
+}
+
 function generateNumbers() {
     const minEl = document.getElementById('settingMin');
     const maxEl = document.getElementById('settingMax');
@@ -452,7 +458,6 @@ function toggleGodMode() {
 }
 
 function startTimerTicker() {
-    // UPDATED: Logic to handle Countdown, Auto-Reveal, and Red Overlay
     if(timerInterval) clearInterval(timerInterval);
     const overlay = document.getElementById('tensionOverlay');
     
@@ -468,16 +473,12 @@ function startTimerTicker() {
                 
                 // Red Tension Effect (Intensifies as time reaches 0)
                 if (remaining <= state.settings.duration && overlay) {
-                   // Calculate intensity: 0 at start, 1 at end
                    const intensity = 1 - (remaining / state.settings.duration);
-                   // Apply opacity (cap at 0.8 so it's not pitch black)
                    overlay.style.opacity = Math.max(0, Math.min(0.8, intensity));
                    
                    // Play tick sound in last 10 seconds
                    if (remaining <= 10 && remaining > 0 && theme.sfx) {
-                       // Only tick once per second is tricky here without separate flag, 
-                       // but simple implementation:
-                       // We won't spam tick here to keep it simple, but the visual queue is strong.
+                       // Optional: Add logic to play tick here
                    }
                 }
 
@@ -652,7 +653,7 @@ function renderDistribute() {
     const baseUrl = window.location.href.split('?')[0];
     const currentSeconds = state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0;
     
-    // UPDATED: Pre-calculate time text so it doesn't say "Loading..."
+    // UPDATED: Pre-calculate time text
     let timeText = `0:00`;
     if (state.settings.timerMode === 'down') {
         const remaining = Math.max(0, state.settings.duration - currentSeconds);
