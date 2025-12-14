@@ -97,31 +97,37 @@
         </div>
     </div>
 
-    <!-- UPDATED: Tutorial Modal (Fixed colors) -->
+    <!-- UPDATED: Tutorial Modal (Layout Fixed) -->
     <div class="modal-overlay" id="tutorialModal" onclick="closeModal('tutorialModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h2>📜 How to Play</h2>
             <div style="text-align:left; font-size:1rem; opacity:0.9;">
-                <div class="item-card" style="margin-bottom:10px;">
-                    <div><strong>1. Setup</strong></div>
-                    <div style="font-size:0.9rem; opacity:0.7;">Add players and click "Go". Choose your range (e.g. 1-100) and time limit.</div>
+                
+                <div class="item-card" style="margin-bottom:10px; display:block; text-align:left;">
+                    <div style="color:var(--primary); font-weight:800; margin-bottom:4px; font-size:1.1rem;">1. Setup</div>
+                    <div style="font-size:0.95rem; opacity:0.8; line-height:1.4;">Add players and click "Go". Choose your range (e.g. 1-100) and timer settings.</div>
                 </div>
-                <div class="item-card" style="margin-bottom:10px;">
-                    <div><strong>2. Distribute</strong></div>
-                    <div style="font-size:0.9rem; opacity:0.7;">Everyone scans their own QR code (or pass the phone around). You get a secret number. 🤫</div>
+
+                <div class="item-card" style="margin-bottom:10px; display:block; text-align:left;">
+                    <div style="color:var(--primary); font-weight:800; margin-bottom:4px; font-size:1.1rem;">2. Distribute</div>
+                    <div style="font-size:0.95rem; opacity:0.8; line-height:1.4;">Everyone scans their own QR code (or pass the phone around). You get a secret number. 🤫</div>
                 </div>
-                <div class="item-card" style="margin-bottom:10px;">
-                    <div><strong>3. Line Up!</strong></div>
-                    <div style="font-size:0.9rem; opacity:0.7;">Without showing your screen, talk to others and physically line up in the correct order.</div>
+
+                <div class="item-card" style="margin-bottom:10px; display:block; text-align:left;">
+                    <div style="color:var(--primary); font-weight:800; margin-bottom:4px; font-size:1.1rem;">3. Line Up!</div>
+                    <div style="font-size:0.95rem; opacity:0.8; line-height:1.4;">Without showing your screen, talk to others and physically line up in the correct order.</div>
                 </div>
-                <div class="item-card" style="margin-bottom:10px;">
-                    <div><strong>4. Verify</strong></div>
-                    <div style="font-size:0.9rem; opacity:0.7;">The host arranges the names on the big screen to match the physical line.</div>
+
+                <div class="item-card" style="margin-bottom:10px; display:block; text-align:left;">
+                    <div style="color:var(--primary); font-weight:800; margin-bottom:4px; font-size:1.1rem;">4. Verify</div>
+                    <div style="font-size:0.95rem; opacity:0.8; line-height:1.4;">The host arranges the names on the big screen to match the physical line.</div>
                 </div>
-                <div class="item-card" style="margin-bottom:10px;">
-                    <div><strong>5. Reveal</strong></div>
-                    <div style="font-size:0.9rem; opacity:0.7;">See who was right, who was wrong, and who is the MVP! 🏆</div>
+
+                <div class="item-card" style="margin-bottom:10px; display:block; text-align:left;">
+                    <div style="color:var(--primary); font-weight:800; margin-bottom:4px; font-size:1.1rem;">5. Reveal</div>
+                    <div style="font-size:0.95rem; opacity:0.8; line-height:1.4;">See who was right, who was wrong, and who is the MVP! 🏆</div>
                 </div>
+
             </div>
             <button class="btn-primary" onclick="closeModal('tutorialModal')">Got it!</button>
         </div>
