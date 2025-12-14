@@ -97,39 +97,39 @@
         </div>
     </div>
 
-    <!-- UPDATED: Tutorial Modal (Layout Fixed) -->
+    <!-- UPDATED: Tutorial Modal (Detailed & Clearer) -->
     <div class="modal-overlay" id="tutorialModal" onclick="closeModal('tutorialModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h2>📜 How to Play</h2>
             <div style="text-align:left; font-size:1rem; opacity:0.9;">
                 
                 <div class="item-card" style="margin-bottom:10px; display:block; text-align:left;">
-                    <div style="color:var(--primary); font-weight:800; margin-bottom:4px; font-size:1.1rem;">1. Setup</div>
-                    <div style="font-size:0.95rem; opacity:0.8; line-height:1.4;">Add players and click "Go". Choose your range (e.g. 1-100) and timer settings.</div>
+                    <div style="color:var(--primary); font-weight:800; margin-bottom:4px; font-size:1.1rem;">1. Add Names</div>
+                    <div style="font-size:0.95rem; opacity:0.8; line-height:1.4;">Type everyone's name. Click <strong>Add</strong>. Then click <strong>Configure Game</strong> and set it up however you'd like.</div>
                 </div>
 
                 <div class="item-card" style="margin-bottom:10px; display:block; text-align:left;">
-                    <div style="color:var(--primary); font-weight:800; margin-bottom:4px; font-size:1.1rem;">2. Distribute</div>
-                    <div style="font-size:0.95rem; opacity:0.8; line-height:1.4;">Everyone scans their own QR code (or pass the phone around). You get a secret number. 🤫</div>
+                    <div style="color:var(--primary); font-weight:800; margin-bottom:4px; font-size:1.1rem;">2. Get Your Number</div>
+                    <div style="font-size:0.95rem; opacity:0.8; line-height:1.4;">Scan the QR code with your phone. You will see a secret number. <br><strong>Do not show your screen or number to others, and do not explicitly state your number!</strong> 🤫</div>
                 </div>
 
                 <div class="item-card" style="margin-bottom:10px; display:block; text-align:left;">
-                    <div style="color:var(--primary); font-weight:800; margin-bottom:4px; font-size:1.1rem;">3. Line Up!</div>
-                    <div style="font-size:0.95rem; opacity:0.8; line-height:1.4;">Without showing your screen, talk to others and physically line up in the correct order.</div>
+                    <div style="color:var(--primary); font-weight:800; margin-bottom:4px; font-size:1.1rem;">3. Stand Up & Talk</div>
+                    <div style="font-size:0.95rem; opacity:0.8; line-height:1.4;">Stand up. Ask others: <em>"Do you think that your number bigger than mine?"—"My number is extremely big."—"I think I have the smallest number out of everyone."</em></div>
                 </div>
 
                 <div class="item-card" style="margin-bottom:10px; display:block; text-align:left;">
-                    <div style="color:var(--primary); font-weight:800; margin-bottom:4px; font-size:1.1rem;">4. Verify</div>
-                    <div style="font-size:0.95rem; opacity:0.8; line-height:1.4;">The host arranges the names on the big screen to match the physical line.</div>
+                    <div style="color:var(--primary); font-weight:800; margin-bottom:4px; font-size:1.1rem;">4. Make a Line</div>
+                    <div style="font-size:0.95rem; opacity:0.8; line-height:1.4;"> Line up from <strong>Smallest</strong> to <strong>Biggest</strong> (or however the settings are setup).</div>
                 </div>
 
                 <div class="item-card" style="margin-bottom:10px; display:block; text-align:left;">
-                    <div style="color:var(--primary); font-weight:800; margin-bottom:4px; font-size:1.1rem;">5. Reveal</div>
-                    <div style="font-size:0.95rem; opacity:0.8; line-height:1.4;">See who was right, who was wrong, and who is the MVP! 🏆</div>
+                    <div style="color:var(--primary); font-weight:800; margin-bottom:4px; font-size:1.1rem;">5. Check & Win</div>
+                    <div style="font-size:0.95rem; opacity:0.8; line-height:1.4;">Host fixes the list on the TV to match your real line. Click <strong>Reveal</strong> to see if you won! 🏆</div>
                 </div>
 
             </div>
-            <button class="btn-primary" onclick="closeModal('tutorialModal')">Got it!</button>
+            <button class="btn-primary" onclick="closeModal('tutorialModal')">Okay, I understand!</button>
         </div>
     </div>
 
@@ -151,7 +151,7 @@
 
     <div class="modal-overlay" id="qrGridModal" onclick="closeModal('qrGridModal')">
         <div class="modal-content" style="max-width:900px; width:95%; height:90vh;" onclick="event.stopPropagation()">
-            <h2 style="margin-bottom:5px;">Scan Your Name</h2>
+            <h2 style="margin-bottom:5px;">📸 Scan Your Name</h2>
             <p>Everyone scan their own code!</p>
             <div id="qrGridTarget" class="qr-grid-container"></div>
             <button class="btn-secondary" onclick="closeModal('qrGridModal')">Close</button>
