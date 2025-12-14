@@ -9,7 +9,7 @@ const SFX_FILES = {
     win: "sfx/unlimitedplay_spark.wav",
     lose: "sfx/streaklost.wav",
     start: "sfx/startupshine.wav",
-    tick: "sfx/tick.wav" // Optional: You might want a tick sound later
+    tick: "sfx/tick.wav"
 };
 
 const DEFAULT_STATE = { 
@@ -42,6 +42,7 @@ function showToast(msg) {
 }
 function formatTime(s) { 
     if(s === null) return "0:00";
+    if(s < 0) s = 0;
     const m = Math.floor(s / 60);
     const sec = (s % 60).toString().padStart(2, '0');
     return `${m}:${sec}`; 
@@ -156,7 +157,6 @@ function loadState() {
         const saved = localStorage.getItem('lineUpState');
         if (saved) {
             state = JSON.parse(saved);
-            // Default timer settings if loading old save
             if (!state.settings.timerMode) { state.settings.timerMode = 'up'; state.settings.duration = 120; }
             
             if (state.step === 'DISTRIBUTE') { state.startTime = null; state.finalTime = null; }
@@ -259,13 +259,11 @@ function removePlayer(i) { state.players.splice(i, 1); setState('SETUP'); pulse(
 function openGameSettings() {
     if(state.players.length < 2) return showToast("Add 2+ players first!");
     
-    // Pre-fill values
     document.getElementById('settingMin').value = state.settings.min;
     document.getElementById('settingMax').value = state.settings.max;
     document.getElementById('settingOrder').value = state.settings.order;
     document.getElementById('settingDuration').value = state.settings.duration || 120;
     
-    // Set Timer Toggle
     toggleTimerMode(state.settings.timerMode || 'up');
     
     openModal('gameSettingsModal');
@@ -295,12 +293,11 @@ function toggleTimerMode(mode) {
 function adjustTime(amount) {
     const el = document.getElementById('settingDuration');
     let val = parseInt(el.value) + amount;
-    if(val < 10) val = 10; // Minimum 10 seconds
+    if(val < 10) val = 10;
     el.value = val;
 }
 
 function generateNumbers() {
-    // READ FROM MODAL INPUTS NOW
     const minEl = document.getElementById('settingMin');
     const maxEl = document.getElementById('settingMax');
     const orderEl = document.getElementById('settingOrder');
@@ -327,7 +324,7 @@ function generateNumbers() {
 
 function startGame() {
     if (generateNumbers()) {
-        closeModal('gameSettingsModal'); // Close settings
+        closeModal('gameSettingsModal'); 
         state.startTime = null; 
         state.finalTime = null;
         setState('DISTRIBUTE'); pulse(); requestWakeLock();
@@ -341,7 +338,6 @@ function startVerification() {
 
 function startPassGame() {
     if (state.players.length < 2) return showToast("Need 2+ players to start!");
-    // Pass Game skips the modal for now, uses default or last saved settings
     if (generateNumbers()) {
         state.passIndex = 0; state.viewingNumber = false; state.startTime = null;
         setState('PASS_PLAY'); pulse(); requestWakeLock();
@@ -455,27 +451,55 @@ function toggleGodMode() {
     }
 }
 
-// UPDATED: Timer Logic for Countdown
 function startTimerTicker() {
+    // UPDATED: Logic to handle Countdown, Auto-Reveal, and Red Overlay
     if(timerInterval) clearInterval(timerInterval);
+    const overlay = document.getElementById('tensionOverlay');
+    
     timerInterval = setInterval(() => {
         const el = document.getElementById('timerDisplay');
+        
         if(el && state.startTime) {
             let diff = Math.floor((Date.now() - state.startTime) / 1000);
             
             // Countdown Logic
             if(state.settings.timerMode === 'down') {
                 const remaining = state.settings.duration - diff;
+                
+                // Red Tension Effect (Intensifies as time reaches 0)
+                if (remaining <= state.settings.duration && overlay) {
+                   // Calculate intensity: 0 at start, 1 at end
+                   const intensity = 1 - (remaining / state.settings.duration);
+                   // Apply opacity (cap at 0.8 so it's not pitch black)
+                   overlay.style.opacity = Math.max(0, Math.min(0.8, intensity));
+                   
+                   // Play tick sound in last 10 seconds
+                   if (remaining <= 10 && remaining > 0 && theme.sfx) {
+                       // Only tick once per second is tricky here without separate flag, 
+                       // but simple implementation:
+                       // We won't spam tick here to keep it simple, but the visual queue is strong.
+                   }
+                }
+
                 if(remaining <= 0) {
-                    diff = 0;
-                    el.style.backgroundColor = 'var(--danger)';
-                    el.innerText = `⏱️ 0:00 (TIME UP!)`;
-                    // Optional: You could trigger automatic reveal here if you wanted
+                    // TIME UP!
+                    clearInterval(timerInterval);
+                    el.innerText = `⏱️ 0:00`;
+                    
+                    // Reset overlay immediately so results aren't red
+                    if(overlay) overlay.style.opacity = 0;
+                    
+                    // Auto Reveal
+                    if(state.step !== 'RESULTS') {
+                        checkOrder(); 
+                    }
                     return; 
                 }
+                
                 el.innerText = `⏱️ ${formatTime(remaining)}`;
             } else {
-                // Standard Stopwatch
+                // Stopwatch Mode
+                if(overlay) overlay.style.opacity = 0;
                 el.innerText = `⏱️ ${formatTime(diff)}`;
             }
         }
@@ -496,7 +520,18 @@ function openModal(id) {
 function closeModal(id) { document.getElementById(id).classList.remove('active'); pulse(); }
 
 // --- RENDER ENGINE ---
-function setState(s) { state.step = s; saveState(); render(); }
+function setState(s) { 
+    state.step = s; 
+    saveState(); 
+    
+    // Reset overlay if leaving game loop
+    const overlay = document.getElementById('tensionOverlay');
+    if (s === 'SETUP' || s === 'RESULTS') {
+        if(overlay) overlay.style.opacity = 0;
+    }
+    
+    render(); 
+}
 
 function render() {
     const params = new URLSearchParams(window.location.search);
@@ -553,8 +588,6 @@ function renderSetup() {
         <h1>Line Up!</h1>
         <p>The Ultimate Chaos Number Game</p>
         
-        <!-- REMOVED MIN/MAX/SORT FROM HERE - MOVED TO MODAL -->
-        
         <div class="divider"></div>
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <label class="label" style="margin:0;">Players (${state.players.length})</label>
@@ -580,7 +613,6 @@ function renderSetup() {
         </div>
         
         <div style="margin-top:auto;">
-            <!-- UPDATED: Button now opens Settings Modal -->
             <button class="btn-primary" onclick="openGameSettings()" ${state.players.length < 2 ? 'disabled' : ''}>
                 ${state.players.length < 2 ? '2+ Players to Start' : 'Go!'}
             </button>
@@ -618,13 +650,21 @@ function renderSetup() {
 
 function renderDistribute() {
     const baseUrl = window.location.href.split('?')[0];
-    // Timer display is updated dynamically via startTimerTicker now
     const currentSeconds = state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0;
+    
+    // UPDATED: Pre-calculate time text so it doesn't say "Loading..."
+    let timeText = `0:00`;
+    if (state.settings.timerMode === 'down') {
+        const remaining = Math.max(0, state.settings.duration - currentSeconds);
+        timeText = formatTime(remaining);
+    } else {
+        timeText = formatTime(currentSeconds);
+    }
+    
     const encodeData = (obj) => btoa(JSON.stringify(obj));
     const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">👁️</button>`;
     
-    // Initial static render of timer (ticker will take over)
-    const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ Loading...</div></div>`;
+    const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ ${timeText}</div></div>`;
     const controlsHtml = `
         ${timerHtml}
         <h2>🔗 Distribute</h2>
@@ -702,9 +742,20 @@ function renderPassPlay() {
 
 function renderVerify() {
     if (!state.startTime) state.startTime = Date.now();
+    const currentSeconds = Math.floor((Date.now() - state.startTime) / 1000);
+    
+    // UPDATED: Pre-calculate time text
+    let timeText = `0:00`;
+    if (state.settings.timerMode === 'down') {
+        const remaining = Math.max(0, state.settings.duration - currentSeconds);
+        timeText = formatTime(remaining);
+    } else {
+        timeText = formatTime(currentSeconds);
+    }
+    
     const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">👁️</button>`;
     
-    const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ Loading...</div></div>`;
+    const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ ${timeText}</div></div>`;
     const controlsHtml = `
         ${timerHtml}
         <div style="display:flex; justify-content:space-between; align-items:center;">
