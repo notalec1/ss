@@ -20,7 +20,7 @@
     <!-- Red Tension Overlay -->
     <div id="tensionOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; background:radial-gradient(circle, transparent 20%, rgba(220, 38, 38, 0.8) 100%); opacity:0; z-index:1; transition: opacity 0.5s linear;"></div>
 
-    <!-- NEW: Floating Tutorial Button -->
+    <!-- Floating Tutorial Button -->
     <button class="help-floating-btn" onclick="openModal('tutorialModal')">?</button>
 
     <div class="app-card" id="app">
@@ -97,28 +97,28 @@
         </div>
     </div>
 
-    <!-- NEW: Tutorial Modal -->
+    <!-- UPDATED: Tutorial Modal (Fixed colors) -->
     <div class="modal-overlay" id="tutorialModal" onclick="closeModal('tutorialModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h2>📜 How to Play</h2>
             <div style="text-align:left; font-size:1rem; opacity:0.9;">
-                <div class="item-card" style="margin-bottom:10px; background:white;">
+                <div class="item-card" style="margin-bottom:10px;">
                     <div><strong>1. Setup</strong></div>
                     <div style="font-size:0.9rem; opacity:0.7;">Add players and click "Go". Choose your range (e.g. 1-100) and time limit.</div>
                 </div>
-                <div class="item-card" style="margin-bottom:10px; background:white;">
+                <div class="item-card" style="margin-bottom:10px;">
                     <div><strong>2. Distribute</strong></div>
                     <div style="font-size:0.9rem; opacity:0.7;">Everyone scans their own QR code (or pass the phone around). You get a secret number. 🤫</div>
                 </div>
-                <div class="item-card" style="margin-bottom:10px; background:white;">
+                <div class="item-card" style="margin-bottom:10px;">
                     <div><strong>3. Line Up!</strong></div>
                     <div style="font-size:0.9rem; opacity:0.7;">Without showing your screen, talk to others and physically line up in the correct order.</div>
                 </div>
-                <div class="item-card" style="margin-bottom:10px; background:white;">
+                <div class="item-card" style="margin-bottom:10px;">
                     <div><strong>4. Verify</strong></div>
                     <div style="font-size:0.9rem; opacity:0.7;">The host arranges the names on the big screen to match the physical line.</div>
                 </div>
-                <div class="item-card" style="margin-bottom:10px; background:white;">
+                <div class="item-card" style="margin-bottom:10px;">
                     <div><strong>5. Reveal</strong></div>
                     <div style="font-size:0.9rem; opacity:0.7;">See who was right, who was wrong, and who is the MVP! 🏆</div>
                 </div>
