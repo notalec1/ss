@@ -17,7 +17,7 @@
 
     <canvas id="snowCanvas"></canvas>
     
-    <!-- NEW: Red Tension Overlay -->
+    <!-- Red Tension Overlay -->
     <div id="tensionOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; background:radial-gradient(circle, transparent 20%, rgba(220, 38, 38, 0.8) 100%); opacity:0; z-index:1; transition: opacity 0.5s linear;"></div>
 
     <div class="app-card" id="app">
@@ -27,7 +27,7 @@
     </div>
 
     <!-- MODALS -->
-    <!-- NEW: Game Settings Modal -->
+    <!-- Game Settings Modal -->
     <div class="modal-overlay" id="gameSettingsModal" onclick="closeModal('gameSettingsModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h2>⚙️ Game Setup</h2>
@@ -65,13 +65,26 @@
                     </button>
                 </div>
 
-                <!-- Duration Input (Hidden by default) -->
+                <!-- UPDATED: Duration Input with Presets -->
                 <div id="timerDurationInput" style="display:none;">
                     <label class="label">Time Limit (Seconds)</label>
-                    <div class="row">
-                        <button class="btn-secondary btn-icon" onclick="adjustTime(-30)">-</button>
+                    
+                    <!-- Manual Input -->
+                    <div class="row" style="margin-bottom:12px;">
+                        <button class="btn-secondary btn-icon" onclick="adjustTime(-10)">-</button>
                         <input type="number" id="settingDuration" value="120" style="text-align:center;">
-                        <button class="btn-secondary btn-icon" onclick="adjustTime(30)">+</button>
+                        <button class="btn-secondary btn-icon" onclick="adjustTime(10)">+</button>
+                    </div>
+
+                    <!-- New Presets Grid -->
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px;">
+                        <button class="btn-secondary btn-sm" onclick="setDuration(30)">30s</button>
+                        <button class="btn-secondary btn-sm" onclick="setDuration(60)">60s</button>
+                        <button class="btn-secondary btn-sm" onclick="setDuration(90)">90s</button>
+                        <button class="btn-secondary btn-sm" onclick="setDuration(120)">2m</button>
+                        <button class="btn-secondary btn-sm" onclick="setDuration(180)">3m</button>
+                        <button class="btn-secondary btn-sm" onclick="setDuration(240)">4m</button>
+                        <button class="btn-secondary btn-sm" onclick="setDuration(300)">5m</button>
                     </div>
                 </div>
             </div>
@@ -118,7 +131,6 @@
   <div class="modal-overlay" id="presetsModal" onclick="closeModal('presetsModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h2>💾 Saved Groups</h2>
-            <!-- ADDED: max-height and overflow-y -->
             <div id="presetsList" style="margin:20px 0; text-align:left; max-height: 50vh; overflow-y: auto;"></div>
             <button class="btn-secondary" onclick="closeModal('presetsModal')">Close</button>
         </div>
@@ -127,7 +139,6 @@
 <div class="modal-overlay" id="historyModal" onclick="closeModal('historyModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h2>📜 Game History</h2>
-            <!-- ADDED: max-height and overflow-y to enable scrolling -->
             <div id="historyList" style="margin:20px 0; text-align:left; max-height: 50vh; overflow-y: auto;"></div>
             <button class="btn-secondary" onclick="closeModal('historyModal')">Close</button>
         </div>
