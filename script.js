@@ -951,7 +951,7 @@ function renderResults() {
     // Updated Time Badge logic
     let timeText = formatTime(state.finalTime);
     if(state.settings.timerMode === 'down' && state.finalTime > state.settings.duration) {
-         timeText = "TIME UP!";
+         timeText = "Done!";
     }
     const timeMsg = `<div class="timer-badge" style="background:var(--gold); color:white;">Time: ${timeText}</div>`;
     const headerHtml = `<div style="text-align:center;">${timeMsg}</div><h1>${allRevealed ? 'Results' : 'Revealing...'}</h1>`;
