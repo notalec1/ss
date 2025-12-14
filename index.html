@@ -16,6 +16,9 @@
 <body>
 
     <canvas id="snowCanvas"></canvas>
+    
+    <!-- NEW: Red Tension Overlay -->
+    <div id="tensionOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; background:radial-gradient(circle, transparent 20%, rgba(220, 38, 38, 0.8) 100%); opacity:0; z-index:1; transition: opacity 0.5s linear;"></div>
 
     <div class="app-card" id="app">
         <div style="text-align:center;">
@@ -24,6 +27,60 @@
     </div>
 
     <!-- MODALS -->
+    <!-- NEW: Game Settings Modal -->
+    <div class="modal-overlay" id="gameSettingsModal" onclick="closeModal('gameSettingsModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2>⚙️ Game Setup</h2>
+            
+            <div style="text-align:left; margin-bottom:20px;">
+                <!-- 1. Range Settings -->
+                <h3 style="margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Numbers</h3>
+                <div class="row">
+                    <div class="col">
+                        <label class="label">Min</label>
+                        <input type="number" id="settingMin" value="1">
+                    </div>
+                    <div class="col">
+                        <label class="label">Max</label>
+                        <input type="number" id="settingMax" value="100">
+                    </div>
+                </div>
+                <div style="margin-top:15px;">
+                    <label class="label">Sort Order</label>
+                    <select id="settingOrder">
+                        <option value="asc">Smallest → Biggest</option>
+                        <option value="desc">Biggest → Smallest</option>
+                    </select>
+                </div>
+
+                <!-- 2. Timer Settings -->
+                <h3 style="margin-top:25px; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Timer</h3>
+                
+                <div class="row" style="margin-bottom:15px;">
+                    <button class="col btn-secondary" id="btnTimerUp" onclick="toggleTimerMode('up')" style="border:2px solid var(--primary);">
+                        ⏱️ Stopwatch
+                    </button>
+                    <button class="col btn-secondary" id="btnTimerDown" onclick="toggleTimerMode('down')">
+                        💣 Countdown
+                    </button>
+                </div>
+
+                <!-- Duration Input (Hidden by default) -->
+                <div id="timerDurationInput" style="display:none;">
+                    <label class="label">Time Limit (Seconds)</label>
+                    <div class="row">
+                        <button class="btn-secondary btn-icon" onclick="adjustTime(-30)">-</button>
+                        <input type="number" id="settingDuration" value="120" style="text-align:center;">
+                        <button class="btn-secondary btn-icon" onclick="adjustTime(30)">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="startGame()">🚀 Launch Game</button>
+            <button class="btn-secondary" style="margin-top:10px;" onclick="closeModal('gameSettingsModal')">Cancel</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="qrModal" onclick="closeModal('qrModal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h2 id="qrName" style="margin-bottom:5px;">Player</h2>
@@ -89,60 +146,6 @@
             <button class="btn-danger" onclick="wipeData()">🗑️ Factory Reset</button>
             <br><br>
             <button class="btn-secondary" onclick="closeModal('dataModal')">Close</button>
-        </div>
-    </div>
-
-    <!-- NEW: Game Settings Modal -->
-    <div class="modal-overlay" id="gameSettingsModal" onclick="closeModal('gameSettingsModal')">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h2>⚙️ Game Setup</h2>
-            
-            <div style="text-align:left; margin-bottom:20px;">
-                <!-- 1. Range Settings -->
-                <h3 style="margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Numbers</h3>
-                <div class="row">
-                    <div class="col">
-                        <label class="label">Min</label>
-                        <input type="number" id="settingMin" value="1">
-                    </div>
-                    <div class="col">
-                        <label class="label">Max</label>
-                        <input type="number" id="settingMax" value="100">
-                    </div>
-                </div>
-                <div style="margin-top:15px;">
-                    <label class="label">Sort Order</label>
-                    <select id="settingOrder">
-                        <option value="asc">Smallest → Biggest</option>
-                        <option value="desc">Biggest → Smallest</option>
-                    </select>
-                </div>
-
-                <!-- 2. Timer Settings -->
-                <h3 style="margin-top:25px; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Timer</h3>
-                
-                <div class="row" style="margin-bottom:15px;">
-                    <button class="col btn-secondary" id="btnTimerUp" onclick="toggleTimerMode('up')" style="border:2px solid var(--primary);">
-                        ⏱️ Stopwatch
-                    </button>
-                    <button class="col btn-secondary" id="btnTimerDown" onclick="toggleTimerMode('down')">
-                        💣 Countdown
-                    </button>
-                </div>
-
-                <!-- Duration Input (Hidden by default) -->
-                <div id="timerDurationInput" style="display:none;">
-                    <label class="label">Time Limit (Seconds)</label>
-                    <div class="row">
-                        <button class="btn-secondary btn-icon" onclick="adjustTime(-30)">-</button>
-                        <input type="number" id="settingDuration" value="120" style="text-align:center;">
-                        <button class="btn-secondary btn-icon" onclick="adjustTime(30)">+</button>
-                    </div>
-                </div>
-            </div>
-
-            <button class="btn-primary" onclick="startGame()">🚀 Launch Game</button>
-            <button class="btn-secondary" style="margin-top:10px;" onclick="closeModal('gameSettingsModal')">Cancel</button>
         </div>
     </div>
 
