@@ -33,7 +33,7 @@ let godMode = false;
 let movingPlayerIndex = null; 
 let viewMode = sessionStorage.getItem('lineUpViewMode') || null; 
 // NEW: Track roster visibility for privacy
-let isRosterExpanded = false;
+let isAutoNamesExpanded = false;
 
 const app = document.getElementById('app');
 
@@ -455,6 +455,11 @@ function renderHistoryList() {
     }).join('');
 }
 
+function toggleAutoNames() {
+    isAutoNamesExpanded = !isAutoNamesExpanded;
+    render();
+}
+
 // --- MISC UTILS ---
 function toggleGodMode() {
     if(godMode) { godMode = false; render(); } else { 
@@ -617,12 +622,19 @@ function renderSetup() {
             <button class="btn-primary" style="width:auto;" onclick="addPlayer()">Add</button>
         </div>
         
-        <div class="chip-container">
-            ${AUTO_NAMES.map(n => {
-                const isAdded = state.players.some(p => p.name.toLowerCase() === n.toLowerCase());
-                return `<button class="chip-btn ${isAdded ? 'added' : ''}" onclick="addPlayer('${n}')">${n}</button>`;
-            }).join('')}
-        </div>
+        <!-- MODIFIED: Collapsible Auto Names -->
+        <button class="btn-secondary btn-sm" onclick="toggleAutoNames()" style="width:100%; justify-content:center; opacity:0.8; margin-bottom:10px;">
+            ${isAutoNamesExpanded ? '🔼 COLLAPSE SUGGESTIONS' : '🔽 EXPAND SUGGESTIONS'}
+        </button>
+
+        ${isAutoNamesExpanded ? `
+            <div class="chip-container">
+                ${AUTO_NAMES.map(n => {
+                    const isAdded = state.players.some(p => p.name.toLowerCase() === n.toLowerCase());
+                    return `<button class="chip-btn ${isAdded ? 'added' : ''}" onclick="addPlayer('${n}')">${n}</button>`;
+                }).join('')}
+            </div>
+        ` : ''}
         
         <div style="margin-top:auto;">
             <button class="btn-primary" onclick="openGameSettings()" ${state.players.length < 2 ? 'disabled' : ''}>
@@ -634,6 +646,7 @@ function renderSetup() {
         </div>
     `;
 
+    // RESTORED: Original Roster Logic (Always visible)
     const rosterHtml = `
         <div class="list-wrap">
             ${state.players.length === 0 ? '<div style="text-align:center; opacity:0.5; padding:20px;">Add players...</div>' : ''}
@@ -646,7 +659,6 @@ function renderSetup() {
         </div>
     `;
 
-    // UPDATED: Added Roster Toggle for Mobile View
     app.innerHTML = `
         ${switchBtn}
         <div class="split-container">
@@ -655,13 +667,7 @@ function renderSetup() {
                 <div class="right-panel">
                     <div class="game-status-panel"><h3>Current Roster</h3>${rosterHtml}</div>
                 </div>` 
-            : `<div style="margin-top:10px">
-                <button class="btn-secondary" onclick="toggleRoster()" style="margin-bottom:10px; justify-content: space-between; padding: 12px 20px;">
-                    <span style="font-size:1rem; font-weight:800; opacity:0.8;">${isRosterExpanded ? 'Collapse List' : 'Expand List'} (${state.players.length})</span>
-                    <span>${isRosterExpanded ? '🔼' : '🔽'}</span>
-                </button>
-                ${isRosterExpanded ? rosterHtml : ''}
-               </div>`}
+            : `<div style="margin-top:10px">${rosterHtml}</div>`}
         </div>
     `;
     if(viewMode === 'tv') document.body.classList.add('is-tv-mode');
