@@ -1,3 +1,5 @@
+/* --- START OF FILE lineup-main/script.js --- */
+
 // --- CONFIG & STATE ---
 const GOD_PASSWORD = "line1up";
 const AUTO_NAMES = ["Alec", "Alain", "Nada", "Hoda", "Fadi", "Noa", "Gio", "Neo", "Nounou", "Assaad", "Chris", "Eliott"];
@@ -30,6 +32,9 @@ let revealInterval = null;
 let godMode = false;
 let movingPlayerIndex = null; 
 let viewMode = sessionStorage.getItem('lineUpViewMode') || null; 
+// NEW: Track roster visibility for privacy
+let isRosterExpanded = false;
+
 const app = document.getElementById('app');
 
 // --- UTILS ---
@@ -457,6 +462,12 @@ function toggleGodMode() {
     }
 }
 
+// NEW: Toggle visibility of the roster list (for privacy)
+function toggleRoster() {
+    isRosterExpanded = !isRosterExpanded;
+    render();
+}
+
 function startTimerTicker() {
     if(timerInterval) clearInterval(timerInterval);
     const overlay = document.getElementById('tensionOverlay');
@@ -635,6 +646,7 @@ function renderSetup() {
         </div>
     `;
 
+    // UPDATED: Added Roster Toggle for Mobile View
     app.innerHTML = `
         ${switchBtn}
         <div class="split-container">
@@ -643,7 +655,13 @@ function renderSetup() {
                 <div class="right-panel">
                     <div class="game-status-panel"><h3>Current Roster</h3>${rosterHtml}</div>
                 </div>` 
-            : `<div style="margin-top:10px">${rosterHtml}</div>`}
+            : `<div style="margin-top:10px">
+                <button class="btn-secondary" onclick="toggleRoster()" style="margin-bottom:10px; justify-content: space-between; padding: 12px 20px;">
+                    <span style="font-size:1rem; font-weight:800; opacity:0.8;">${isRosterExpanded ? 'Collapse List' : 'Expand List'} (${state.players.length})</span>
+                    <span>${isRosterExpanded ? '🔼' : '🔽'}</span>
+                </button>
+                ${isRosterExpanded ? rosterHtml : ''}
+               </div>`}
         </div>
     `;
     if(viewMode === 'tv') document.body.classList.add('is-tv-mode');
