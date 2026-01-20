@@ -1,89 +1,10 @@
 /* --- START OF FILE lineup-main/script.js --- */
 
-// =========================================================
-// 1. CONFIGURATION & SERVICES
-// =========================================================
-
+// --- CONFIG & STATE ---
 const GOD_PASSWORD = "line1up";
 const AUTO_NAMES = ["Alec", "Alain", "Nada", "Hoda", "Fadi", "Noa", "Gio", "Neo", "Nounou", "Assaad", "Chris", "Eliott"];
 
-// --- FIREBASE CONFIGURATION ---
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBLXXrwC2WF8ENCdpMEe9e4ClCyBZcF4Pc",
-  authDomain: "lineup-12345.firebaseapp.com",
-  databaseURL: "https://lineup-12345-default-rtdb.firebaseio.com",
-  projectId: "lineup-12345",
-  storageBucket: "lineup-12345.firebasestorage.app",
-  messagingSenderId: "785796686648",
-  appId: "1:785796686648:web:d31f6a30767a4c1a8fd7cd",
-  measurementId: "G-ZD6G5FLXQ6"
-};
-
-// Initialize Firebase
-let db, auth;
-try {
-    // Check if the placeholder API key is still there or if we have the real one
-    if (typeof firebase !== 'undefined') {
-        firebase.initializeApp(FIREBASE_CONFIG);
-        db = firebase.firestore();
-        auth = firebase.auth();
-        console.log("🔥 Firebase Initialized");
-    } else {
-        console.warn("⚠️ Firebase SDK not loaded in HTML. Online features disabled.");
-    }
-} catch (e) { console.error("Firebase Init Error:", e); }
-
-// --- I18N DICTIONARY ---
-const TRANSLATIONS = {
-    en: {
-        title: "Line Up!",
-        subtitle: "The Ultimate Chaos Number Game",
-        players: "Players",
-        add: "Add",
-        configure: "Configure Game",
-        passPlay: "Pass & Play",
-        distribute: "Distribute",
-        verify: "Verify",
-        results: "Results",
-        hideSuggestions: "🔼 Collapse Suggestions",
-        showSuggestions: "🔽 Expand Suggestions",
-        waiting: "Waiting for host...",
-        roomMode: "Room Mode"
-    },
-    es: {
-        title: "¡Alinearse!",
-        subtitle: "El juego de números del caos",
-        players: "Jugadores",
-        add: "Añadir",
-        configure: "Configurar",
-        passPlay: "Pasa y Juega",
-        distribute: "Distribuir",
-        verify: "Verificar",
-        results: "Resultados",
-        hideSuggestions: "🔼 Ocultar Sugerencias",
-        showSuggestions: "🔽 Mostrar Sugerencias",
-        waiting: "Esperando al anfitrión...",
-        roomMode: "Modo Sala"
-    },
-    fr: {
-        title: "Alignez-vous!",
-        subtitle: "Le jeu de nombres chaotique",
-        players: "Joueurs",
-        add: "Ajouter",
-        configure: "Configurer",
-        passPlay: "Passe & Joue",
-        distribute: "Distribuer",
-        verify: "Vérifier",
-        results: "Résultats",
-        hideSuggestions: "🔼 Masquer Suggestions",
-        showSuggestions: "🔽 Afficher Suggestions",
-        waiting: "En attente de l'hôte...",
-        roomMode: "Mode Salle"
-    }
-};
-let currentLang = localStorage.getItem('lineUpLang') || 'en';
-
-// --- STATE VARIABLES ---
+// SFX Configuration
 const SFX_FILES = {
     add: "sfx/getgems.wav",
     popup: "sfx/popup.wav",
@@ -96,6 +17,7 @@ const SFX_FILES = {
 const DEFAULT_STATE = { 
     step: 'SETUP', 
     players: [], 
+    // ADDED: timerMode ('up' or 'down') and duration (seconds)
     settings: { min: 1, max: 100, order: 'asc', timerMode: 'up', duration: 120 }, 
     startTime: null, 
     finalTime: null, 
@@ -110,26 +32,12 @@ let revealInterval = null;
 let godMode = false;
 let movingPlayerIndex = null; 
 let viewMode = sessionStorage.getItem('lineUpViewMode') || null; 
-let isAutoNamesExpanded = false; // Toggle state for suggestion list
-
-// Screensaver State
-let screensaverTimeout = null;
-const SCREENSAVER_DELAY = 300000; // 5 Minutes
+// NEW: Track roster visibility for privacy
+let isAutoNamesExpanded = false;
 
 const app = document.getElementById('app');
 
-// =========================================================
-// 2. CORE UTILITIES
-// =========================================================
-
-function t(key) { return TRANSLATIONS[currentLang][key] || key; }
-
-function changeLanguage(lang) {
-    currentLang = lang;
-    localStorage.setItem('lineUpLang', lang);
-    render();
-}
-
+// --- UTILS ---
 function pulse(ms = 10) { if (navigator.vibrate) navigator.vibrate(ms); }
 async function requestWakeLock() { if ('wakeLock' in navigator) { try { await navigator.wakeLock.request('screen'); } catch (err) {} } }
 function showToast(msg) {
@@ -158,27 +66,7 @@ function resetViewMode() {
     render();
 }
 
-// --- SCREENSAVER LOGIC ---
-function initScreensaver() {
-    const el = document.getElementById('screensaver');
-    if(!el) return;
-    
-    function resetTimer() {
-        if(el.classList.contains('active')) el.classList.remove('active');
-        clearTimeout(screensaverTimeout);
-        screensaverTimeout = setTimeout(() => {
-            // Only show if in TV mode or Setup
-            if(viewMode === 'tv' || state.step === 'SETUP') el.classList.add('active');
-        }, SCREENSAVER_DELAY);
-    }
-    ['mousemove', 'mousedown', 'touchstart', 'keydown'].forEach(evt => window.addEventListener(evt, resetTimer));
-    resetTimer();
-}
-
-// =========================================================
-// 3. THEME & AUDIO
-// =========================================================
-
+// --- THEME MANAGER & SFX ---
 const DEFAULT_THEME = { 
     blur: 15, scale: 1.0, snow: true, sfx: true,
     color: '#6366f1', font: "'Nunito', sans-serif", speed: 6,
@@ -219,6 +107,7 @@ function applyTheme() {
         if(el.type === 'checkbox') el.checked = theme[id.replace('Input','')];
         else el.value = theme[id.replace('Input','')];
     });
+    
     const canvas = document.getElementById('snowCanvas');
     if(canvas) canvas.style.display = theme.snow ? 'block' : 'none';
 }
@@ -232,6 +121,7 @@ function updateTheme(key, val) {
     render();
 }
 
+// --- SNOW FX ---
 function initSnow() {
     const canvas = document.getElementById('snowCanvas');
     const ctx = canvas.getContext('2d');
@@ -264,18 +154,16 @@ function initSnow() {
     draw();
 }
 
-// =========================================================
-// 4. DATA MANAGEMENT & FIREBASE SYNC
-// =========================================================
-
+// --- DATA MANAGEMENT ---
 function loadState() {
     const params = new URLSearchParams(window.location.search);
-    if (params.has('p') || params.has('room') || params.has('roomId')) return;
+    if (params.has('p') || params.has('room')) return;
     try {
         const saved = localStorage.getItem('lineUpState');
         if (saved) {
             state = JSON.parse(saved);
             if (!state.settings.timerMode) { state.settings.timerMode = 'up'; state.settings.duration = 120; }
+            
             if (state.step === 'DISTRIBUTE') { state.startTime = null; state.finalTime = null; }
             if (state.revealedCount === undefined) state.revealedCount = 0; 
             if ((state.step === 'VERIFY') && state.startTime) startTimerTicker();
@@ -284,78 +172,9 @@ function loadState() {
 }
 
 function saveState() {
-    // 1. Local Save (Always happen unless in Room View)
-    if (!new URLSearchParams(window.location.search).has('roomId')) {
-        localStorage.setItem('lineUpState', JSON.stringify(state));
-    }
-    
-    // 2. Firebase Sync (If Host)
-    if (db && window.currentRoomId && viewMode === 'tv') {
-        db.collection('rooms').doc(window.currentRoomId).update({
-            state: JSON.stringify(state),
-            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-        });
-    }
+    if (!new URLSearchParams(window.location.search).has('p')) localStorage.setItem('lineUpState', JSON.stringify(state));
 }
 
-// --- FIREBASE HOST FUNCTIONS ---
-async function createFirebaseRoom() {
-    if (!db) return showToast("Firebase not configured!");
-    
-    // Login
-    await auth.signInAnonymously();
-    
-    // Create Unique ID
-    const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-    window.currentRoomId = roomId;
-    
-    await db.collection('rooms').doc(roomId).set({
-        host: auth.currentUser.uid,
-        created: firebase.firestore.FieldValue.serverTimestamp(),
-        state: JSON.stringify(state)
-    });
-
-    showToast(`Room Live: ${roomId}`);
-    return roomId;
-}
-
-// --- FIREBASE PLAYER FUNCTIONS ---
-async function joinFirebaseRoom(roomId) {
-    if (!db) return showToast("Firebase not configured!");
-    await auth.signInAnonymously();
-    
-    db.collection('rooms').doc(roomId).onSnapshot((doc) => {
-        if (doc.exists) {
-            const remoteState = JSON.parse(doc.data().state);
-            handleRemoteUpdate(remoteState);
-        } else {
-            showToast("Room closed by host.");
-        }
-    });
-}
-
-function handleRemoteUpdate(remoteState) {
-    const myName = sessionStorage.getItem('lineUpMyName');
-    
-    // If name not claimed, show pick list
-    if (!myName) {
-        renderRoomPickList(remoteState);
-        return;
-    }
-
-    // If claimed, show dynamic game view
-    const myData = remoteState.players.find(p => p.name === myName);
-    if (!myData) {
-        // Name removed from roster?
-        sessionStorage.removeItem('lineUpMyName');
-        renderRoomPickList(remoteState);
-        return;
-    }
-
-    renderRealTimePlayerView(myData, remoteState.settings);
-}
-
-// --- STANDARD STORAGE ---
 function getLeaderboard() {
     try { return JSON.parse(localStorage.getItem('lineUpLeaderboard')) || {}; } catch(e) { return {}; }
 }
@@ -423,10 +242,7 @@ function wipeData() {
     }
 }
 
-// =========================================================
-// 5. GAME & LOGIC
-// =========================================================
-
+// --- GAME LOGIC ---
 function addPlayer(optionalName) {
     const input = document.getElementById('nameInput');
     const name = optionalName || input.value.trim();
@@ -444,6 +260,7 @@ function addPlayer(optionalName) {
 
 function removePlayer(i) { state.players.splice(i, 1); setState('SETUP'); pulse(); }
 
+// --- SETTINGS MODAL LOGIC ---
 function openGameSettings() {
     if(state.players.length < 2) return showToast("Add 2+ players first!");
     
@@ -451,7 +268,9 @@ function openGameSettings() {
     document.getElementById('settingMax').value = state.settings.max;
     document.getElementById('settingOrder').value = state.settings.order;
     document.getElementById('settingDuration').value = state.settings.duration || 120;
+    
     toggleTimerMode(state.settings.timerMode || 'up');
+    
     openModal('gameSettingsModal');
 }
 
@@ -462,12 +281,16 @@ function toggleTimerMode(mode) {
     const inputDiv = document.getElementById('timerDurationInput');
 
     if(mode === 'up') {
-        upBtn.style.border = '2px solid var(--primary)'; upBtn.style.opacity = '1';
-        downBtn.style.border = '1px solid var(--border)'; downBtn.style.opacity = '0.5';
+        upBtn.style.border = '2px solid var(--primary)';
+        upBtn.style.opacity = '1';
+        downBtn.style.border = '1px solid var(--border)';
+        downBtn.style.opacity = '0.5';
         inputDiv.style.display = 'none';
     } else {
-        downBtn.style.border = '2px solid var(--primary)'; downBtn.style.opacity = '1';
-        upBtn.style.border = '1px solid var(--border)'; upBtn.style.opacity = '0.5';
+        downBtn.style.border = '2px solid var(--primary)';
+        downBtn.style.opacity = '1';
+        upBtn.style.border = '1px solid var(--border)';
+        upBtn.style.opacity = '0.5';
         inputDiv.style.display = 'block';
     }
 }
@@ -478,17 +301,28 @@ function adjustTime(amount) {
     if(val < 10) val = 10;
     el.value = val;
 }
-function setDuration(val) { document.getElementById('settingDuration').value = val; pulse(); }
+
+// NEW: Helper for Preset Buttons
+function setDuration(val) {
+    document.getElementById('settingDuration').value = val;
+    pulse();
+}
 
 function generateNumbers() {
-    const min = parseInt(document.getElementById('settingMin').value);
-    const max = parseInt(document.getElementById('settingMax').value);
+    const minEl = document.getElementById('settingMin');
+    const maxEl = document.getElementById('settingMax');
+    const orderEl = document.getElementById('settingOrder');
+    const durationEl = document.getElementById('settingDuration');
+
+    const min = parseInt(minEl.value);
+    const max = parseInt(maxEl.value);
+
     if (min >= max) { showToast("Min must be < Max!"); return false; }
     
     state.settings.min = min; 
     state.settings.max = max;
-    state.settings.order = document.getElementById('settingOrder').value;
-    state.settings.duration = parseInt(document.getElementById('settingDuration').value);
+    state.settings.order = orderEl.value;
+    state.settings.duration = parseInt(durationEl.value);
 
     const used = new Set();
     state.players.forEach(p => {
@@ -508,7 +342,10 @@ function startGame() {
     }
 }
 
-function startVerification() { state.startTime = Date.now(); setState('VERIFY'); }
+function startVerification() {
+    state.startTime = Date.now();
+    setState('VERIFY');
+}
 
 function startPassGame() {
     if (state.players.length < 2) return showToast("Need 2+ players to start!");
@@ -521,7 +358,9 @@ function startPassGame() {
 function nextPassPlayer() {
     if (state.passIndex < state.players.length - 1) {
         state.passIndex++; state.viewingNumber = false; saveState(); render();
-    } else { startVerification(); }
+    } else {
+        startVerification(); 
+    }
     pulse();
 }
 
@@ -534,7 +373,12 @@ function savePreset() {
     const name = prompt("What do you want to name this group?");
     if(name) {
         const presets = JSON.parse(localStorage.getItem('lineUpPresets')) || [];
-        presets.push({ name, players: state.players.map(p => ({ name: p.name, number: 0 })), min: state.settings.min, max: state.settings.max });
+        presets.push({ 
+            name, 
+            players: state.players.map(p => ({ name: p.name, number: 0 })),
+            min: state.settings.min,
+            max: state.settings.max
+        });
         localStorage.setItem('lineUpPresets', JSON.stringify(presets));
         showToast("Saved!");
     }
@@ -546,7 +390,10 @@ function loadPreset(index) {
         state.players = JSON.parse(JSON.stringify(presets[index].players));
         if(presets[index].min !== undefined) state.settings.min = presets[index].min;
         if(presets[index].max !== undefined) state.settings.max = presets[index].max;
-        saveState(); closeModal('presetsModal'); render(); showToast("Preset loaded!");
+        saveState();
+        closeModal('presetsModal');
+        render();
+        showToast("Preset loaded!");
     }
 }
 
@@ -561,14 +408,17 @@ function renderPresetsList() {
     const presets = JSON.parse(localStorage.getItem('lineUpPresets')) || [];
     const el = document.getElementById('presetsList');
     if(presets.length === 0) { el.innerHTML = "<p>No saved groups. Click '+Save' to start.</p>"; return; }
-    el.innerHTML = presets.map((p, i) => `
+    el.innerHTML = presets.map((p, i) => {
+        const rangeInfo = (p.min !== undefined) ? `<br><small style="opacity:0.6">Range: ${p.min}-${p.max}</small>` : '';
+        return `
         <div class="item-card" style="margin-bottom:8px;">
-            <div><strong>${p.name}</strong> (${p.players.length})</div>
+            <div><strong>${p.name}</strong> (${p.players.length})${rangeInfo}</div>
             <div style="display:flex; gap:5px;">
                 <button class="btn-primary btn-sm" onclick="loadPreset(${i})">Load</button>
                 <button class="btn-danger btn-sm" onclick="deletePreset(${i})">X</button>
             </div>
-        </div>`).join('');
+        </div>`;
+    }).join('');
 }
 
 function saveHistory(win) {
@@ -589,9 +439,10 @@ function renderHistoryList() {
     const el = document.getElementById('historyList');
     if(log.length === 0) { el.innerHTML = "<p>No games played yet.</p>"; return; }
     el.innerHTML = log.map((g, index) => {
-        const names = g.roster ? g.roster.join(', ') : 'No roster data.';
+        const names = g.roster ? g.roster.join(', ') : 'No roster data (can be due to corruption).';
         return `
-        <div class="item-card" style="margin-bottom:8px; display:block; cursor:pointer; ${g.win ? 'border-color:var(--success)' : ''}" 
+        <div class="item-card" 
+             style="margin-bottom:8px; display:block; cursor:pointer; ${g.win ? 'border-color:var(--success)' : ''}" 
              onclick="const d = document.getElementById('hist-details-${index}'); d.style.display = d.style.display === 'none' ? 'block' : 'none'; pulse();">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div><div style="font-size:0.8rem; opacity:0.7">${g.date}</div><strong>${g.players} Players</strong></div>
@@ -604,13 +455,23 @@ function renderHistoryList() {
     }).join('');
 }
 
-function toggleAutoNames() { isAutoNamesExpanded = !isAutoNamesExpanded; render(); }
+function toggleAutoNames() {
+    isAutoNamesExpanded = !isAutoNamesExpanded;
+    render();
+}
+
+// --- MISC UTILS ---
 function toggleGodMode() {
     if(godMode) { godMode = false; render(); } else { 
         if(prompt("Enter Admin Password:") === GOD_PASSWORD) { godMode = true; showToast("🔓 God Mode Active"); render(); } else { showToast("❌ Wrong Password!"); } 
     }
 }
-function toggleRoster() { isRosterExpanded = !isRosterExpanded; render(); } // Kept for legacy compatibility if needed
+
+// NEW: Toggle visibility of the roster list (for privacy)
+function toggleRoster() {
+    isRosterExpanded = !isRosterExpanded;
+    render();
+}
 
 function startTimerTicker() {
     if(timerInterval) clearInterval(timerInterval);
@@ -618,23 +479,43 @@ function startTimerTicker() {
     
     timerInterval = setInterval(() => {
         const el = document.getElementById('timerDisplay');
+        
         if(el && state.startTime) {
             let diff = Math.floor((Date.now() - state.startTime) / 1000);
+            
+            // Countdown Logic
             if(state.settings.timerMode === 'down') {
                 const remaining = state.settings.duration - diff;
+                
+                // Red Tension Effect (Intensifies as time reaches 0)
                 if (remaining <= state.settings.duration && overlay) {
                    const intensity = 1 - (remaining / state.settings.duration);
                    overlay.style.opacity = Math.max(0, Math.min(0.8, intensity));
+                   
+                   // Play tick sound in last 10 seconds
+                   if (remaining <= 10 && remaining > 0 && theme.sfx) {
+                       // Optional: Add logic to play tick here
+                   }
                 }
+
                 if(remaining <= 0) {
+                    // TIME UP!
                     clearInterval(timerInterval);
                     el.innerText = `⏱️ 0:00`;
+                    
+                    // Reset overlay immediately so results aren't red
                     if(overlay) overlay.style.opacity = 0;
-                    if(state.step !== 'RESULTS') checkOrder();
+                    
+                    // Auto Reveal
+                    if(state.step !== 'RESULTS') {
+                        checkOrder(); 
+                    }
                     return; 
                 }
+                
                 el.innerText = `⏱️ ${formatTime(remaining)}`;
             } else {
+                // Stopwatch Mode
                 if(overlay) overlay.style.opacity = 0;
                 el.innerText = `⏱️ ${formatTime(diff)}`;
             }
@@ -647,39 +528,30 @@ function openModal(id) {
     const m = document.getElementById(id); m.classList.add('active'); 
     if(id==='presetsModal') renderPresetsList(); 
     if(id==='historyModal') renderHistoryList(); 
-    if(id==='leaderboardModal') document.getElementById('mobileLeaderboardList').innerHTML = getLeaderboardHtml();
+    if(id==='leaderboardModal') {
+        document.getElementById('mobileLeaderboardList').innerHTML = getLeaderboardHtml();
+    }
     if(id==='themeModal') applyTheme();
     pulse(); 
 }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); pulse(); }
 
-// =========================================================
-// 6. RENDER ENGINE
-// =========================================================
-
+// --- RENDER ENGINE ---
 function setState(s) { 
-    state.step = s; saveState(); 
+    state.step = s; 
+    saveState(); 
+    
+    // Reset overlay if leaving game loop
     const overlay = document.getElementById('tensionOverlay');
-    if ((s === 'SETUP' || s === 'RESULTS') && overlay) overlay.style.opacity = 0;
+    if (s === 'SETUP' || s === 'RESULTS') {
+        if(overlay) overlay.style.opacity = 0;
+    }
+    
     render(); 
 }
 
 function render() {
-    const langSel = document.getElementById('langSelect');
-    if(langSel) langSel.value = currentLang;
-
     const params = new URLSearchParams(window.location.search);
-    
-    // FIREBASE JOIN CHECK
-    if (params.get('roomId')) {
-        const rId = params.get('roomId');
-        if (!window.isListening) {
-            window.isListening = true;
-            joinFirebaseRoom(rId);
-        }
-        return;
-    }
-
     if (params.get('p')) { renderPlayerView(params.get('p')); return; }
     if (params.get('room')) { renderRoomView(params.get('room')); return; }
 
@@ -694,8 +566,7 @@ function render() {
     applyTheme();
 }
 
-// --- VIEW COMPONENTS ---
-
+// --- COMPONENTS ---
 function getLeaderboardHtml() {
     const scores = getLeaderboard();
     const entries = Object.entries(scores).sort((a,b) => b[1] - a[1]);
@@ -707,12 +578,13 @@ function getLeaderboardHtml() {
                 <span style="font-weight:700;">${e[0]}</span>
             </div>
             <strong style="color:var(--primary-dark)">${e[1]} pts</strong>
-        </div>`).join('');
+        </div>
+    `).join('');
 }
 
 function renderModeSelection() {
     app.innerHTML = `
-        <h1>${t('title')}</h1>
+        <h1>Welcome</h1>
         <p>Choose your display mode</p>
         <div class="row" style="margin-top:20px;">
             <button class="mode-btn col" onclick="setViewMode('mobile')">
@@ -723,35 +595,36 @@ function renderModeSelection() {
                 <div class="mode-icon">📺</div>
                 Big / TV
             </button>
-        </div>`;
+        </div>
+    `;
 }
 
 function renderSetup() {
     const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">👁️</button>`;
-    
     const leftContent = `
-        <h1>${t('title')}</h1>
-        <p>${t('subtitle')}</p>
+        <h1>Line Up!</h1>
+        <p>The Ultimate Chaos Number Game</p>
         
         <div class="divider"></div>
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <label class="label" style="margin:0;">${t('players')} (${state.players.length})</label>
+            <label class="label" style="margin:0;">Players (${state.players.length})</label>
             <div style="display:flex; gap:5px;">
                 <button class="btn-secondary btn-sm" onclick="openModal('presetsModal')">💾</button>
                 <button class="btn-secondary btn-sm" onclick="openModal('leaderboardModal')">🏆</button>
                 <button class="btn-secondary btn-sm" onclick="openModal('historyModal')">📜</button>
                 <button class="btn-secondary btn-sm" onclick="openModal('themeModal'); applyTheme();">🎨</button>
                 <button class="btn-secondary btn-sm" onclick="openModal('dataModal')">⚙️</button>
-                <button class="btn-secondary btn-sm" onclick="savePreset()">💾 Group</button>
+                <button class="btn-secondary btn-sm" onclick="savePreset()">Save Group</button>
             </div>
         </div>
         <div class="row" style="margin-top:10px; margin-bottom:10px;">
             <input type="text" id="nameInput" placeholder="Name" onkeydown="if(event.key==='Enter') addPlayer()">
-            <button class="btn-primary" style="width:auto;" onclick="addPlayer()">${t('add')}</button>
+            <button class="btn-primary" style="width:auto;" onclick="addPlayer()">Add</button>
         </div>
         
+        <!-- MODIFIED: Collapsible Auto Names -->
         <button class="btn-secondary btn-sm" onclick="toggleAutoNames()" style="width:100%; justify-content:center; opacity:0.8; margin-bottom:10px;">
-            ${isAutoNamesExpanded ? t('hideSuggestions') : t('showSuggestions')}
+            ${isAutoNamesExpanded ? '🔼 COLLAPSE SUGGESTIONS' : '🔽 EXPAND SUGGESTIONS'}
         </button>
 
         ${isAutoNamesExpanded ? `
@@ -760,18 +633,20 @@ function renderSetup() {
                     const isAdded = state.players.some(p => p.name.toLowerCase() === n.toLowerCase());
                     return `<button class="chip-btn ${isAdded ? 'added' : ''}" onclick="addPlayer('${n}')">${n}</button>`;
                 }).join('')}
-            </div>` : ''}
+            </div>
+        ` : ''}
         
         <div style="margin-top:auto;">
             <button class="btn-primary" onclick="openGameSettings()" ${state.players.length < 2 ? 'disabled' : ''}>
-                ${state.players.length < 2 ? '2+ Players to Start' : t('configure')}
+                ${state.players.length < 2 ? '2+ Players to Start' : 'Configure Game'}
             </button>
             ${viewMode === 'mobile' ? `
             <div style="text-align:center; margin: 12px 0; font-size: 0.8rem; font-weight:800; opacity:0.5; letter-spacing:1px;">— OR —</div>
-            <button class="btn-secondary" onclick="startPassGame()" ${state.players.length < 2 ? 'disabled' : ''}>📱 ${t('passPlay')}</button>` : ''}
+            <button class="btn-secondary" onclick="startPassGame()" ${state.players.length < 2 ? 'disabled' : ''}>📱 Pass & Play</button>` : ''}
         </div>
     `;
 
+    // RESTORED: Original Roster Logic (Always visible)
     const rosterHtml = `
         <div class="list-wrap">
             ${state.players.length === 0 ? '<div style="text-align:center; opacity:0.5; padding:20px;">Add players...</div>' : ''}
@@ -784,58 +659,52 @@ function renderSetup() {
         </div>
     `;
 
-    app.innerHTML = `${switchBtn}<div class="split-container"><div class="left-panel">${leftContent}</div>${viewMode === 'tv' ? `<div class="right-panel"><div class="game-status-panel"><h3>Current Roster</h3>${rosterHtml}</div></div>` : `<div style="margin-top:10px">${rosterHtml}</div>`}</div>`;
+    app.innerHTML = `
+        ${switchBtn}
+        <div class="split-container">
+            <div class="left-panel">${leftContent}</div>
+            ${viewMode === 'tv' ? `
+                <div class="right-panel">
+                    <div class="game-status-panel"><h3>Current Roster</h3>${rosterHtml}</div>
+                </div>` 
+            : `<div style="margin-top:10px">${rosterHtml}</div>`}
+        </div>
+    `;
     if(viewMode === 'tv') document.body.classList.add('is-tv-mode');
 }
 
 function renderDistribute() {
     const baseUrl = window.location.href.split('?')[0];
-    let timeText = `0:00`;
-    const sec = state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0;
+    const currentSeconds = state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0;
     
+    // UPDATED: Pre-calculate time text
+    let timeText = `0:00`;
     if (state.settings.timerMode === 'down') {
-        const remaining = Math.max(0, state.settings.duration - sec);
+        const remaining = Math.max(0, state.settings.duration - currentSeconds);
         timeText = formatTime(remaining);
     } else {
-        timeText = formatTime(sec);
+        timeText = formatTime(currentSeconds);
     }
-
-    // Prepare URL for Firebase Room if active
-    let firebaseRoomUrl = baseUrl;
-    if (db && window.currentRoomId) firebaseRoomUrl += `?roomId=${window.currentRoomId}`;
-
+    
+    const encodeData = (obj) => btoa(JSON.stringify(obj));
     const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">👁️</button>`;
+    
+    const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ ${timeText}</div></div>`;
     const controlsHtml = `
-        <div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ ${timeText}</div></div>
-        <h2>${t('distribute')}</h2>
+        ${timerHtml}
+        <h2>🔗 Distribute</h2>
         <div style="text-align:center; margin-top:20px;">
-            <button class="btn-primary" onclick="startVerification()">${t('verify')}</button>
+            <button class="btn-primary" onclick="startVerification()">Start Verification</button>
             <button class="btn-secondary" style="margin-top:10px;" onclick="setState('SETUP')">Back</button>
         </div>
-        ${db ? `<div style="text-align:center; margin-top:20px; font-size:0.8rem; opacity:0.7">🔥 Live Session: ${window.currentRoomId || 'Creating...'}</div>` : ''}
         <div class="row" style="margin-top:15px;">
             ${viewMode === 'mobile' ? `<button class="btn-secondary" onclick="openModal('leaderboardModal')">🏆 Leaderboard</button>` : ''}
-            <button class="btn-secondary" style="border-color:var(--primary); color:var(--primary)" onclick="openRoomQr()">🏠 ${t('roomMode')}</button>
+            <button class="btn-secondary" style="border-color:var(--primary); color:var(--primary)" onclick="openRoomQr()">🏠 Room Mode</button>
         </div>
         ${viewMode === 'tv' ? `<button class="btn-secondary" style="margin-top:10px;" onclick="openQrGrid()">📺 Grid View</button>` : ''}
     `;
 
-    // Hybrid List: If Firebase active, show Big QR. If not, show manual links.
-    let listHtml = '';
-    
-    if (db && window.currentRoomId) {
-        if (!window.qrGenerated) {
-            setTimeout(() => {
-                const c = document.getElementById('mainRoomQr');
-                if(c) new QRCode(c, { text: firebaseRoomUrl, width: 250, height: 250 });
-            }, 100);
-            window.qrGenerated = true;
-        }
-        listHtml = `<div style="text-align:center; padding:20px;"><div id="mainRoomQr" style="display:inline-block; background:white; padding:10px;"></div><p style="margin-top:10px">Scan to Join Session</p></div>`;
-    } else {
-        // Legacy Manual Links
-        const encodeData = (obj) => btoa(JSON.stringify(obj));
-        listHtml = `
+    const listHtml = `
         <div class="list-wrap">
             ${state.players.map((p, i) => {
                 const payload = { n: p.name, v: p.number, min: state.settings.min, max: state.settings.max, o: state.settings.order };
@@ -854,197 +723,393 @@ function renderDistribute() {
                 </div>`;
             }).join('')}
         </div>`;
-    }
 
-    if (viewMode === 'tv') app.innerHTML = `${switchBtn}<div class="split-container"><div class="left-panel">${controlsHtml}</div><div class="right-panel"><div class="game-status-panel"><h3>Links</h3>${listHtml}</div></div></div>`;
-    else app.innerHTML = `${switchBtn}${controlsHtml}${listHtml}`;
-    
-    // Auto-create room if TV mode + Firebase enabled
-    if (db && !window.currentRoomId && viewMode === 'tv') {
-        createFirebaseRoom().then(() => render());
+    if (viewMode === 'tv') {
+        app.innerHTML = `${switchBtn}<div class="split-container">
+            <div class="left-panel">${controlsHtml}</div>
+            <div class="right-panel">
+                <div class="game-status-panel"><h3>Links</h3>${listHtml}</div>
+            </div>
+        </div>`;
+    } else {
+        app.innerHTML = `${switchBtn}${controlsHtml}${listHtml}`;
     }
-    
     startTimerTicker();
 }
 
 function renderPassPlay() {
     const p = state.players[state.passIndex];
     const orderText = state.settings.order === 'asc' ? 'Smallest ➔ Biggest' : 'Biggest ➔ Smallest';
-    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()">👁️</button>`;
+    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">👁️</button>`;
     
     if (!state.viewingNumber) {
-        app.innerHTML = `${switchBtn}<div style="text-align:center; margin-top:20px;"><h1 style="font-size:4rem; margin-bottom:20px;">📱</h1><h2>Pass to<br><span style="color:var(--primary); font-size:2.5rem;">${p.name}</span></h2><div class="divider"></div><button class="btn-primary" onclick="state.viewingNumber=true; saveState(); render()">I am ${p.name}</button></div>`;
+        app.innerHTML = `
+            ${switchBtn}
+            <div style="text-align:center; margin-top:20px;">
+                <h1 style="font-size:4rem; margin-bottom:20px;">📱</h1>
+                <h2>Pass to<br><span style="color:var(--primary); font-size:2.5rem;">${p.name}</span></h2>
+                <div class="divider"></div>
+                <button class="btn-primary" onclick="state.viewingNumber=true; saveState(); render()">I am ${p.name}</button>
+            </div>`;
     } else {
-        app.innerHTML = `${switchBtn}<div style="text-align:center;"><h2>Hi, ${p.name}!</h2><p>Tap & hold to reveal.</p></div><div class="secret-container" id="secretBox"><div class="secret-overlay">HOLD</div><div class="big-number secret-blur">${p.number}</div></div><div style="background:var(--bg-item); padding:15px; border-radius:16px; text-align:left; font-size:0.95rem; margin-bottom:20px;">Range: <strong>${state.settings.min} - ${state.settings.max}</strong><br>Order: <strong>${orderText}</strong></div><button class="btn-primary" onclick="nextPassPlayer()">${state.passIndex < state.players.length - 1 ? 'Next Player' : 'Finished: Go to Line Up!'}</button>`;
+        app.innerHTML = `
+            ${switchBtn}
+            <div style="text-align:center;"><h2>Hi, ${p.name}!</h2><p>Tap & hold to reveal.</p></div>
+            <div class="secret-container" id="secretBox"><div class="secret-overlay">HOLD</div><div class="big-number secret-blur">${p.number}</div></div>
+            <div style="background:var(--bg-item); padding:15px; border-radius:16px; text-align:left; font-size:0.95rem; margin-bottom:20px;">
+                Range: <strong>${state.settings.min} - ${state.settings.max}</strong><br>Order: <strong>${orderText}</strong>
+            </div>
+            <button class="btn-primary" onclick="nextPassPlayer()">${state.passIndex < state.players.length - 1 ? 'Next Player' : 'Finished: Go to Line Up!'}</button>
+        `;
         bindSecretBox();
     }
 }
 
 function renderVerify() {
     if (!state.startTime) state.startTime = Date.now();
+    const currentSeconds = Math.floor((Date.now() - state.startTime) / 1000);
+    
+    // UPDATED: Pre-calculate time text
     let timeText = `0:00`;
-    const sec = Math.floor((Date.now() - state.startTime) / 1000);
-    if (state.settings.timerMode === 'down') timeText = formatTime(Math.max(0, state.settings.duration - sec));
-    else timeText = formatTime(sec);
-
-    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()">👁️</button>`;
+    if (state.settings.timerMode === 'down') {
+        const remaining = Math.max(0, state.settings.duration - currentSeconds);
+        timeText = formatTime(remaining);
+    } else {
+        timeText = formatTime(currentSeconds);
+    }
+    
+    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">👁️</button>`;
+    
+    const timerHtml = `<div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ ${timeText}</div></div>`;
     const controlsHtml = `
-        <div style="text-align:center;"><div id="timerDisplay" class="timer-badge">⏱️ ${timeText}</div></div>
+        ${timerHtml}
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2>${t('verify')}</h2>
+            <h2>🧐 Verify</h2>
             <button class="btn-secondary btn-icon" style="width:36px; height:36px; font-size:1rem;" onclick="toggleGodMode()">${godMode ? '🔓' : '🔒'}</button>
         </div>
-        ${viewMode === 'tv' ? `<div style="margin-top:auto"><button class="btn-primary" style="background:var(--success); margin-bottom:10px" onclick="checkOrder()">Reveal Results!</button><button class="btn-secondary" onclick="setState('DISTRIBUTE')">Back</button></div>` : ''}
+        ${viewMode === 'tv' ? 
+          `<div style="margin-top:auto">
+            <button class="btn-primary" style="background:var(--success); margin-bottom:10px" onclick="checkOrder()">Reveal Results!</button>
+            <button class="btn-secondary" onclick="setState('DISTRIBUTE')">Back</button>
+           </div>` 
+          : ''}
     `;
 
-    const listHtml = `<div class="list-wrap">${state.players.map((p, i) => {
-        if (theme.controls === 'arrows') {
-            return `<div class="item-card"><div style="display:flex; align-items:center;"><div class="rank-badge">${i+1}</div><div><span style="font-weight:700;">${p.name}</span>${godMode?` (${p.number})`:''}</div></div><div style="display:flex; gap:8px;"><button class="btn-secondary btn-icon" onclick="movePlayer(${i}, -1)">▲</button><button class="btn-secondary btn-icon" onclick="movePlayer(${i}, 1)">▼</button></div></div>`;
-        } else {
-            const isSelected = movingPlayerIndex === i;
-            const isTarget = movingPlayerIndex !== null;
-            if (isTarget && !isSelected) return `<div class="item-card" style="padding:10px;"><button class="btn-place-here" onclick="finishMove(${i})">👇 Place Here (#${i+1})</button></div>`;
-            return `<div class="item-card ${isSelected?'is-moving':''}"><div style="display:flex; align-items:center;"><div class="rank-badge">${i+1}</div><div><span style="font-weight:700;">${p.name}</span>${godMode?` (${p.number})`:''}</div></div><button class="btn-move-select" style="${isSelected?'background:var(--danger);color:white':''}" onclick="startMove(${i})">${isSelected?'✕':'↕️'}</button></div>`;
-        }
-    }).join('')}</div>${viewMode === 'mobile' ? `<button class="btn-primary" style="background:var(--success);" onclick="checkOrder()">Reveal Results</button><button class="btn-secondary" style="margin-top:10px;" onclick="setState('DISTRIBUTE')">Back</button>` : ''}`;
+    const listHtml = `
+        <div class="list-wrap">
+            ${state.players.map((p, i) => {
+                // MOVE LOGIC DISPLAY
+                if (theme.controls === 'arrows') {
+                    // LEGACY ARROWS
+                    return `
+                    <div class="item-card" style="transition: transform 0.3s ease;">
+                        <div style="display:flex; align-items:center;">
+                            <div class="rank-badge">${i + 1}</div>
+                            <div><span style="font-weight:700;">${p.name}</span>${godMode ? `<span style="margin-left:8px; color:var(--primary); font-weight:900;">(${p.number})</span>` : ''}</div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-secondary btn-icon" onclick="movePlayer(${i}, -1)" ${i === 0 ? 'disabled' : ''}>▲</button>
+                            <button class="btn-secondary btn-icon" onclick="movePlayer(${i}, 1)" ${i === state.players.length - 1 ? 'disabled' : ''}>▼</button>
+                        </div>
+                    </div>`;
+                } else {
+                    // MODERN TWO-TAP JUMP
+                    const isSelected = movingPlayerIndex === i;
+                    const isTargetMode = movingPlayerIndex !== null;
+                    
+                    if (isTargetMode && !isSelected) {
+                        // TARGET STATE
+                        return `
+                        <div class="item-card" style="padding:10px;">
+                            <button class="btn-place-here" onclick="finishMove(${i})">
+                                👇 Place Here (#${i+1})
+                            </button>
+                        </div>`;
+                    }
+                    
+                    // NORMAL STATE
+                    return `
+                    <div class="item-card ${isSelected ? 'is-moving' : ''}" style="transition: transform 0.2s ease;">
+                        <div style="display:flex; align-items:center;">
+                            <div class="rank-badge">${i + 1}</div>
+                            <div><span style="font-weight:700;">${p.name}</span>${godMode ? `<span style="margin-left:8px; color:var(--primary); font-weight:900;">(${p.number})</span>` : ''}</div>
+                        </div>
+                        <div>
+                            <button class="btn-move-select" style="${isSelected ? 'background:var(--danger); color:white; border-color:var(--danger);' : ''}" onclick="startMove(${i})">
+                                ${isSelected ? '✕' : '↕️'}
+                            </button>
+                        </div>
+                    </div>`;
+                }
+            }).join('')}
+        </div>
+        ${viewMode === 'mobile' ? `
+        <button class="btn-primary" style="background:var(--success);" onclick="checkOrder()">Reveal Results</button>
+        <button class="btn-secondary" style="margin-top:10px;" onclick="setState('DISTRIBUTE')">Back</button>` : ''}
+    `;
 
-    if (viewMode === 'tv') app.innerHTML = `${switchBtn}<div class="split-container"><div class="left-panel">${controlsHtml}</div><div class="right-panel"><div class="game-status-panel"><h3>Current Order</h3>${listHtml}</div></div></div>`;
-    else app.innerHTML = `${switchBtn}${controlsHtml}${listHtml}`;
+    if (viewMode === 'tv') {
+        app.innerHTML = `${switchBtn}<div class="split-container">
+            <div class="left-panel">${controlsHtml}</div>
+            <div class="right-panel">
+                <div class="game-status-panel"><h3>Current Order</h3>${listHtml}</div>
+            </div>
+        </div>`;
+    } else {
+        app.innerHTML = `${switchBtn}${controlsHtml}${listHtml}`;
+    }
     startTimerTicker();
 }
 
-function startMove(index) { movingPlayerIndex = (movingPlayerIndex === index) ? null : index; render(); }
-function finishMove(target) { if (movingPlayerIndex === null) return; const p = state.players.splice(movingPlayerIndex, 1)[0]; state.players.splice(target, 0, p); movingPlayerIndex = null; saveState(); render(); playSfx('add'); }
-
-function checkOrder() { state.revealedCount = 0; setState('RESULTS'); startAutoReveal(); pulse(50); }
-
-function renderResults() {
-    clearInterval(timerInterval);
-    const sorted = [...state.players].sort((a, b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
-    const mvpName = getMvpName(state.players, sorted);
-    const listItems = state.players.map((p, i) => getResultCardHtml(p, i, sorted, mvpName, i < state.revealedCount)).join('');
-
-    if (!state.finalTime) {
-        state.finalTime = Math.floor((Date.now() - state.startTime) / 1000); 
-        const allCorrect = state.players.every((p, i) => p.name === sorted[i].name);
-        saveHistory(allCorrect); updateScores();
+// NEW: MOVE LOGIC FUNCTIONS
+function startMove(index) {
+    if (movingPlayerIndex === index) {
+        movingPlayerIndex = null; // Cancel
+    } else {
+        movingPlayerIndex = index; // Select
     }
-
-    const allRevealed = state.revealedCount >= state.players.length;
-    let timeText = formatTime(state.finalTime);
-    if(state.settings.timerMode === 'down' && state.finalTime > state.settings.duration) timeText = "Done!";
-    const header = `<div style="text-align:center;"><div class="timer-badge" style="background:var(--gold); color:white;">Time: ${timeText}</div></div><h1>${allRevealed ? t('results') : 'Revealing...'}</h1>`;
-    const btns = allRevealed ? `<button class="btn-primary" onclick="restartSamePlayers()">🔄 Play Again</button><button class="btn-secondary" style="margin-top:10px;" onclick="resetGameData()">New Game</button>` : `<button class="btn-secondary" style="margin-top:10px; opacity:0.5" onclick="state.revealedCount=999; render()">Skip Animation</button>`;
-    const listHtml = `<div class="list-wrap">${listItems}</div>`;
-
-    if(viewMode === 'tv') app.innerHTML = `<div class="split-container"><div class="left-panel" style="justify-content:center;">${header}<br>${btns}</div><div class="right-panel"><div class="game-status-panel"><h3>Results</h3>${listHtml}</div></div></div>`;
-    else app.innerHTML = `${header}${listHtml}${btns}`;
+    render();
 }
 
+function finishMove(targetIndex) {
+    if (movingPlayerIndex === null) return;
+    
+    // Splice logic: Remove from old, insert at new
+    const player = state.players.splice(movingPlayerIndex, 1)[0];
+    state.players.splice(targetIndex, 0, player);
+    
+    movingPlayerIndex = null;
+    saveState();
+    render();
+    playSfx('add'); // Satisfying click sound
+}
+
+// NEW: Helper to generate card HTML (used by render and auto-reveal)
 function getResultCardHtml(p, i, sorted, mvpName, isRevealed) {
-    if (!isRevealed) return `<div class="item-card pending" id="res-card-${i}"><div style="display:flex; align-items:center;"><div class="rank-badge" style="background:var(--text-sub); opacity:0.5;">${i+1}</div><span style="font-weight:700; opacity:0.5;">Hidden</span></div><div style="opacity:0.5;">⏳</div></div>`;
-    const isCorrect = p.name === sorted[i].name; 
-    const realRank = sorted.findIndex(x => x.name === p.name) + 1;
-    const isMvp = p.name === mvpName;
-    return `<div class="item-card just-revealed ${isCorrect?'correct':'wrong'} ${isMvp?'gold':''}" id="res-card-${i}"><div><div style="display:flex; align-items:center;"><div class="rank-badge" style="background:${isCorrect?'var(--success)':'var(--danger)'}; color:white;">${i+1}</div><strong>${p.name}</strong>${isMvp?'<span style="margin-left:8px; font-size:0.8rem; background:var(--gold); color:white; padding:2px 6px; border-radius:4px;">⭐ MVP</span>':''}</div><div style="font-size:0.85rem; margin-top:6px; margin-left:40px; opacity:0.8;">Number: <strong>${p.number}</strong>${!isCorrect?` (Should be #${realRank})`:''}</div></div><div style="font-size:1.5rem;">${isCorrect?`✅<br><span style="font-size:0.6rem; font-weight:bold; color:var(--success)">+10pts</span>`:'❌'}</div></div>`;
-}
-
-function getMvpName(players, sorted) {
-    if(players.length < 2) return "";
-    const correctPlayers = players.filter((p, i) => p.name === sorted[i].name);
-    if (correctPlayers.length > 0) {
-        let bestName = ""; let minDiff = Infinity;
-        players.forEach((p, i) => {
-            if (p.name !== sorted[i].name) return;
-            let gapPrev = Infinity; let gapNext = Infinity;
-            if (i > 0) gapPrev = Math.abs(p.number - sorted[i-1].number);
-            if (i < sorted.length - 1) gapNext = Math.abs(p.number - sorted[i+1].number);
-            const difficulty = Math.min(gapPrev, gapNext);
-            if (difficulty < minDiff) { minDiff = difficulty; bestName = p.name; }
-        });
-        return bestName;
+    if (!isRevealed) {
+        return `
+        <div class="item-card pending" id="res-card-${i}">
+            <div style="display:flex; align-items:center;">
+                <div class="rank-badge" style="background:var(--text-sub); opacity:0.5;">${i+1}</div>
+                <span style="font-weight:700; opacity:0.5;">Hidden</span>
+            </div>
+            <div style="opacity:0.5;">⏳</div>
+        </div>`;
     }
-    let bestName = ""; let minRankDiff = Infinity;
-    players.forEach((p, i) => {
-        const sortedIndex = sorted.findIndex(s => s.name === p.name);
-        const diff = Math.abs(i - sortedIndex);
-        if (diff < minRankDiff) { minRankDiff = diff; bestName = p.name; }
-    });
-    return bestName;
+
+    const isCorrect = p.name === sorted[i].name; 
+    const realRank = sorted.findIndex(x => x.name === p.name) + 1; 
+    const isMvp = p.name === mvpName;
+
+    return `
+        <div class="item-card just-revealed ${isCorrect ? 'correct' : 'wrong'} ${isMvp ? 'gold' : ''}" id="res-card-${i}">
+            <div>
+                <div style="display:flex; align-items:center;">
+                    <div class="rank-badge" style="background:${isCorrect ? 'var(--success)' : 'var(--danger)'}; color:white;">${i+1}</div>
+                    <strong>${p.name}</strong>${isMvp ? '<span style="margin-left:8px; font-size:0.8rem; background:var(--gold); color:white; padding:2px 6px; border-radius:4px;">⭐ MVP</span>' : ''}
+                </div>
+                <div style="font-size:0.85rem; margin-top:6px; margin-left:40px; opacity:0.8;">Number: <strong>${p.number}</strong>${!isCorrect ? ` (Should be #${realRank})` : ''}</div>
+            </div>
+            <div style="font-size:1.5rem;">${isCorrect ? `✅<br><span style="font-size:0.6rem; font-weight:bold; color:var(--success)">+10pts</span>` : '❌'}</div>
+        </div>`;
 }
 
 function startAutoReveal() {
     if (revealInterval) return;
+    
+    // NEW MVP LOGIC: RANK-BASED
     const sorted = [...state.players].sort((a, b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
     const mvpName = getMvpName(state.players, sorted);
+
     revealInterval = setInterval(() => {
         if (state.revealedCount >= state.players.length) {
-            clearInterval(revealInterval); revealInterval = null; render();
+            clearInterval(revealInterval);
+            revealInterval = null;
+            render(); // Final render to show buttons
+            
+            // Final check
             const allCorrect = state.players.every((p, i) => p.name === sorted[i].name);
             playSfx(allCorrect ? 'win' : 'lose');
             if(allCorrect) setTimeout(() => confetti({ particleCount: 650, spread: 180, origin: { y: 0.6 } }), 200);
             return;
         }
-        state.revealedCount++; saveState(); playSfx('popup');
-        // Surgical Update
+        
+        state.revealedCount++;
+        saveState();
+        playSfx('popup'); 
+        
+        // --- SURGICAL DOM UPDATE (NO VOMIT) ---
         const cardIndex = state.revealedCount - 1;
         const player = state.players[cardIndex];
         const newHtml = getResultCardHtml(player, cardIndex, sorted, mvpName, true);
+        
         const cardEl = document.getElementById(`res-card-${cardIndex}`);
-        if(cardEl) { cardEl.outerHTML = newHtml; document.getElementById(`res-card-${cardIndex}`)?.scrollIntoView({behavior: "smooth", block: "center"}); }
-    }, 1500);
+        if(cardEl) {
+            cardEl.outerHTML = newHtml;
+            const newCard = document.getElementById(`res-card-${cardIndex}`);
+            if(newCard) newCard.scrollIntoView({behavior: "smooth", block: "center"});
+        }
+
+    }, 1500); // 1.0s Speed --> 1.5s
 }
 
-// --- PLAYER & ROOM VIEWS (NEW & LEGACY) ---
+function renderResults() {
+    clearInterval(timerInterval);
+    const sorted = [...state.players].sort((a, b) => state.settings.order === 'asc' ? a.number - b.number : b.number - a.number);
+    
+    const mvpName = getMvpName(state.players, sorted);
 
-function renderRoomPickList(remoteState) {
-    const unclaimed = remoteState.players; 
-    app.innerHTML = `
-        <h2 style="margin-bottom:5px;">🏠 Room Mode</h2>
-        <p>Select your name to join</p>
-        <div class="list-wrap">${unclaimed.map(p => `
-        <button class="btn-secondary" style="margin-bottom:10px; justify-content:space-between; padding:20px;" 
-            onclick="claimFirebasePlayer('${p.name}')">
-            <span style="font-weight:bold; font-size:1.1rem;">${p.name}</span>
-            <span>👉</span>
-        </button>`).join('')}</div>`;
-}
+    const listItems = state.players.map((p, i) => {
+        const isRevealed = i < state.revealedCount;
+        return getResultCardHtml(p, i, sorted, mvpName, isRevealed);
+    }).join('');
 
-function claimFirebasePlayer(name) {
-    sessionStorage.setItem('lineUpMyName', name);
-    render(); // Will trigger handleRemoteUpdate again
-}
-
-function renderRealTimePlayerView(myData, settings) {
-    if (myData.number === 0) {
-        app.innerHTML = `<div style="text-align:center; padding:50px;"><h2>Welcome, ${myData.name}</h2><p>Waiting for host to launch...</p></div>`;
-        return;
+    if (!state.finalTime) {
+        state.finalTime = Math.floor((Date.now() - state.startTime) / 1000); 
+        const allCorrect = state.players.every((p, i) => p.name === sorted[i].name);
+        saveHistory(allCorrect); 
+        updateScores();
     }
-    const orderText = settings.order === 'asc' ? 'Smallest ➔ Biggest' : 'Biggest ➔ Smallest';
+
+    const allRevealed = state.revealedCount >= state.players.length;
+    // Updated Time Badge logic
+    let timeText = formatTime(state.finalTime);
+    if(state.settings.timerMode === 'down' && state.finalTime > state.settings.duration) {
+         timeText = "Done!";
+    }
+    const timeMsg = `<div class="timer-badge" style="background:var(--gold); color:white;">Time: ${timeText}</div>`;
+    const headerHtml = `<div style="text-align:center;">${timeMsg}</div><h1>${allRevealed ? 'Results' : 'Revealing...'}</h1>`;
+    
+    const buttonsHtml = allRevealed ? `
+        <button class="btn-primary" onclick="restartSamePlayers()">🔄 Play Again</button>
+        <button class="btn-secondary" style="margin-top:10px;" onclick="resetGameData()">New Game</button>
+    ` : `
+        <button class="btn-secondary" style="margin-top:10px; opacity:0.5" onclick="state.revealedCount=999; render()">Skip Animation</button>
+    `;
+
+    const listHtml = `<div class="list-wrap">${listItems}</div>`;
+    // LEADERBOARD HTML REMOVED HERE
+
+    const switchBtn = `<button class="top-left-btn" onclick="resetViewMode()" title="Switch View Mode">👁️</button>`;
+
+    if(viewMode === 'tv') {
+        app.innerHTML = `
+            ${switchBtn}
+            <div class="split-container">
+                <div class="left-panel" style="justify-content:center;">${headerHtml}<div style="margin-top:30px">${buttonsHtml}</div></div>
+                <div class="right-panel">
+                    <div class="game-status-panel"><h3>Results</h3>${listHtml}</div>
+                </div>
+            </div>`;
+    } else {
+        app.innerHTML = `${switchBtn}${headerHtml}${listHtml}${buttonsHtml}`;
+    }
+}
+
+// NEW: Centralized MVP Logic
+function getMvpName(players, sorted) {
+    if(players.length < 2) return "";
+
+    // 1. Identify Correct Players
+    const correctPlayers = players.filter((p, i) => p.name === sorted[i].name);
+
+    // 2. Logic A: Perfect/Correct Players (Who had the tightest squeeze?)
+    if (correctPlayers.length > 0) {
+        let bestName = "";
+        let minDiff = Infinity;
+
+        players.forEach((p, i) => {
+            if (p.name !== sorted[i].name) return; // Skip incorrect players
+
+            // Get absolute difference to neighbors in the SORTED list
+            let gapPrev = Infinity;
+            let gapNext = Infinity;
+
+            if (i > 0) gapPrev = Math.abs(p.number - sorted[i-1].number);
+            if (i < sorted.length - 1) gapNext = Math.abs(p.number - sorted[i+1].number);
+
+            const difficulty = Math.min(gapPrev, gapNext);
+
+            if (difficulty < minDiff) {
+                minDiff = difficulty;
+                bestName = p.name;
+            }
+        });
+        return bestName;
+    }
+
+    // 3. Logic B: Everyone Wrong (Who was closest to their rank?)
+    let bestName = "";
+    let minRankDiff = Infinity;
+    players.forEach((p, i) => {
+        const sortedIndex = sorted.findIndex(s => s.name === p.name);
+        const diff = Math.abs(i - sortedIndex);
+        if (diff < minRankDiff) { 
+            minRankDiff = diff; 
+            bestName = p.name; 
+        }
+    });
+    return bestName;
+}
+
+// --- PLAYER VIEWS ---
+function renderPlayerView(encodedData) {
+    let data = null;
+    try { data = JSON.parse(atob(encodedData)); } catch(e) {}
+    if (!data) return app.innerHTML = `<h2>Error</h2><p>Broken link.</p>`;
     app.innerHTML = `
-        <div style="text-align:center;"><h2>Hi, ${myData.name}!</h2><p>Tap & hold.</p></div>
-        <div class="secret-container" id="secretBox"><div class="secret-overlay">HOLD</div><div class="big-number secret-blur">${myData.number}</div></div>
-        <div style="background:var(--bg-item); padding:20px; border-radius:16px; text-align:left;">Range: <strong>${settings.min} - ${settings.max}</strong><br>Order: <strong>${orderText}</strong></div>
+        <div style="text-align:center;"><h2>Hi, ${data.n}!</h2><p>Tap & hold.</p></div>
+        <div class="secret-container" id="secretBox"><div class="secret-overlay">HOLD</div><div class="big-number secret-blur">${data.v}</div></div>
+        <div style="background:var(--bg-item); padding:20px; border-radius:16px; text-align:left; font-size:0.95rem;">Range: <strong>${data.min} - ${data.max}</strong></div>
     `;
     bindSecretBox();
 }
 
-// Legacy "Offline" Room View
 function renderRoomView(encodedData) {
     let data = null;
     try { data = JSON.parse(atob(encodedData)); } catch(e) {}
     if (!data) return app.innerHTML = `<h2>Error.</h2><p>Invalid Room Data???</p>`;
+    
+    // ANTI-CHEAT CHECK
     if (data.id) {
         const claimedName = localStorage.getItem('lineUpClaim_' + data.id);
         if (claimedName) {
             const playerInfo = data.players.find(p => p.n === claimedName);
             if (playerInfo) {
-                app.innerHTML = `<div style="text-align:center; margin-top:30px;"><h1 style="font-size:3rem;">🔒</h1><h2>Hi,<br>${claimedName}</h2><p>You have already selected your name.</p><div class="divider"></div><button class="btn-primary" onclick="claimPlayer('${playerInfo.n}', ${playerInfo.v}, ${data.min}, ${data.max}, '${data.o}', ${data.id})">View My Number</button><div style="margin-top:20px;"><button class="btn-secondary btn-sm" onclick="if(confirm('Switch name?')) { localStorage.removeItem('lineUpClaim_' + ${data.id}); render(); }">Not ${claimedName}?</button></div></div>`;
+                app.innerHTML = `
+                    <div style="text-align:center; margin-top:30px;">
+                        <h1 style="font-size:3rem;">🔒</h1>
+                        <h2>Hi,<br>${claimedName}</h2>
+                        <p>You have already selected your name.</p>
+                        <div class="divider"></div>
+                        <button class="btn-primary" onclick="claimPlayer('${playerInfo.n}', ${playerInfo.v}, ${data.min}, ${data.max}, '${data.o}', ${data.id})">
+                            View My Number
+                        </button>
+                        <div style="margin-top:20px;">
+                            <button class="btn-secondary btn-sm" onclick="if(confirm('Are you sure you want to switch names? This should only be done if you clicked by mistake. Cheating would just ruin the fun and game.')) { localStorage.removeItem('lineUpClaim_' + ${data.id}); render(); }">
+                                Not ${claimedName}?
+                            </button>
+                        </div>
+                    </div>
+                `;
                 return;
             }
         }
     }
-    app.innerHTML = `<h2 style="margin-bottom:5px;">🏠 Pick Name</h2><p>Tap YOUR name to reveal.</p><div class="list-wrap">${data.players.map(p => `<button class="btn-secondary" style="margin-bottom:10px; justify-content:space-between; padding:20px;" onclick="claimPlayer('${p.n}', ${p.v}, ${data.min}, ${data.max}, '${data.o}', ${data.id || 0})"><span style="font-weight:bold; font-size:1.1rem;">${p.n}</span><span>👉</span></button>`).join('')}</div>`;
+
+    app.innerHTML = `
+        <h2 style="margin-bottom:5px;">🏠 Pick Name</h2>
+        <p>Tap YOUR name to reveal your number.</p>
+        <div class="list-wrap">
+            ${data.players.map(p => `
+                <button class="btn-secondary" style="margin-bottom:10px; justify-content:space-between; padding:20px;" 
+                    onclick="claimPlayer('${p.n}', ${p.v}, ${data.min}, ${data.max}, '${data.o}', ${data.id || 0})">
+                    <span style="font-weight:bold; font-size:1.1rem;">${p.n}</span>
+                    <span>👉</span>
+                </button>
+            `).join('')}
+        </div>
+    `;
 }
 
 function claimPlayer(name, val, min, max, order, roomId) {
@@ -1054,14 +1119,6 @@ function claimPlayer(name, val, min, max, order, roomId) {
     const newUrl = `${window.location.pathname}?p=${encoded}`;
     window.history.pushState({path: newUrl}, '', newUrl);
     render();
-}
-
-function renderPlayerView(encodedData) {
-    let data = null;
-    try { data = JSON.parse(atob(encodedData)); } catch(e) {}
-    if (!data) return app.innerHTML = `<h2>Error</h2><p>Broken link.</p>`;
-    app.innerHTML = `<div style="text-align:center;"><h2>Hi, ${data.n}!</h2><p>Tap & hold.</p></div><div class="secret-container" id="secretBox"><div class="secret-overlay">HOLD</div><div class="big-number secret-blur">${data.v}</div></div><div style="background:var(--bg-item); padding:20px; border-radius:16px; text-align:left; font-size:0.95rem;">Range: <strong>${data.min} - ${data.max}</strong></div>`;
-    bindSecretBox();
 }
 
 // --- INTERACTION ---
@@ -1088,6 +1145,7 @@ function bindSecretBox() {
 function copyLink(url) { navigator.clipboard.writeText(url); showToast("Link copied!"); pulse(); }
 async function shareLink(url, name) { pulse(); if (navigator.share) { try { await navigator.share({ title: 'Line Up!', text: `Number for ${name}`, url: url }); } catch (err) {} } else { copyLink(url); } }
 function showQr(url, name) { pulse(); openModal('qrModal'); document.getElementById('qrName').textContent = name; const c = document.getElementById('qrDisplay'); c.innerHTML = ''; new QRCode(c, { text: url, width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L }); }
+
 function openQrGrid() {
     openModal('qrGridModal');
     const target = document.getElementById('qrGridTarget');
@@ -1104,18 +1162,32 @@ function openQrGrid() {
         new QRCode(document.getElementById(`qr-${p.name}`), { text: link, width: 128, height: 128 });
     });
 }
+
 function openRoomQr() {
     openModal('roomQrModal');
     const c = document.getElementById('roomQrDisplay');
     c.innerHTML = '';
-    const roomData = { id: Date.now(), players: state.players.map(p => ({n: p.name, v: p.number})), min: state.settings.min, max: state.settings.max, o: state.settings.order };
+    const roomData = {
+        id: Date.now(),
+        players: state.players.map(p => ({n: p.name, v: p.number})),
+        min: state.settings.min, 
+        max: state.settings.max,
+        o: state.settings.order
+    };
     const baseUrl = window.location.href.split('?')[0];
     const url = `${baseUrl}?room=${btoa(JSON.stringify(roomData))}`;
     new QRCode(c, { text: url, width: 250, height: 250, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L });
 }
 
+function checkOrder() { 
+    state.revealedCount = 0; 
+    setState('RESULTS'); 
+    startAutoReveal(); // NEW: Start reveal immediately
+    pulse(50); 
+}
+
 // Start
-initSnow(); initScreensaver(); loadState(); 
+initSnow(); loadState(); 
 playSfx('start'); 
 if(state.step !== 'SETUP' && !viewMode) { viewMode = 'mobile'; }
 if(viewMode === 'tv') document.body.classList.add('is-tv-mode');
