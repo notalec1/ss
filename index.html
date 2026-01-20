@@ -9,9 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
     <!-- Link to your new CSS file -->
     <link rel="stylesheet" href="style.css">
@@ -30,23 +27,6 @@
         <div style="text-align:center;">
             <h1>Loading...</h1>
         </div>
-    </div>
-
-    <!-- Screensaver Overlay -->
-    <div id="screensaver" class="screensaver">
-        <div class="screensaver-content">
-            <div class="bouncer">Line Up!</div>
-            <p>Touch to Resume</p>
-        </div>
-    </div>
-
-    <!-- Language Toggle (Absolute Top Right) -->
-    <div style="position:fixed; top:20px; left:20px; z-index:60;">
-        <select id="langSelect" onchange="changeLanguage(this.value)" class="lang-dropdown">
-            <option value="en">🇺🇸 EN</option>
-            <option value="es">🇪🇸 ES</option>
-            <option value="fr">🇫🇷 FR</option>
-        </select>
     </div>
 
     <!-- MODALS -->
